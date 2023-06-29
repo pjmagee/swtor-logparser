@@ -6,25 +6,25 @@ public class Actor
 {
     private List<ReadOnlyMemory<char>> Roms { get; }
     private bool IsEmpty => Roms.Count == 0 || (Roms.Count == 1 && Roms[0].Length == 1 && Roms[0].Span[0] == '=');
-	
-    public string? Name
+
+    public string? Name => _name ??= GetName();
+
+    private string? _name;
+    private string? GetName()
     {
-        get 
+        try 
         {
-            try 
-            {
-                if (IsCompanion)
-                    return Roms[0].Span.Slice(Roms[0].Span.IndexOf('/') + 1, Roms[0].Span.IndexOf('{') - 1 - Roms[0].Span.IndexOf('/')).Trim().ToString();
+            if (IsCompanion)
+                return Roms[0].Slice(Roms[0].Span.IndexOf('/') + 1, Roms[0].Span.IndexOf('{') - 1 - Roms[0].Span.IndexOf('/')).Trim().ToString();
                 
-                if (IsPlayer)
-                    return Roms[0].Span.Slice(1, Roms[0].Span.IndexOf('#') - 1).Trim().ToString();
+            if (IsPlayer)
+                return Roms[0].Slice(1, Roms[0].Span.IndexOf('#') - 1).Trim().ToString();
 					
-                return Roms[0].Span.Slice(0, Roms[0].Span.IndexOf('{')).Trim().ToString();
-            }
-            catch
-            {
-                return null;
-            }
+            return Roms[0].Slice(0, Roms[0].Span.IndexOf('{')).Trim().ToString();
+        }
+        catch
+        {
+            return null;
         }
     }
 	
@@ -32,77 +32,66 @@ public class Actor
     public bool IsPlayer => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@';
     public bool IsCompanion => IsPlayer && Roms[0].Span.IndexOf('/') > 0;
 	
-    public int? Health
-    {
-        get
-        {
-            if (Roms.Count == 3)
-            {
-                return int.Parse(Roms[2].Slice(1, Roms[2].Span.IndexOf('/') - 1).Span);
-            }
-			
-            return null;
-        }
-    }
+    
+    private int? _health;
+    public int? Health => _health ??= GetHealth();
+    private int? GetHealth() => Roms.Count == 3 ? int.Parse(Roms[2].Slice(1, Roms[2].Span.IndexOf('/') - 1).Span) : null;
 
-    public int? MaxHealth
+
+    private int? _maxHealth;
+    public int? MaxHealth => _maxHealth ??= GetMaxHealth();
+    private int? GetMaxHealth()
     {
-        get
-        {
-            if (!IsEmpty)
-            {
-                var health = Roms[2].Span;
-                int maxStart = health.IndexOf('/') + 1;
-                int maxLength = health.Length - maxStart - 1;
-                return int.Parse(Roms[2].Slice(maxStart, maxLength).Span);
-            }
-			
-            return null;
-        }
+        if (IsEmpty) return null;
+        var health = Roms[2].Span;
+        int maxStart = health.IndexOf('/') + 1;
+        int maxLength = health.Length - maxStart - 1;
+        return int.Parse(Roms[2].Slice(maxStart, maxLength).Span);
     }
 	
-    public (float X, float Y, float Z, float Direction)? Position
+    private (float X, float Y, float Z, float Direction)? _position;
+    
+    public (float X, float Y, float Z, float Direction)? Position => _position ??= GetPosition();
+    
+    private (float X, float Y, float Z, float D)? GetPosition()
     {
-        get
+        if (Roms.Count == 3)
         {
-            if (Roms.Count == 3)
-            {
-                var position = ExtractPosition(Roms[1].Span);
-                return (position[0], position[1], position[2], position[3]);
-            }
+            var position = ExtractPosition(Roms[1].Span);
+            return (position[0], position[1], position[2], position[3]);
+        }
 			
-            return null;			
-        }
+        return null;
     }
-	
-    public long? Id
+
+    private long? _id;
+    public long? Id => _id ??= GetId();
+
+    private long? GetId()
     {
-        get 
+        if (IsPlayer)
         {
-            if (IsPlayer)
+            var hash = Roms[0].Span.IndexOf('#');
+            var slash = Roms[0].Span.IndexOf('/');
+
+            if (IsCompanion)
             {
-                var hash = Roms[0].Span.IndexOf('#');
-                var slash = Roms[0].Span.IndexOf('/');
-
-                if (IsCompanion)
-                {
-                    var idStart = Roms[0].Span.IndexOf('{');
-                    var idEnd = Roms[0].Span.IndexOf('}');
-                    return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd  - idStart - 1));
-                }
-
-                return long.Parse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash));
+                var idStart = Roms[0].Span.IndexOf('{');
+                var idEnd = Roms[0].Span.IndexOf('}');
+                return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd  - idStart - 1));
             }
 
-            if (IsNpc)
-            {
-                int openIndex = Roms[0].Span.IndexOf('{');
-                int closeIndex = Roms[0].Span.IndexOf('}');
-                return long.Parse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1));
-            }
-
-            return null;
+            return long.Parse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash));
         }
+
+        if (IsNpc)
+        {
+            int openIndex = Roms[0].Span.IndexOf('{');
+            int closeIndex = Roms[0].Span.IndexOf('}');
+            return long.Parse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1));
+        }
+
+        return null;
     }
 
     private Actor(ReadOnlyMemory<char> rom)

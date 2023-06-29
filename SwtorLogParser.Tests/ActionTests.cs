@@ -7,6 +7,7 @@ public class ActionTests
     {
         var action = Action.Parse("AreaEntered {836045448953664}: Imperial Fleet {137438989504}".AsMemory());
         
+        Assert.NotNull(action);
         Assert.False(action.Effect.IsNested);
         
         Assert.Equal("AreaEntered", action.Event.Name);
@@ -21,6 +22,7 @@ public class ActionTests
     {
         var action = Action.Parse("DisciplineChanged {836045448953665}: Mercenary {16141111589108060476}/Bodyguard {2031339142381600}".AsMemory());
         
+        Assert.NotNull(action);
         Assert.True(action.Effect.IsNested);
         
         Assert.Equal("DisciplineChanged", action.Event.Name);

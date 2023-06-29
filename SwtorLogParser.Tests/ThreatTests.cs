@@ -38,4 +38,11 @@ public class ThreatTests
         var threat = Threat.Parse("".AsMemory());
         Assert.Null(threat);
     }
+    
+    [Fact]
+    public void Invalid_Threat_Is_Null()
+    {
+        var threat = Threat.Parse("<>".AsMemory());
+        Assert.Null(threat);
+    }
 }

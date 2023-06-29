@@ -1,15 +1,15 @@
 ﻿namespace SwtorLogParser;
 
-public class CombatLog
+public sealed class CombatLog
 {
-	public FileInfo FileInfo { get; }
+	public FileInfo FileInfo { get; init; }
 	
 	public CombatLog(FileInfo fileInfo)
 	{
 		FileInfo = fileInfo;		
 	}
 
-	public List<CombatLogLine> Parse()
+	public List<CombatLogLine> GetLogLines()
 	{
 		List<CombatLogLine> items = new List<CombatLogLine>();
 
@@ -17,9 +17,9 @@ public class CombatLog
 		{
 			using (var reader = new StreamReader(stream))
 			{
-				var memory = reader.ReadToEnd().AsMemory();
+				var span = reader.ReadToEnd().AsSpan();
 				
-				foreach(var line in memory.Span.EnumerateLines())
+				foreach(var line in span.EnumerateLines())
 				{
 					if(line.IsEmpty) continue;
 					var combatLogLine = CombatLogLine.Parse(new ReadOnlyMemory<char>(line.ToArray()));

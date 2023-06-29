@@ -24,20 +24,15 @@ public class Value
     public bool IsMiss => Rom.Span.Contains(CombatLogs.Miss.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsDodge => Rom.Span.Contains(CombatLogs.Dodge.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsDeflect => Rom.Span.Contains(CombatLogs.Deflect.Span, StringComparison.OrdinalIgnoreCase);
+    
+    public int? Total => Integer + Tilde;
 	
-    public int? Tilde
-    {
-        get 
-        {
-            if(Rom.Span.Contains(CombatLogs.Tilde.Span, StringComparison.OrdinalIgnoreCase))
-                return ExtractTildeValue(Rom);
-            return null;
-        }
-    }	
-
+    public int? Tilde => Rom.Span.Contains(CombatLogs.Tilde.Span, StringComparison.OrdinalIgnoreCase) ? ExtractTildeValue(Rom) : null;
     public int? Integer => ExtractFirstValue(Rom);
-	
-    public ReadOnlyMemory<char>? Text => ExtractTextValue(Rom);
+
+    private string? _text;
+    
+    public string? Text => _text ??= ExtractTextValue(Rom);
 
     public long? Id
     {
@@ -57,16 +52,16 @@ public class Value
     {
         var start = rom.Span.LastIndexOf('(');
         var end = rom.Span.LastIndexOf(')');
+        var lastSection = rom.Span.LastIndexOf(']');
+
+        if (start == -1 || end == -1 || lastSection > start) return null;
 
         var scope = rom.Slice(start + 1, end - start - 1);
 			
-        if (!scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase))
-            return new Value(scope);
-			
-        return null;
+        return !scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase) ? new Value(scope) : null;
     }
 
-    private static ReadOnlyMemory<char>? ExtractTextValue(ReadOnlyMemory<char> rom)
+    private static string? ExtractTextValue(ReadOnlyMemory<char> rom)
     {
         int start = -1;
         int end = -1;
@@ -87,7 +82,7 @@ public class Value
         }
 
         if (start != -1)
-            return rom.Slice(start, end - start + 1);
+            return rom.Slice(start, end - start + 1).Trim().ToString();
 
         return null;
     }

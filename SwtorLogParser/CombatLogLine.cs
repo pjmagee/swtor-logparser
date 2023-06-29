@@ -39,7 +39,7 @@ public class CombatLogLine
     {
         var v = Value is not null ? $"({Value})" : null;
         var t = Threat is not null ? $"<{Threat}>" : null;
-        return $"[{TimeStamp:T}] [{Source}] [{Target}] [{Ability}] [{Action}] {v} {t}";
+        return $"[{TimeStamp:T}] [{Source}] [{Target}] [{Ability}] [{Action}] {v} {t}".Trim();
     }
 
     private static List<ReadOnlyMemory<char>> GetSections(ReadOnlyMemory<char> rom)

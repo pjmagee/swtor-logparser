@@ -7,7 +7,7 @@ public class Ability : GameObject
 
     }
 
-    public static Ability? Parse(ReadOnlyMemory<char> rom)
+    public new static Ability? Parse(ReadOnlyMemory<char> rom)
     {
         if(rom.Length == 0 || rom.IsEmpty) return null;
         return new Ability(rom);

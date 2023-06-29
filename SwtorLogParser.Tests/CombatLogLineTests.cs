@@ -3,6 +3,46 @@
 public class CombatLogLineTests
 {
     [Fact]
+    public void All_Logs_Are_Not_Null()
+    {
+        foreach (CombatLog combatLog in CombatLogs.EnumerateCombatLogs())
+        {
+            using (var reader = combatLog.FileInfo.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                using(var streamReader = new StreamReader(reader))
+                {
+                    while (!streamReader.EndOfStream)
+                    {
+                        var line = streamReader.ReadLine();
+
+                        if (line is not null)
+                        {
+                            CombatLogLine? parsed = CombatLogLine.Parse(line.AsMemory());
+                            Assert.NotNull(parsed);
+                            
+                            Assert.NotEmpty(parsed.ToString());
+                            
+                            Assert.True(parsed.TimeStamp != default);
+
+                            if (parsed.Source is not null)
+                            {
+                                Assert.NotNull(parsed.Source.Id);
+                                Assert.NotNull(parsed.Source.Name);
+                            }
+
+                            if (parsed.Action is not null)
+                            {
+                                Assert.NotNull(parsed.Action.Effect);
+                                Assert.NotNull(parsed.Action.Event);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    [Fact]
     public void Empty_Line_Is_Null()
     {
         var line = CombatLogLine.Parse("".AsMemory());
