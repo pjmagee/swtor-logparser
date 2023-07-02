@@ -9,11 +9,26 @@ public class ActorTests
         
         Assert.NotNull(actor);
         Assert.True(actor.IsPlayer);
+        Assert.False(actor.IsCompanion);
+        Assert.False(actor.IsNpc);
         Assert.Equal(688623358308676, actor.Id);
         Assert.Equal("Powerful Subscriber", actor.Name);
         Assert.Equal(1, actor.Health);
         Assert.Equal(401177, actor.MaxHealth);
         Assert.Equal((4641.05f,4529.71f,694.02f,-124.45f), actor.Position);
+    }
+    
+    [Fact]
+    public void Player_Is_Local_Is_True()
+    {
+        foreach (var name in CombatLogs.PlayerNames)
+        {
+            var actor = Actor.Parse($"@{name}#{Random.Shared.Next(1000000000)}|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
+        
+            Assert.NotNull(actor);
+            Assert.True(actor.IsPlayer);
+            Assert.True(actor.IsLocalPlayer);
+        }
     }
     
     [Fact]
@@ -23,6 +38,8 @@ public class ActorTests
         
         Assert.NotNull(actor);
         Assert.True(actor.IsNpc);
+        Assert.False(actor.IsCompanion);
+        Assert.False(actor.IsPlayer);
         Assert.Equal(3158140992356352, actor.Id);
         Assert.Equal("Yozusk Mauler", actor.Name);
         Assert.Equal(1, actor.Health);
@@ -37,6 +54,8 @@ public class ActorTests
         
         Assert.NotNull(actor);
         Assert.True(actor.IsCompanion);
+        Assert.False(actor.IsNpc);
+        Assert.False(actor.IsPlayer);
         Assert.Equal(3916370223824896, actor.Id);
         Assert.Equal("Shae Vizla", actor.Name);
         Assert.Equal(295328, actor.Health);

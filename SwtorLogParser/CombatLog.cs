@@ -9,6 +9,12 @@ public sealed class CombatLog
 		FileInfo = fileInfo;		
 	}
 
+	public override string ToString()
+	{
+		var count = GetLogLines().Count;
+		return $"{FileInfo.Name}: {count}";
+	}
+
 	public List<CombatLogLine> GetLogLines()
 	{
 		List<CombatLogLine> items = new List<CombatLogLine>();

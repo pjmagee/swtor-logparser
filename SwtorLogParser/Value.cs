@@ -12,37 +12,36 @@ public class Value
     }
 	
     public bool IsCritical => Rom.Span.Contains(CombatLogs.Critical.Span, StringComparison.OrdinalIgnoreCase);
-    public bool IsCharges => Rom.Span.Contains(CombatLogs.Charges.Span, StringComparison.OrdinalIgnoreCase);	
-	
+    public bool IsCharges => Rom.Span.Contains(CombatLogs.Charges.Span, StringComparison.OrdinalIgnoreCase);
+    
     public bool IsEnergy => Rom.Span.Contains(CombatLogs.Energy.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsKinetic => Rom.Span.Contains(CombatLogs.Kinetic.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsElemental => Rom.Span.Contains(CombatLogs.Elemental.Span, StringComparison.OrdinalIgnoreCase);
-    public bool IsInternal => Rom.Span.Contains(CombatLogs.Internal.Span, StringComparison.OrdinalIgnoreCase);	
+    public bool IsInternal => Rom.Span.Contains(CombatLogs.Internal.Span, StringComparison.OrdinalIgnoreCase);
 	
     public bool IsAbsorbed => Rom.Span.Contains(CombatLogs.Absorbed.Span, StringComparison.OrdinalIgnoreCase);	
     public bool IsParry => Rom.Span.Contains(CombatLogs.Parry.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsMiss => Rom.Span.Contains(CombatLogs.Miss.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsDodge => Rom.Span.Contains(CombatLogs.Dodge.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsDeflect => Rom.Span.Contains(CombatLogs.Deflect.Span, StringComparison.OrdinalIgnoreCase);
-    
-    public int? Total => Integer + Tilde;
-	
+
+    public int Total => Integer.GetValueOrDefault();
+
     public int? Tilde => Rom.Span.Contains(CombatLogs.Tilde.Span, StringComparison.OrdinalIgnoreCase) ? ExtractTildeValue(Rom) : null;
     public int? Integer => ExtractFirstValue(Rom);
 
     private string? _text;
-    
     public string? Text => _text ??= ExtractTextValue(Rom);
 
-    public long? Id
+    public ulong? Id
     {
         get
         {
             var start = Rom.Span.IndexOf('{');
             var end = Rom.Span.IndexOf('}');
 
-            if (start != -1)
-                return long.Parse(Rom.Span.Slice(start + 1, end - start - 1));
+            if (start != -1 && end != -1)
+                return ulong.Parse(Rom.Span.Slice(start + 1, end - start - 1));
 
             return null;
         }

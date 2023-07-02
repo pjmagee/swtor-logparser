@@ -9,7 +9,15 @@ public class Ability : GameObject
 
     public new static Ability? Parse(ReadOnlyMemory<char> rom)
     {
-        if(rom.Length == 0 || rom.IsEmpty) return null;
-        return new Ability(rom);
+        if (rom.Length == 0 || rom.IsEmpty) return null;
+        
+        if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out GameObject? value))
+        {
+            return (Ability?) value;
+        }
+        
+        var ability = new Ability(rom);
+        CombatLogs.GameObjectCache.Add(ability.GetHashCode(), ability);
+        return ability;
     }
 }

@@ -29,10 +29,10 @@ public class Actor
     }
 	
     public bool IsNpc => !IsEmpty && Roms[0].Span[0] != '@';
-    public bool IsPlayer => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@';
-    public bool IsCompanion => IsPlayer && Roms[0].Span.IndexOf('/') > 0;
-	
-    
+    public bool IsPlayer => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@' && !IsCompanion;
+    public bool IsCompanion => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@' && Roms[0].Span.IndexOf('/') > 0;
+    public bool IsLocalPlayer => IsPlayer && CombatLogs.PlayerNames.Contains(Name!);
+
     private int? _health;
     public int? Health => _health ??= GetHealth();
     private int? GetHealth() => Roms.Count == 3 ? int.Parse(Roms[2].Slice(1, Roms[2].Span.IndexOf('/') - 1).Span) : null;
@@ -69,18 +69,17 @@ public class Actor
 
     private long? GetId()
     {
+        if (IsCompanion)
+        {
+            int idStart = Roms[0].Span.IndexOf('{');
+            int idEnd = Roms[0].Span.IndexOf('}');
+            return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd  - idStart - 1));
+        }
+        
         if (IsPlayer)
         {
-            var hash = Roms[0].Span.IndexOf('#');
-            var slash = Roms[0].Span.IndexOf('/');
-
-            if (IsCompanion)
-            {
-                var idStart = Roms[0].Span.IndexOf('{');
-                var idEnd = Roms[0].Span.IndexOf('}');
-                return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd  - idStart - 1));
-            }
-
+            int hash = Roms[0].Span.IndexOf('#');
+            int slash = Roms[0].Span.IndexOf('/');
             return long.Parse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash));
         }
 
@@ -105,7 +104,7 @@ public class Actor
         return new Actor(rom);
     }
 	
-    public override string ToString() => $"{Name} {Id} ({Health}/{MaxHealth}";
+    public override string ToString() => $"{Name} {Id} ({Health}/{MaxHealth})";
 
     private static List<float> ExtractPosition(ReadOnlySpan<char> span)
     {

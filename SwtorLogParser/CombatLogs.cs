@@ -2,8 +2,16 @@
 
 public static class CombatLogs
 {
-    private static readonly string Settings = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, System.Environment.SpecialFolderOption.None), "Star Wars - The Old Republic", "CombatLogs");
-    internal static DirectoryInfo CombatLogsDirectory { get; } = new(Settings);
+    internal static readonly Dictionary<int, Action> ActionCache = new();
+    internal static readonly Dictionary<int, GameObject> GameObjectCache = new();
+    
+    private static readonly string LogsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, System.Environment.SpecialFolderOption.None), "Star Wars - The Old Republic", "CombatLogs");
+    private static readonly string SettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, System.Environment.SpecialFolderOption.None), "SWTOR", "swtor", "settings");
+    
+    internal static DirectoryInfo CombatLogsDirectory { get; } = new(LogsPath);
+    internal static DirectoryInfo SettingsDirectory { get; } = new(SettingsPath);
+    
+    public static HashSet<string> PlayerNames { get; }
     
     internal static ReadOnlyMemory<char> Energy { get; } = "energy".AsMemory();
     internal static ReadOnlyMemory<char> Kinetic { get; } = "kinetic".AsMemory();
@@ -18,6 +26,11 @@ public static class CombatLogs
     internal static ReadOnlyMemory<char> Deflect { get; } = "deflect".AsMemory();
     internal static ReadOnlyMemory<char> Tilde { get; } = "~".AsMemory();
     internal static ReadOnlyMemory<char> HeroEnginePrefix { get; } = "he".AsMemory();
+
+    static CombatLogs()
+    {
+        PlayerNames = SettingsDirectory.EnumerateFiles("*PlayerGUIState.ini").Select(x => x.Name.Split('_')[1]).ToHashSet();
+    }
 
     public static IEnumerable<CombatLog> EnumerateCombatLogs()
     {

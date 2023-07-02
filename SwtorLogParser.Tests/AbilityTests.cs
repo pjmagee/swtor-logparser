@@ -10,7 +10,7 @@ public class AbilityTests
         Assert.NotNull(ability);
         Assert.False(ability.IsNested);
         Assert.Equal("Overlord's Command Throne", ability.Name);
-        Assert.Equal(3039943492370432, ability.Id);
+        Assert.Equal(3039943492370432u, ability.Id);
     }
 
     [Fact]
@@ -21,6 +21,6 @@ public class AbilityTests
         Assert.NotNull(ability);
         Assert.False(ability.IsNested);
         Assert.Null(ability.Name);
-        Assert.Equal(3039943492370432, ability.Id);
+        Assert.Equal(3039943492370432u, ability.Id);
     }
 }

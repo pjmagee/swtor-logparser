@@ -31,8 +31,7 @@ public class CombatLogLine
     {
         if (rom.IsEmpty) return null;
         var sections = GetSections(rom);
-        if (sections.Count != 5) return null;
-        return new CombatLogLine(rom, sections);
+        return sections.Count != 5 ? null : new CombatLogLine(rom, sections);
     }
 
     public override string ToString()
@@ -45,17 +44,20 @@ public class CombatLogLine
     private static List<ReadOnlyMemory<char>> GetSections(ReadOnlyMemory<char> rom)
     {
         List<ReadOnlyMemory<char>> roms = new List<ReadOnlyMemory<char>>();
+        
+        const char sectionOpen = '[';
+        const char sectionClose = ']';
 
         int start = -1;
         int end = -1;
 
         for (int i = 0; i < rom.Length; i++)
         {
-            if (rom.Span[i] == '[')
+            if (rom.Span[i] == sectionOpen)
             {
                 start = i + 1;
             }
-            else if (rom.Span[i] == ']')
+            else if (rom.Span[i] == sectionClose)
             {
                 end = i;
 

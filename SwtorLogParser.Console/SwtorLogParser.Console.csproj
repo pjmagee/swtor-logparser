@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>        
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>        
+        <RootNamespace>SwtorLogParser.Cli</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PublishAot>false</PublishAot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\SwtorLogParser\SwtorLogParser.csproj" />
+      <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1" />
+    </ItemGroup>
+
+</Project>

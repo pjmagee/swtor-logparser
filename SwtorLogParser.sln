@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwtorLogParser", "SwtorLogP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwtorLogParser.Tests", "SwtorLogParser.Tests\SwtorLogParser.Tests.csproj", "{1309B620-5EF4-4C98-BC66-539487C8AE8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Samples\Sample\Sample.csproj", "{B8D4BED8-3927-4425-8F9A-DA235186512C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwtorLogParser.Console", "SwtorLogParser.Console\SwtorLogParser.Console.csproj", "{113FFF0C-D3EA-4D6C-B0AD-9DC5DC7F5D5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,9 +20,9 @@ Global
 		{1309B620-5EF4-4C98-BC66-539487C8AE8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1309B620-5EF4-4C98-BC66-539487C8AE8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1309B620-5EF4-4C98-BC66-539487C8AE8C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8D4BED8-3927-4425-8F9A-DA235186512C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8D4BED8-3927-4425-8F9A-DA235186512C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8D4BED8-3927-4425-8F9A-DA235186512C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8D4BED8-3927-4425-8F9A-DA235186512C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{113FFF0C-D3EA-4D6C-B0AD-9DC5DC7F5D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{113FFF0C-D3EA-4D6C-B0AD-9DC5DC7F5D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{113FFF0C-D3EA-4D6C-B0AD-9DC5DC7F5D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{113FFF0C-D3EA-4D6C-B0AD-9DC5DC7F5D5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
