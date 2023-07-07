@@ -8,8 +8,9 @@ public class ActorTests
     [Fact]
     public void Player_Is_Parsed()
     {
-        var actor = Actor.Parse("@Powerful Subscriber#688623358308676|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
-        
+        var actor = Actor.Parse("@Powerful Subscriber#688623358308676|(4641.05,4529.71,694.02,-124.45)|(1/401177)"
+            .AsMemory());
+
         Assert.NotNull(actor);
         Assert.True(actor.IsPlayer);
         Assert.False(actor.IsCompanion);
@@ -18,27 +19,29 @@ public class ActorTests
         Assert.Equal("Powerful Subscriber", actor.Name);
         Assert.Equal(1, actor.Health);
         Assert.Equal(401177, actor.MaxHealth);
-        Assert.Equal((4641.05f,4529.71f,694.02f,-124.45f), actor.Position);
+        Assert.Equal((4641.05f, 4529.71f, 694.02f, -124.45f), actor.Position);
     }
-    
+
     [Fact]
     public void Player_Is_Local_Is_True()
     {
         foreach (var name in CombatLogs.PlayerNames)
         {
-            var actor = Actor.Parse($"@{name}#{Random.Shared.Next(1000000000)}|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
-        
+            var actor = Actor.Parse(
+                $"@{name}#{Random.Shared.Next(1000000000)}|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
+
             Assert.NotNull(actor);
             Assert.True(actor.IsPlayer);
             Assert.True(actor.IsLocalPlayer);
         }
     }
-    
+
     [Fact]
     public void Npc_Is_Parsed()
     {
-        var actor = Actor.Parse("Yozusk Mauler {3158140992356352}:5577004295094|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
-        
+        var actor = Actor.Parse(
+            "Yozusk Mauler {3158140992356352}:5577004295094|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
+
         Assert.NotNull(actor);
         Assert.True(actor.IsNpc);
         Assert.False(actor.IsCompanion);
@@ -47,14 +50,16 @@ public class ActorTests
         Assert.Equal("Yozusk Mauler", actor.Name);
         Assert.Equal(1, actor.Health);
         Assert.Equal(401177, actor.MaxHealth);
-        Assert.Equal((4641.05f,4529.71f,694.02f,-124.45f), actor.Position);
+        Assert.Equal((4641.05f, 4529.71f, 694.02f, -124.45f), actor.Position);
     }
 
     [Fact]
     public void Companion_Is_Parsed()
     {
-        var actor = Actor.Parse("@Powerful Subscriber#688623358308676/Shae Vizla {3916370223824896}:2488005972848|(4568.53,4550.25,694.02,0.00)|(295328/295328)".AsMemory());
-        
+        var actor = Actor.Parse(
+            "@Powerful Subscriber#688623358308676/Shae Vizla {3916370223824896}:2488005972848|(4568.53,4550.25,694.02,0.00)|(295328/295328)"
+                .AsMemory());
+
         Assert.NotNull(actor);
         Assert.True(actor.IsCompanion);
         Assert.False(actor.IsNpc);
@@ -63,6 +68,6 @@ public class ActorTests
         Assert.Equal("Shae Vizla", actor.Name);
         Assert.Equal(295328, actor.Health);
         Assert.Equal(295328, actor.MaxHealth);
-        Assert.Equal((4568.53f,4550.25f,694.02f,0.00f), actor.Position);
+        Assert.Equal((4568.53f, 4550.25f, 694.02f, 0.00f), actor.Position);
     }
 }

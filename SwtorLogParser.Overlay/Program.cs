@@ -2,10 +2,10 @@ using SwtorLogParser.Monitor;
 
 namespace SwtorLogParser.Overlay;
 
-static class Program
+internal static class Program
 {
     [STAThread]
-    static void Main()
+    private static void Main()
     {
         ApplicationConfiguration.Initialize();
         Application.Run(new ParserForm(CombatLogsMonitor.Instance));

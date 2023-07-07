@@ -4,15 +4,12 @@ namespace SwtorLogParser.Monitor;
 
 public sealed class CombatLog
 {
-    public FileInfo FileInfo
-    {
-        get; init;
-    }
-
     public CombatLog(FileInfo fileInfo)
     {
         FileInfo = fileInfo;
     }
+
+    public FileInfo FileInfo { get; init; }
 
     public override string ToString()
     {

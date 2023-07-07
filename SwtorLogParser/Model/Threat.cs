@@ -2,19 +2,20 @@
 
 public class Threat
 {
-    private ReadOnlyMemory<char> Rom
+    private Threat(ReadOnlyMemory<char> rom)
     {
-        get;
+        Rom = rom;
     }
 
-    public override string ToString() => $"{Rom}";
+    private ReadOnlyMemory<char> Rom { get; }
+
     public bool IsPositive => Value >= 0;
     public bool IsNegative => Value < 0;
     public int Value => int.Parse(Rom.Span);
 
-    private Threat(ReadOnlyMemory<char> rom)
+    public override string ToString()
     {
-        Rom = rom;
+        return $"{Rom}";
     }
 
     public static Threat? Parse(ReadOnlyMemory<char> rom)

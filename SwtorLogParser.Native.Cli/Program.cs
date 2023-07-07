@@ -25,10 +25,10 @@ public static class Program
         var token = context.GetCancellationToken();
         var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
         manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
-        
+
         CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DPS.Subscribe((playerStats) => Update(list, playerStats));
-        CombatLogsMonitor.Instance.HPS.Subscribe((playerStats) => Update(list, playerStats));
+        CombatLogsMonitor.Instance.DPS.Subscribe(playerStats => Update(list, playerStats));
+        CombatLogsMonitor.Instance.HPS.Subscribe(playerStats => Update(list, playerStats));
         CombatLogsMonitor.Instance.Start(token);
 
         manualResetEvent.WaitOne();
@@ -42,14 +42,12 @@ public static class Program
         Console.SetCursorPosition(0, 1);
 
         foreach (var item in list.Items)
-        {
-            Console.WriteLine("{0}: DPS: {1} ({2}%); HPS: {3} ({4}%)", 
-                item.Player.Name!, 
+            Console.WriteLine("{0}: DPS: {1} ({2}%); HPS: {3} ({4}%)",
+                item.Player.Name!,
                 item.DPS.HasValue ? item.DPS.Value.ToString("N") : "-",
                 item.DPSCritP.HasValue ? item.DPSCritP.Value.ToString("N") : "-",
                 item.HPS.HasValue ? item.HPS.Value.ToString("N") : "-",
                 item.HPSCritP.HasValue ? item.HPSCritP.Value.ToString("N") : "-");
-        }
     }
 
     private static void OnCombatLogAdded(object? _, CombatLog combatLog)
@@ -62,9 +60,6 @@ public static class Program
 
     private static void ListCombatLogs()
     {
-        foreach (var combatLog in CombatLogs.EnumerateCombatLogs())
-        {
-            Console.WriteLine(combatLog);
-        }
+        foreach (var combatLog in CombatLogs.EnumerateCombatLogs()) Console.WriteLine(combatLog);
     }
 }

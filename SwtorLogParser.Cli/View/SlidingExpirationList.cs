@@ -1,25 +1,13 @@
-﻿using SwtorLogParser.Monitor;
+﻿using System.Collections.Immutable;
+using SwtorLogParser.Monitor;
 
 namespace SwtorLogParser.Cli.View;
 
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Threading;
-
 public class SlidingExpirationList
 {
-    private readonly SortedList<long, Entry> _items;
-    private readonly Timer _expirationTimer;
     private readonly TimeSpan _expirationTime;
-
-    public IReadOnlyList<CombatLogsMonitor.PlayerStats> Items
-    {
-        get
-        {
-            lock (_items) return ImmutableList.Create(_items.Values.Select(x => x.Stats).ToArray());
-        }
-    }
+    private readonly Timer _expirationTimer;
+    private readonly SortedList<long, Entry> _items;
 
     public SlidingExpirationList(TimeSpan expirationTime)
     {
@@ -28,11 +16,22 @@ public class SlidingExpirationList
         _expirationTimer = new Timer(RemoveExpiredItems, null, expirationTime, expirationTime);
     }
 
+    public IReadOnlyList<CombatLogsMonitor.PlayerStats> Items
+    {
+        get
+        {
+            lock (_items)
+            {
+                return ImmutableList.Create(_items.Values.Select(x => x.Stats).ToArray());
+            }
+        }
+    }
+
     public void AddOrUpdate(CombatLogsMonitor.PlayerStats item)
     {
         lock (_items)
         {
-            if(_items.TryGetValue(item.Player.Id!.Value, out var entry))
+            if (_items.TryGetValue(item.Player.Id!.Value, out var entry))
             {
                 if (item.HPS.HasValue)
                 {
@@ -48,7 +47,7 @@ public class SlidingExpirationList
             }
             else
             {
-                _items.Add(item.Player.Id!.Value, new Entry() { Stats = item });
+                _items.Add(item.Player.Id!.Value, new Entry { Stats = item });
             }
 
             _items[item.Player.Id!.Value].Expiration = DateTime.Now.Add(_expirationTime);
@@ -62,17 +61,10 @@ public class SlidingExpirationList
         lock (_items)
         {
             foreach (var item in _items)
-            {
                 if (item.Value.Expiration <= DateTime.Now)
-                {
                     expiredItems.Add(item.Value);
-                }
-            }
 
-            foreach (var item in expiredItems)
-            {
-                _items.Remove(item.Stats.Player.Id!.Value);
-            }
+            foreach (var item in expiredItems) _items.Remove(item.Stats.Player.Id!.Value);
         }
     }
 }

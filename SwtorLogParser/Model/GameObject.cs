@@ -4,17 +4,37 @@ namespace SwtorLogParser.Model;
 
 public class GameObject : IEquatable<GameObject>
 {
-    protected ReadOnlyMemory<char> Rom
-    {
-        get;
-    }
+    private ulong? _id;
 
     private bool? _isNested;
-    public bool IsNested => _isNested ??= Rom.Span.IndexOf('/') > -1;
+
+    private string? _name;
+
+    private ulong? _parentId;
 
 
     private string? _parentName;
+
+    protected GameObject(ReadOnlyMemory<char> rom)
+    {
+        Rom = rom;
+    }
+
+    protected ReadOnlyMemory<char> Rom { get; }
+
+    public bool IsNested => _isNested ??= Rom.Span.IndexOf('/') > -1;
     public string? ParentName => _parentName ??= GetParentName();
+    public string? Name => _name ??= GetName();
+    public ulong? ParentId => _parentId ??= GetParentId();
+    public ulong? Id => _id ??= GetId();
+
+    public bool Equals(GameObject? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return GetHashCode().Equals(other.GetHashCode());
+    }
+
     private string? GetParentName()
     {
         if (IsNested)
@@ -28,14 +48,16 @@ public class GameObject : IEquatable<GameObject>
         return null;
     }
 
-    public override int GetHashCode() => Rom.GetHashCode();
+    public override int GetHashCode()
+    {
+        return Rom.GetHashCode();
+    }
 
-    private string? _name;
-    public string? Name => _name ??= GetName();
     private string? GetName()
     {
         if (IsNested)
-            return Rom.Span.Slice(Rom.Span.IndexOf('/') + 1, Rom.Span.LastIndexOf('{') - Rom.Span.IndexOf('/') - 1).Trim().ToString();
+            return Rom.Span.Slice(Rom.Span.IndexOf('/') + 1, Rom.Span.LastIndexOf('{') - Rom.Span.IndexOf('/') - 1)
+                .Trim().ToString();
 
         var nameEnd = Rom.Span.IndexOf('{');
         if (nameEnd == -1) return null;
@@ -43,8 +65,6 @@ public class GameObject : IEquatable<GameObject>
         return name.Length > 0 ? name.ToString() : null;
     }
 
-    private ulong? _parentId;
-    public ulong? ParentId => _parentId ??= GetParentId();
     private ulong? GetParentId()
     {
         if (!IsNested) return null;
@@ -56,8 +76,6 @@ public class GameObject : IEquatable<GameObject>
             : null;
     }
 
-    private ulong? _id;
-    public ulong? Id => _id ??= GetId();
     private ulong? GetId()
     {
         if (IsNested)
@@ -80,11 +98,6 @@ public class GameObject : IEquatable<GameObject>
         return null;
     }
 
-    protected GameObject(ReadOnlyMemory<char> rom)
-    {
-        Rom = rom;
-    }
-
     public static GameObject? Parse(ReadOnlyMemory<char> rom)
     {
         if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out var value))
@@ -96,12 +109,8 @@ public class GameObject : IEquatable<GameObject>
         return gameObject;
     }
 
-    public override string ToString() => $"{Name} {{{Id}}}";
-
-    public bool Equals(GameObject? other)
+    public override string ToString()
     {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return GetHashCode().Equals(other.GetHashCode());
+        return $"{Name} {{{Id}}}";
     }
 }

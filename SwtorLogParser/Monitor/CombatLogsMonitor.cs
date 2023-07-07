@@ -15,7 +15,8 @@ public class CombatLogsMonitor
 #if RELEASE
     public static CombatLogsMonitor Instance { get; } = new(NullLogger<CombatLogsMonitor>.Instance);
 #elif DEBUG
-    public static CombatLogsMonitor Instance { get; } = new(LoggerFactory.Create(x => x.ClearProviders().AddConsole().AddDebug()).CreateLogger<CombatLogsMonitor>());
+    public static CombatLogsMonitor Instance { get; } =
+ new(LoggerFactory.Create(x => x.ClearProviders().AddConsole().AddDebug()).CreateLogger<CombatLogsMonitor>());
 #endif
 
     private Task? _monitor;
@@ -29,8 +30,8 @@ public class CombatLogsMonitor
 
     public ReplaySubject<CombatLogLine> CombatLogLines { get; } = new(TimeSpan.FromMinutes(1));
 
-    private DateTime? _lastWriteTime = null;
-    private string? _lastFileName = null;
+    private DateTime? _lastWriteTime;
+    private string? _lastFileName;
 
     public IObservable<PlayerStats> DPS { get; private set; }
 
@@ -51,18 +52,24 @@ public class CombatLogsMonitor
             .SelectMany(group =>
             {
                 return group
-                    .Buffer(TimeSpan.FromSeconds(5))
+                    .Buffer(TimeSpan.FromSeconds(2))
                     .Where(b => b.Count >= 2)
                     .Select(buffer =>
                     {
                         var sortedBuffer = buffer.OrderBy(x => x.TimeStamp).ToList();
-                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp).TotalSeconds;
+                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp)
+                            .TotalSeconds;
                         var sum = sortedBuffer.Sum(x => x.Value!.Total);
                         var critical = sortedBuffer.Count(x => x.Value!.IsCritical) * 100.0 / sortedBuffer.Count;
-                        
-                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum, critical);
-                        
-                        return new PlayerStats { Player = sortedBuffer[0].Source!, DPS = sum / totalSeconds, DPSCritP = double.IsInfinity(critical) ? null : critical };
+
+                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum,
+                            critical);
+
+                        return new PlayerStats
+                        {
+                            Player = sortedBuffer[0].Source!, DPS = sum / totalSeconds,
+                            DPSCritP = double.IsInfinity(critical) ? null : critical
+                        };
                     });
             });
 
@@ -78,13 +85,19 @@ public class CombatLogsMonitor
                     .Select(buffer =>
                     {
                         var sortedBuffer = buffer.OrderBy(x => x.TimeStamp).ToList();
-                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp).TotalSeconds;
+                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp)
+                            .TotalSeconds;
                         var sum = sortedBuffer.Sum(x => x.Value!.Total);
                         var critical = sortedBuffer.Count(x => x.Value!.IsCritical) * 100.0 / sortedBuffer.Count;
-                        
-                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum, critical);
-                        
-                        return new PlayerStats { Player = sortedBuffer[0].Source!, HPS = sum / totalSeconds, HPSCritP = double.IsInfinity(critical) ? null : critical };
+
+                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum,
+                            critical);
+
+                        return new PlayerStats
+                        {
+                            Player = sortedBuffer[0].Source!, HPS = sum / totalSeconds,
+                            HPSCritP = double.IsInfinity(critical) ? null : critical
+                        };
                     });
             });
     }
@@ -111,7 +124,7 @@ public class CombatLogsMonitor
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"_cancellationTokenSource.CancelAsync() failed");
+            _logger.LogError(e, "_cancellationTokenSource.CancelAsync() failed");
         }
     }
 
@@ -153,10 +166,9 @@ public class CombatLogsMonitor
                     var line = streamReader.ReadLine();
 
                     if (line is not null)
-                    {
                         try
                         {
-                            CombatLogLine? item = CombatLogLine.Parse(line.AsMemory());
+                            var item = CombatLogLine.Parse(line.AsMemory());
 
                             if (item is not null)
                             {
@@ -168,7 +180,6 @@ public class CombatLogsMonitor
                         {
                             _logger.LogError(e, "Failed to parse line: {Line}", line);
                         }
-                    }
 
                     position = streamReader.BaseStream.Position;
                 }
@@ -185,7 +196,7 @@ public class CombatLogsMonitor
 
     private async Task MonitorAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug($"Monitor async");
+        _logger.LogDebug("Monitor async");
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -193,7 +204,7 @@ public class CombatLogsMonitor
 
             if (CombatLogs.CombatLogsDirectory.LastWriteTime != _lastWriteTime)
             {
-                CombatLog? latestLogFile = CombatLogs.GetLatestCombatLog();
+                var latestLogFile = CombatLogs.GetLatestCombatLog();
 
                 if (latestLogFile is not null)
                 {
@@ -201,7 +212,7 @@ public class CombatLogsMonitor
 
                     _lastFileName = latestLogFile.FileInfo.FullName;
                     _lastWriteTime = CombatLogs.CombatLogsDirectory.LastWriteTime;
-                    _logger.LogDebug($"CombatLogsDirectory.LastWriteTime != LastWriteTime");
+                    _logger.LogDebug("CombatLogsDirectory.LastWriteTime != LastWriteTime");
                 }
             }
 

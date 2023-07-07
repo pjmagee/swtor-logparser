@@ -7,28 +7,28 @@ using static NativeMethods;
 
 public sealed class ParserForm : Form
 {
-    private readonly CombatLogsMonitor _monitor;
-    private readonly SlidingExpirationList _list;
-    private readonly Color _semiTransparentColor = Color.FromArgb(255, Color.White);
-    private readonly IDisposable _hpsSubscription;
     private readonly IDisposable _dpsSubscription;
-    
+    private readonly IDisposable _hpsSubscription;
+    private readonly SlidingExpirationList _list;
+    private readonly CombatLogsMonitor _monitor;
+    private readonly Color _semiTransparentColor = Color.FromArgb(255, Color.White);
+
     public ParserForm(CombatLogsMonitor monitor)
     {
         _monitor = monitor;
-        _list = new(this, TimeSpan.FromSeconds(10));
+        _list = new SlidingExpirationList(this, TimeSpan.FromSeconds(10));
         _dpsSubscription = _monitor.DPS.Subscribe(OnNext);
         _hpsSubscription = _monitor.HPS.Subscribe(OnNext);
-        
+
         DoubleBuffered = true;
         TopMost = true;
         AllowTransparency = true;
         ControlBox = true;
         AutoSize = true;
-        
+
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(800, 450);
-        
+
         Opacity = 0.5;
         FormBorderStyle = FormBorderStyle.None;
         WindowState = FormWindowState.Normal;
@@ -45,7 +45,7 @@ public sealed class ParserForm : Form
             new() { Name = "Crit %", DataPropertyName = nameof(Entry.HCrit) }
         };
 
-        var dataGridView = new DataGridView()
+        var dataGridView = new DataGridView
         {
             AutoGenerateColumns = false,
             BorderStyle = BorderStyle.None,
@@ -70,26 +70,23 @@ public sealed class ParserForm : Form
             MultiSelect = false,
             DataSource = _list
         };
-        
+
         dataGridView.Columns.AddRange(columns);
-        
+
         dataGridView.BackgroundColor = Color.FromArgb(0, 0, 0);
         dataGridView.DefaultCellStyle.SelectionBackColor = dataGridView.DefaultCellStyle.BackColor;
         dataGridView.DefaultCellStyle.SelectionForeColor = dataGridView.DefaultCellStyle.ForeColor;
         dataGridView.MouseDown += DataGridViewOnMouseDown;
-        
+
         Controls.Add(dataGridView);
-        
+
         Activated -= OnActivated;
         Activated += OnActivated;
     }
 
     private void OnActivated(object? sender, EventArgs e)
     {
-        if (!_monitor.IsRunning)
-        {
-            _monitor.Start(CancellationToken.None);
-        }
+        if (!_monitor.IsRunning) _monitor.Start(CancellationToken.None);
     }
 
     private void OnNext(CombatLogsMonitor.PlayerStats stats)
@@ -105,11 +102,11 @@ public sealed class ParserForm : Form
             SendMessage(Handle, WM_NCL_BUTTON_DOWN, HT_CAPTION, 0);
         }
     }
-    
+
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
-        
+
         using (var brush = new SolidBrush(_semiTransparentColor))
         {
             e.Graphics.FillRectangle(brush, ClientRectangle);

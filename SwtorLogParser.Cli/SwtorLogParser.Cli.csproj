@@ -5,8 +5,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>preview</LangVersion>        
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>        
+        <LangVersion>preview</LangVersion>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>SwtorLogParser.Cli</RootNamespace>
     </PropertyGroup>
 
@@ -14,12 +14,12 @@
         <PublishAot>false</PublishAot>
     </PropertyGroup>
 
-    <ItemGroup>      
-      <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj" />
+    <ItemGroup>
+        <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1" />
+        <PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1"/>
     </ItemGroup>
 
 </Project>

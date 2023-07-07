@@ -13,7 +13,7 @@ public class ThreatTests
         Assert.True(threat.IsPositive);
         Assert.False(threat.IsNegative);
     }
-    
+
     [Fact]
     public void Positive_Is_Positive()
     {
@@ -23,7 +23,7 @@ public class ThreatTests
         Assert.True(threat.IsPositive);
         Assert.False(threat.IsNegative);
     }
-    
+
     [Fact]
     public void Negative_Is_Negative()
     {
@@ -33,14 +33,14 @@ public class ThreatTests
         Assert.False(threat.IsPositive);
         Assert.True(threat.IsNegative);
     }
-    
+
     [Fact]
     public void No_Threat_Is_Null()
     {
         var threat = Threat.Parse("".AsMemory());
         Assert.Null(threat);
     }
-    
+
     [Fact]
     public void Invalid_Threat_Is_Null()
     {

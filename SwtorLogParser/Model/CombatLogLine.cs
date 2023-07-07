@@ -2,44 +2,6 @@
 
 public class CombatLogLine
 {
-    public DateTime TimeStamp
-    {
-        get;
-    }
-    public Actor? Source
-    {
-        get;
-    }
-    public Actor? Target
-    {
-        get;
-    }
-    public Ability? Ability
-    {
-        get;
-    }
-    public Action? Action
-    {
-        get;
-    }
-    public Value? Value
-    {
-        get;
-    }
-    public Threat? Threat
-    {
-        get;
-    }
-
-    private ReadOnlyMemory<char> Rom
-    {
-        get; set;
-    }
-    private List<ReadOnlyMemory<char>> Roms
-    {
-        get;
-    }
-
     private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms)
     {
         Rom = rom;
@@ -53,6 +15,24 @@ public class CombatLogLine
         Value = Value.Parse(Rom);
         Threat = Threat.Parse(Rom);
     }
+
+    public DateTime TimeStamp { get; }
+
+    public Actor? Source { get; }
+
+    public Actor? Target { get; }
+
+    public Ability? Ability { get; }
+
+    public Action? Action { get; }
+
+    public Value? Value { get; }
+
+    public Threat? Threat { get; }
+
+    private ReadOnlyMemory<char> Rom { get; }
+
+    private List<ReadOnlyMemory<char>> Roms { get; }
 
     public static CombatLogLine? Parse(ReadOnlyMemory<char> rom)
     {
@@ -79,7 +59,6 @@ public class CombatLogLine
         var end = -1;
 
         for (var i = 0; i < rom.Length; i++)
-        {
             if (rom.Span[i] == sectionOpen)
             {
                 start = i + 1;
@@ -94,7 +73,6 @@ public class CombatLogLine
                     start = -1;
                 }
             }
-        }
 
         return roms;
     }

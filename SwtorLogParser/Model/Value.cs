@@ -4,17 +4,14 @@ namespace SwtorLogParser.Model;
 
 public class Value
 {
-    private ReadOnlyMemory<char> Rom
-    {
-        get;
-    }
-
-    public override string ToString() => $"{Rom}";
+    private string? _text;
 
     private Value(ReadOnlyMemory<char> memory)
     {
         Rom = memory;
     }
+
+    private ReadOnlyMemory<char> Rom { get; }
 
     public bool IsCritical => Rom.Span.Contains(CombatLogs.Critical.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsCharges => Rom.Span.Contains(CombatLogs.Charges.Span, StringComparison.OrdinalIgnoreCase);
@@ -32,10 +29,11 @@ public class Value
 
     public int Total => Integer.GetValueOrDefault();
 
-    public int? Tilde => Rom.Span.Contains(CombatLogs.Tilde.Span, StringComparison.OrdinalIgnoreCase) ? ExtractTildeValue(Rom) : null;
-    public int? Integer => ExtractFirstValue(Rom);
+    public int? Tilde => Rom.Span.Contains(CombatLogs.Tilde.Span, StringComparison.OrdinalIgnoreCase)
+        ? ExtractTildeValue(Rom)
+        : null;
 
-    private string? _text;
+    public int? Integer => ExtractFirstValue(Rom);
     public string? Text => _text ??= ExtractTextValue(Rom);
 
     public ulong? Id
@@ -52,6 +50,11 @@ public class Value
         }
     }
 
+    public override string ToString()
+    {
+        return $"{Rom}";
+    }
+
     public static Value? Parse(ReadOnlyMemory<char> rom)
     {
         var start = rom.Span.LastIndexOf('(');
@@ -62,7 +65,9 @@ public class Value
 
         var scope = rom.Slice(start + 1, end - start - 1);
 
-        return !scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase) ? new Value(scope) : null;
+        return !scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase)
+            ? new Value(scope)
+            : null;
     }
 
     private static string? ExtractTextValue(ReadOnlyMemory<char> rom)
@@ -76,10 +81,7 @@ public class Value
 
             if (char.IsLetter(c))
             {
-                if (start == -1)
-                {
-                    start = i;
-                }
+                if (start == -1) start = i;
 
                 end = i;
             }
@@ -97,18 +99,12 @@ public class Value
         var index = 0;
 
         // Ignore any leading whitespace
-        while (index < rom.Length && char.IsWhiteSpace(rom.Span[index]))
-        {
-            index++;
-        }
+        while (index < rom.Length && char.IsWhiteSpace(rom.Span[index])) index++;
 
         // Extract the digits until a non-digit character or '~' is encountered
         while (index < rom.Length && (char.IsDigit(rom.Span[index]) || rom.Span[index] == '~'))
         {
-            if (rom.Span[index] == '~')
-            {
-                break; // Stop extracting when '~' is encountered
-            }
+            if (rom.Span[index] == '~') break; // Stop extracting when '~' is encountered
 
             value = (value ?? 0) * 10 + (rom.Span[index] - '0');
             index++;
@@ -123,16 +119,10 @@ public class Value
         var index = 0;
 
         // Find the '~' character, if present
-        while (index < rom.Length && rom.Span[index] != '~')
-        {
-            index++;
-        }
+        while (index < rom.Length && rom.Span[index] != '~') index++;
 
         // Ignore any characters until a non-digit character is encountered
-        while (index < rom.Length && !char.IsDigit(rom.Span[index]))
-        {
-            index++;
-        }
+        while (index < rom.Length && !char.IsDigit(rom.Span[index])) index++;
 
         // Extract the digits until a non-digit character is encountered
         while (index < rom.Length && char.IsDigit(rom.Span[index]))

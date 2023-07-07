@@ -10,11 +10,10 @@ namespace SwtorLogParser.Overlay.View;
  */
 public class SlidingExpirationList : BindingList<Entry>
 {
-    private readonly Form _form;
+    private static readonly object Lock = new();
     private readonly TimeSpan _expirationTime;
     private readonly Timer _expirationTimer;
-    
-    private static readonly object Lock = new();
+    private readonly Form _form;
 
     public SlidingExpirationList(Form form, TimeSpan expirationTime)
     {
@@ -33,11 +32,10 @@ public class SlidingExpirationList : BindingList<Entry>
             lock (Lock)
             {
                 if (Count > 0)
-                {
-                    for (int i = 0; i < Count; i++)
+                    for (var i = 0; i < Count; i++)
                     {
                         var entry = this[i];
-                    
+
                         if (entry.Stats.Player.Id == item.Player.Id)
                         {
                             if (item.HPS.HasValue)
@@ -53,15 +51,12 @@ public class SlidingExpirationList : BindingList<Entry>
                             }
 
                             entry.Expiration = DateTime.Now.Add(_expirationTime);
-                    
+
                             ResetItem(i);
                         }
                     }
-                }
                 else
-                {
-                    Add(new Entry() { Stats = item, Expiration = DateTime.Now.Add(_expirationTime) });
-                }
+                    Add(new Entry { Stats = item, Expiration = DateTime.Now.Add(_expirationTime) });
             }
         });
     }
@@ -73,17 +68,10 @@ public class SlidingExpirationList : BindingList<Entry>
         lock (Lock)
         {
             foreach (var item in this)
-            {
                 if (item.Expiration <= DateTime.Now)
-                {
                     expiredItems.Add(item);
-                }
-            }
 
-            foreach (var item in expiredItems)
-            {
-                _form.Invoke(() => Remove(item));
-            }
+            foreach (var item in expiredItems) _form.Invoke(() => Remove(item));
         }
     }
 }
