@@ -1,4 +1,7 @@
-﻿namespace SwtorLogParser;
+﻿using SwtorLogParser.Model;
+using Action = SwtorLogParser.Model.Action;
+
+namespace SwtorLogParser.Monitor;
 
 public static class CombatLogs
 {
@@ -34,7 +37,7 @@ public static class CombatLogs
 
     public static IEnumerable<CombatLog> EnumerateCombatLogs()
     {
-        foreach (FileInfo fi in CombatLogsDirectory.EnumerateFiles("*.txt"))
+        foreach (var fi in CombatLogsDirectory.EnumerateFiles("*.txt"))
         {
             yield return new CombatLog(fi);
         }
@@ -42,7 +45,7 @@ public static class CombatLogs
     
     public static CombatLog? GetLatestCombatLog()
     {
-        FileInfo? fileInfo = CombatLogsDirectory.EnumerateFiles("*.txt").MaxBy(x => x.LastWriteTimeUtc);
+        var fileInfo = CombatLogsDirectory.EnumerateFiles("*.txt").MaxBy(x => x.LastWriteTimeUtc);
         return fileInfo is not null ? new CombatLog(fileInfo) : null;
     }
 }

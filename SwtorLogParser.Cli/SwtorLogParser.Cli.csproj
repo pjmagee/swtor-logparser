@@ -14,8 +14,7 @@
         <PublishAot>false</PublishAot>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\SwtorLogParser\SwtorLogParser.csproj" />
+    <ItemGroup>      
       <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj" />
     </ItemGroup>
 

@@ -1,8 +1,13 @@
-﻿namespace SwtorLogParser;
+﻿using SwtorLogParser.Monitor;
+
+namespace SwtorLogParser.Model;
 
 public class Value
 {
-    private ReadOnlyMemory<char> Rom { get; }
+    private ReadOnlyMemory<char> Rom
+    {
+        get;
+    }
 
     public override string ToString() => $"{Rom}";
 
@@ -10,16 +15,16 @@ public class Value
     {
         Rom = memory;
     }
-	
+
     public bool IsCritical => Rom.Span.Contains(CombatLogs.Critical.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsCharges => Rom.Span.Contains(CombatLogs.Charges.Span, StringComparison.OrdinalIgnoreCase);
-    
+
     public bool IsEnergy => Rom.Span.Contains(CombatLogs.Energy.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsKinetic => Rom.Span.Contains(CombatLogs.Kinetic.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsElemental => Rom.Span.Contains(CombatLogs.Elemental.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsInternal => Rom.Span.Contains(CombatLogs.Internal.Span, StringComparison.OrdinalIgnoreCase);
-	
-    public bool IsAbsorbed => Rom.Span.Contains(CombatLogs.Absorbed.Span, StringComparison.OrdinalIgnoreCase);	
+
+    public bool IsAbsorbed => Rom.Span.Contains(CombatLogs.Absorbed.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsParry => Rom.Span.Contains(CombatLogs.Parry.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsMiss => Rom.Span.Contains(CombatLogs.Miss.Span, StringComparison.OrdinalIgnoreCase);
     public bool IsDodge => Rom.Span.Contains(CombatLogs.Dodge.Span, StringComparison.OrdinalIgnoreCase);
@@ -56,18 +61,18 @@ public class Value
         if (start == -1 || end == -1 || lastSection > start) return null;
 
         var scope = rom.Slice(start + 1, end - start - 1);
-			
+
         return !scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase) ? new Value(scope) : null;
     }
 
     private static string? ExtractTextValue(ReadOnlyMemory<char> rom)
     {
-        int start = -1;
-        int end = -1;
+        var start = -1;
+        var end = -1;
 
-        for (int i = 0; i < rom.Length; i++)
+        for (var i = 0; i < rom.Length; i++)
         {
-            char c = rom.Span[i];
+            var c = rom.Span[i];
 
             if (char.IsLetter(c))
             {
@@ -89,7 +94,7 @@ public class Value
     private static int? ExtractFirstValue(ReadOnlyMemory<char> rom)
     {
         int? value = null;
-        int index = 0;
+        var index = 0;
 
         // Ignore any leading whitespace
         while (index < rom.Length && char.IsWhiteSpace(rom.Span[index]))
@@ -105,7 +110,7 @@ public class Value
                 break; // Stop extracting when '~' is encountered
             }
 
-            value = ((value ?? 0) * 10) + (rom.Span[index] - '0');
+            value = (value ?? 0) * 10 + (rom.Span[index] - '0');
             index++;
         }
 
@@ -115,7 +120,7 @@ public class Value
     private static int? ExtractTildeValue(ReadOnlyMemory<char> rom)
     {
         int? value = null;
-        int index = 0;
+        var index = 0;
 
         // Find the '~' character, if present
         while (index < rom.Length && rom.Span[index] != '~')
@@ -132,7 +137,7 @@ public class Value
         // Extract the digits until a non-digit character is encountered
         while (index < rom.Length && char.IsDigit(rom.Span[index]))
         {
-            value = ((value ?? 0) * 10) + (rom.Span[index] - '0');
+            value = (value ?? 0) * 10 + (rom.Span[index] - '0');
             index++;
         }
 

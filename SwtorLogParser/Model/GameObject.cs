@@ -1,12 +1,17 @@
-﻿namespace SwtorLogParser;
+﻿using SwtorLogParser.Monitor;
+
+namespace SwtorLogParser.Model;
 
 public class GameObject : IEquatable<GameObject>
 {
-    protected ReadOnlyMemory<char> Rom { get; }
+    protected ReadOnlyMemory<char> Rom
+    {
+        get;
+    }
 
     private bool? _isNested;
     public bool IsNested => _isNested ??= Rom.Span.IndexOf('/') > -1;
-    
+
 
     private string? _parentName;
     public string? ParentName => _parentName ??= GetParentName();
@@ -29,9 +34,9 @@ public class GameObject : IEquatable<GameObject>
     public string? Name => _name ??= GetName();
     private string? GetName()
     {
-        if (IsNested) 
+        if (IsNested)
             return Rom.Span.Slice(Rom.Span.IndexOf('/') + 1, Rom.Span.LastIndexOf('{') - Rom.Span.IndexOf('/') - 1).Trim().ToString();
-        
+
         var nameEnd = Rom.Span.IndexOf('{');
         if (nameEnd == -1) return null;
         var name = Rom.Span.Slice(0, nameEnd - 1).Trim();
@@ -67,7 +72,7 @@ public class GameObject : IEquatable<GameObject>
         {
             var startIndex = Rom.Span.IndexOf('{');
             var endIndex = Rom.Span.IndexOf('}');
-            
+
             if (startIndex != -1 && endIndex != -1)
                 return ulong.Parse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1));
         }
@@ -79,12 +84,12 @@ public class GameObject : IEquatable<GameObject>
     {
         Rom = rom;
     }
-    
+
     public static GameObject? Parse(ReadOnlyMemory<char> rom)
     {
-        if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out GameObject? value)) 
+        if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out var value))
             return (GameObject?)value;
-        
+
         var gameObject = new GameObject(rom);
         if (gameObject.Id == null) return null;
         CombatLogs.GameObjectCache.Add(gameObject.GetHashCode(), gameObject);
@@ -92,7 +97,7 @@ public class GameObject : IEquatable<GameObject>
     }
 
     public override string ToString() => $"{Name} {{{Id}}}";
-    
+
     public bool Equals(GameObject? other)
     {
         if (ReferenceEquals(null, other)) return false;

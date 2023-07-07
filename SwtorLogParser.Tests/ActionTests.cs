@@ -1,4 +1,7 @@
-﻿namespace SwtorLogParser.Tests;
+﻿using SwtorLogParser.Model;
+using Action = SwtorLogParser.Model.Action;
+
+namespace SwtorLogParser.Tests;
 
 public class ActionTests
 {

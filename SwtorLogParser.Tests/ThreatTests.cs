@@ -1,4 +1,6 @@
-﻿namespace SwtorLogParser.Tests;
+﻿using SwtorLogParser.Model;
+
+namespace SwtorLogParser.Tests;
 
 public class ThreatTests
 {

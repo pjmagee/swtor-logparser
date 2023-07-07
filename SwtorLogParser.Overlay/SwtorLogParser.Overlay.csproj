@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>SwtorLogParser.Overlay</RootNamespace>       
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj" />
+    </ItemGroup>
+    
+    <!--<ItemGroup>
+          <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.25387-preview" />
+    </ItemGroup>-->
+
+</Project>

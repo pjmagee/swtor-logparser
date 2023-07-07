@@ -1,23 +1,50 @@
-﻿namespace SwtorLogParser;
+﻿namespace SwtorLogParser.Model;
 
 public class CombatLogLine
 {
-    public DateTime TimeStamp { get; }
-    public Actor? Source { get; }
-    public Actor? Target { get; }
-    public Ability? Ability { get; }
-    public Action? Action { get; }
-    public Value? Value { get; }
-    public Threat? Threat { get; }
+    public DateTime TimeStamp
+    {
+        get;
+    }
+    public Actor? Source
+    {
+        get;
+    }
+    public Actor? Target
+    {
+        get;
+    }
+    public Ability? Ability
+    {
+        get;
+    }
+    public Action? Action
+    {
+        get;
+    }
+    public Value? Value
+    {
+        get;
+    }
+    public Threat? Threat
+    {
+        get;
+    }
 
-    private ReadOnlyMemory<char> Rom { get; set; }
-    private List<ReadOnlyMemory<char>> Roms { get; }
-    
+    private ReadOnlyMemory<char> Rom
+    {
+        get; set;
+    }
+    private List<ReadOnlyMemory<char>> Roms
+    {
+        get;
+    }
+
     private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms)
     {
         Rom = rom;
         Roms = roms;
-        
+
         TimeStamp = DateTime.Parse(Roms[0].Span);
         Source = Actor.Parse(Roms[1]);
         Target = Actor.Parse(Roms[2]);
@@ -43,15 +70,15 @@ public class CombatLogLine
 
     private static List<ReadOnlyMemory<char>> GetSections(ReadOnlyMemory<char> rom)
     {
-        List<ReadOnlyMemory<char>> roms = new List<ReadOnlyMemory<char>>();
-        
+        var roms = new List<ReadOnlyMemory<char>>();
+
         const char sectionOpen = '[';
         const char sectionClose = ']';
 
-        int start = -1;
-        int end = -1;
+        var start = -1;
+        var end = -1;
 
-        for (int i = 0; i < rom.Length; i++)
+        for (var i = 0; i < rom.Length; i++)
         {
             if (rom.Span[i] == sectionOpen)
             {

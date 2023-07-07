@@ -1,60 +1,63 @@
-﻿namespace SwtorLogParser.Cli;
+﻿using SwtorLogParser.Monitor;
+
+namespace SwtorLogParser.Cli.View;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 
 public class SlidingExpirationList
 {
-    private readonly SortedList<string, PlayerStats> _items;
+    private readonly SortedList<long, Entry> _items;
     private readonly Timer _expirationTimer;
     private readonly TimeSpan _expirationTime;
-    
-    public IReadOnlyList<PlayerStats> Items
+
+    public IReadOnlyList<CombatLogsMonitor.PlayerStats> Items
     {
         get
         {
-            lock (_items) return _items.Values.AsReadOnly();
+            lock (_items) return ImmutableList.Create(_items.Values.Select(x => x.Stats).ToArray());
         }
     }
 
     public SlidingExpirationList(TimeSpan expirationTime)
     {
-        _items = new SortedList<string, PlayerStats>();
+        _items = new SortedList<long, Entry>();
         _expirationTime = expirationTime;
         _expirationTimer = new Timer(RemoveExpiredItems, null, expirationTime, expirationTime);
     }
 
-    public void AddOrUpdate(PlayerStats item)
+    public void AddOrUpdate(CombatLogsMonitor.PlayerStats item)
     {
         lock (_items)
         {
-            if (_items.ContainsKey(item.Player))
+            if(_items.TryGetValue(item.Player.Id!.Value, out var entry))
             {
                 if (item.HPS.HasValue)
                 {
-                    _items[item.Player].HPS = item.HPS;
-                    _items[item.Player].HPSCritP = item.HPSCritP;
+                    entry.Stats.HPS = item.HPS;
+                    entry.Stats.HPSCritP = item.HPSCritP;
                 }
 
                 if (item.DPS.HasValue)
                 {
-                    _items[item.Player].DPS = item.DPS;
-                    _items[item.Player].DPSCritP = item.DPSCritP;
+                    entry.Stats.DPS = item.DPS;
+                    entry.Stats.DPSCritP = item.DPSCritP;
                 }
             }
             else
             {
-                _items.Add(item.Player, item);
+                _items.Add(item.Player.Id!.Value, new Entry() { Stats = item });
             }
-            
-            _items[item.Player].Expiration = DateTime.Now.Add(_expirationTime);
+
+            _items[item.Player.Id!.Value].Expiration = DateTime.Now.Add(_expirationTime);
         }
     }
 
     private void RemoveExpiredItems(object? state)
     {
-        var expiredItems = new List<PlayerStats>();
+        var expiredItems = new List<Entry>();
 
         lock (_items)
         {
@@ -68,7 +71,7 @@ public class SlidingExpirationList
 
             foreach (var item in expiredItems)
             {
-                _items.Remove(item.Player);
+                _items.Remove(item.Stats.Player.Id!.Value);
             }
         }
     }

@@ -1,4 +1,7 @@
-﻿namespace SwtorLogParser;
+﻿using SwtorLogParser.Model;
+using Action = SwtorLogParser.Model.Action;
+
+namespace SwtorLogParser.Extensions;
 
 public static class CombatLogLineExtensions
 {
@@ -14,11 +17,5 @@ public static class CombatLogLineExtensions
         return combatLogLine.Source?.IsPlayer == true && 
                Action.ApplyEffectDamage.Equals(combatLogLine.Action) && 
                combatLogLine.Value is not null;
-    }
-    
-    public static bool IsPlayerAbility(this CombatLogLine combatLogLine)
-    {
-        return combatLogLine.Source?.IsPlayer == true &&
-               Action.EventAbilityActivate.Equals(combatLogLine.Action);
     }
 }

@@ -1,3 +1,5 @@
+using SwtorLogParser.Model;
+
 namespace SwtorLogParser.Tests;
 
 public class ValueTests

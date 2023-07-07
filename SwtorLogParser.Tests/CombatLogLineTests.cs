@@ -1,4 +1,7 @@
-﻿namespace SwtorLogParser.Tests;
+﻿using SwtorLogParser.Model;
+using SwtorLogParser.Monitor;
+
+namespace SwtorLogParser.Tests;
 
 public class CombatLogLineTests
 {

@@ -4,24 +4,37 @@ A fast and efficient SWTOR log file parser using .NET 8.0 and the latest C# feat
 
 ## Features
 
-- [x] Parses log files into a usable format
+- [x] Parses log files into an easily usable format
 - [x] Memory efficient (no unnecessary allocations)
 - [x] Fast (uses ReadOnlySpan\<T> and ReadOnlyMemory\<T> to avoid copying data)
-- [x] AOT compatible (no reflection)
-- [x] DPS/HPS/APM calculations powered by Rx.NET
-- [x] Compiles to native code (no .NET runtime required)
+- [x] Core library is AOT compatible (no reflection)
+- [x] DPS & HPS calculations powered by Rx.NET
+- [x] Native CLI compiles to native code (no .NET runtime required)
+- [x] Minimal Overlay UI
 
 ## Usage
 
-### Console
+### Console (.NET)
 
 To monitor logs in real-time, run the following command:
 ```bash
-swtorlogparser.console.exe monitor
+swtorlogparser.cli.exe monitor
 ```
 
 To list SWTOR log files, run the following command:
 
 ```bash
-swtorlogparser.console.exe list
+swtorlogparser.cli.exe list
+```
+
+### Console (Native)
+
+```bash
+swtorlogparser.native.cli.exe monitor
+```
+
+### Overlay UI
+
+```bash
+SwtorLogParser.Overlay.exe
 ```

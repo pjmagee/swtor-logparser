@@ -1,25 +1,29 @@
 ﻿using System.Globalization;
+using SwtorLogParser.Monitor;
 
-namespace SwtorLogParser;
+namespace SwtorLogParser.Model;
 
 public class Actor
 {
-    private List<ReadOnlyMemory<char>> Roms { get; }
-    private bool IsEmpty => Roms.Count == 0 || (Roms.Count == 1 && Roms[0].Length == 1 && Roms[0].Span[0] == '=');
+    private List<ReadOnlyMemory<char>> Roms
+    {
+        get;
+    }
+    private bool IsEmpty => Roms.Count == 0 || Roms.Count == 1 && Roms[0].Length == 1 && Roms[0].Span[0] == '=';
 
     public string? Name => _name ??= GetName();
 
     private string? _name;
     private string? GetName()
     {
-        try 
+        try
         {
             if (IsCompanion)
                 return Roms[0].Slice(Roms[0].Span.IndexOf('/') + 1, Roms[0].Span.IndexOf('{') - 1 - Roms[0].Span.IndexOf('/')).Trim().ToString();
-                
+
             if (IsPlayer)
                 return Roms[0].Slice(1, Roms[0].Span.IndexOf('#') - 1).Trim().ToString();
-					
+
             return Roms[0].Slice(0, Roms[0].Span.IndexOf('{')).Trim().ToString();
         }
         catch
@@ -27,7 +31,7 @@ public class Actor
             return null;
         }
     }
-	
+
     public bool IsNpc => !IsEmpty && Roms[0].Span[0] != '@';
     public bool IsPlayer => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@' && !IsCompanion;
     public bool IsCompanion => Roms.Count > 0 && Roms[0].Span.Length > 0 && Roms[0].Span[0] == '@' && Roms[0].Span.IndexOf('/') > 0;
@@ -44,15 +48,15 @@ public class Actor
     {
         if (IsEmpty) return null;
         var health = Roms[2].Span;
-        int maxStart = health.IndexOf('/') + 1;
-        int maxLength = health.Length - maxStart - 1;
+        var maxStart = health.IndexOf('/') + 1;
+        var maxLength = health.Length - maxStart - 1;
         return int.Parse(Roms[2].Slice(maxStart, maxLength).Span);
     }
-	
+
     private (float X, float Y, float Z, float Direction)? _position;
-    
+
     public (float X, float Y, float Z, float Direction)? Position => _position ??= GetPosition();
-    
+
     private (float X, float Y, float Z, float D)? GetPosition()
     {
         if (Roms.Count == 3)
@@ -60,7 +64,7 @@ public class Actor
             var position = ExtractPosition(Roms[1].Span);
             return (position[0], position[1], position[2], position[3]);
         }
-			
+
         return null;
     }
 
@@ -71,22 +75,22 @@ public class Actor
     {
         if (IsCompanion)
         {
-            int idStart = Roms[0].Span.IndexOf('{');
-            int idEnd = Roms[0].Span.IndexOf('}');
-            return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd  - idStart - 1));
+            var idStart = Roms[0].Span.IndexOf('{');
+            var idEnd = Roms[0].Span.IndexOf('}');
+            return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd - idStart - 1));
         }
-        
+
         if (IsPlayer)
         {
-            int hash = Roms[0].Span.IndexOf('#');
-            int slash = Roms[0].Span.IndexOf('/');
+            var hash = Roms[0].Span.IndexOf('#');
+            var slash = Roms[0].Span.IndexOf('/');
             return long.Parse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash));
         }
 
         if (IsNpc)
         {
-            int openIndex = Roms[0].Span.IndexOf('{');
-            int closeIndex = Roms[0].Span.IndexOf('}');
+            var openIndex = Roms[0].Span.IndexOf('{');
+            var closeIndex = Roms[0].Span.IndexOf('}');
             return long.Parse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1));
         }
 
@@ -100,17 +104,17 @@ public class Actor
 
     public static Actor? Parse(ReadOnlyMemory<char> rom)
     {
-        if (rom.IsEmpty || (rom.Length == 1 && rom.Span[0] == '=')) return null;
+        if (rom.IsEmpty || rom.Length == 1 && rom.Span[0] == '=') return null;
         return new Actor(rom);
     }
-	
+
     public override string ToString() => $"{Name} {Id} ({Health}/{MaxHealth})";
 
     private static List<float> ExtractPosition(ReadOnlySpan<char> span)
     {
-        List<float> position = new List<float>();
-        int start = 0;
-        int end = 0;
+        var position = new List<float>();
+        var start = 0;
+        var end = 0;
 
         // Skip the opening parenthesis
         if (span[0] == '(')
@@ -128,12 +132,12 @@ public class Actor
             end = span.Length;
         }
 
-        ReadOnlySpan<char> content = span.Slice(start, end - start);
+        var content = span.Slice(start, end - start);
 
         // Split the content by comma
         start = 0;
-        
-        for (int i = 0; i < content.Length; i++)
+
+        for (var i = 0; i < content.Length; i++)
         {
             if (content[i] == ',')
             {
@@ -157,10 +161,10 @@ public class Actor
 
     private static List<ReadOnlyMemory<char>> GetSubSections(ReadOnlyMemory<char> rom)
     {
-        List<ReadOnlyMemory<char>> subSections = new List<ReadOnlyMemory<char>>();
-        int start = 0;
+        var subSections = new List<ReadOnlyMemory<char>>();
+        var start = 0;
 
-        for (int i = 0; i < rom.Length; i++)
+        for (var i = 0; i < rom.Length; i++)
         {
             if (rom.Span[i] == '|')
             {
