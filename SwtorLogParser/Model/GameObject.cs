@@ -2,7 +2,7 @@
 
 namespace SwtorLogParser.Model;
 
-public class GameObject : IEquatable<GameObject>
+public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 {
     private ulong? _id;
 
@@ -112,5 +112,16 @@ public class GameObject : IEquatable<GameObject>
     public override string ToString()
     {
         return $"{Name} {{{Id}}}";
+    }
+
+    public int CompareTo(GameObject? other)
+    {
+        if (Name is not null)
+            return String.Compare(Name, other?.Name, StringComparison.Ordinal);
+
+        if (Id is not null)
+            return Id.Value.CompareTo(other?.Id);
+
+        return 0;
     }
 }

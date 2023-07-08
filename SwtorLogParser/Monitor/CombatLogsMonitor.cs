@@ -28,78 +28,75 @@ public class CombatLogsMonitor
 
     public bool IsRunning => _monitor is { IsCompleted: false } && _reader is { IsCompleted: false };
 
-    public ReplaySubject<CombatLogLine> CombatLogLines { get; } = new(TimeSpan.FromMinutes(1));
+    private Subject<CombatLogLine> CombatLogLines { get; } = new Subject<CombatLogLine>();
 
     private DateTime? _lastWriteTime;
     private string? _lastFileName;
-
-    public IObservable<PlayerStats> DPS { get; private set; }
-
-    public IObservable<PlayerStats> HPS { get; private set; }
-
+    public IObservable<PlayerStats> DpsHps { get; private set; }
+    
+    private static readonly CombatLogLineComparer CombatLogLineComparer = new();
 
     private CombatLogsMonitor()
     {
         ConfigureObservables();
     }
-
+    
     private void ConfigureObservables()
     {
-        DPS = CombatLogLines
-            .Where(combatLogLine => combatLogLine.TimeStamp > DateTime.Now.AddSeconds(-10))
-            .Where(combatLogLine => combatLogLine.IsPlayerDamage())
-            .GroupBy(combatLogLine => combatLogLine.Source!.Name)
-            .SelectMany(group =>
-            {
-                return group
-                    .Buffer(TimeSpan.FromSeconds(2))
-                    .Where(b => b.Count >= 2)
-                    .Select(buffer =>
-                    {
-                        var sortedBuffer = buffer.OrderBy(x => x.TimeStamp).ToList();
-                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp)
-                            .TotalSeconds;
-                        var sum = sortedBuffer.Sum(x => x.Value!.Total);
-                        var critical = sortedBuffer.Count(x => x.Value!.IsCritical) * 100.0 / sortedBuffer.Count;
+        DpsHps = CombatLogLines
+            
+            .Where(x => x.TimeStamp > DateTime.Now.AddSeconds(-10))
+            .Where(x => x.Source is not null && x.Source.Name is not null)
+            .GroupBy(x => x.Source?.Name)
+            .SelectMany(g => g
+                .Where(l => l.IsPlayerDamage() || l.IsPlayerHeal())
+                .DistinctUntilChanged()
+                .Scan(new HashSet<CombatLogLine>(CombatLogLineComparer), Accumulator)
+                .Select(CalculateDpsHpsStats));
+    }
+    
+    private static object Lock = new object();
 
-                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum,
-                            critical);
+    private HashSet<CombatLogLine> Accumulator(HashSet<CombatLogLine> state, CombatLogLine combatLog)
+    {
+        lock (Lock)
+        {
+            state.RemoveWhere(line => line.TimeStamp < combatLog.TimeStamp.AddSeconds(-10));
+            state.Add(combatLog);
+            return state;    
+        }
+    }
 
-                        return new PlayerStats
-                        {
-                            Player = sortedBuffer[0].Source!, DPS = sum / totalSeconds,
-                            DPSCritP = double.IsInfinity(critical) ? null : critical
-                        };
-                    });
-            });
+    private PlayerStats CalculateDpsHpsStats(HashSet<CombatLogLine> state)
+    {
+        // Oldest to latest
+        var items = state.OrderBy(x => x.TimeStamp.TimeOfDay).ToList();
+        
+        var heals = items.Where(pe => pe.IsPlayerHeal()).ToList();
+        var damage = items.Where(pe => pe.IsPlayerDamage()).ToList();
 
-        HPS = CombatLogLines
-            .Where(combatLogLine => combatLogLine.TimeStamp > DateTime.Now.AddSeconds(-10))
-            .Where(combatLogLine => combatLogLine.IsPlayerHeal())
-            .GroupBy(combatLogLine => combatLogLine.Source!.Name)
-            .SelectMany(group =>
-            {
-                return group
-                    .Buffer(TimeSpan.FromSeconds(5))
-                    .Where(b => b.Count >= 2)
-                    .Select(buffer =>
-                    {
-                        var sortedBuffer = buffer.OrderBy(x => x.TimeStamp).ToList();
-                        var totalSeconds = (sortedBuffer.Last().TimeStamp - sortedBuffer.First().TimeStamp)
-                            .TotalSeconds;
-                        var sum = sortedBuffer.Sum(x => x.Value!.Total);
-                        var critical = sortedBuffer.Count(x => x.Value!.IsCritical) * 100.0 / sortedBuffer.Count;
+        var timeSpan = items.Count > 1 ? (items[^1].TimeStamp - items[0].TimeStamp) : TimeSpan.FromSeconds(1);
 
-                        _logger.LogDebug("seconds: {TotalSeconds}. sum: {Sum}. critical: {Critical}", totalSeconds, sum,
-                            critical);
+        int damageTotal = damage.Sum(pe => pe.Value!.Total);
+        int healTotal = heals.Sum(pe => pe.Value!.Total);
 
-                        return new PlayerStats
-                        {
-                            Player = sortedBuffer[0].Source!, HPS = sum / totalSeconds,
-                            HPSCritP = double.IsInfinity(critical) ? null : critical
-                        };
-                    });
-            });
+        double dpsCrit = (double) damage.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
+        double hpsCrit = (double) heals.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
+
+        double? dps = damage.Count > 0 ? damageTotal / timeSpan.TotalSeconds : null;
+        double? hps = heals.Count > 0 ? healTotal / timeSpan.TotalSeconds : null;
+
+        double? dpsCritP = double.IsInfinity(dpsCrit) || dpsCrit == 0.0d ? null : dpsCrit;
+        double? hpsCritP = double.IsInfinity(hpsCrit) || hpsCrit == 0.0d ? null : hpsCrit;
+
+        return new PlayerStats
+        {
+            Player = state.ElementAt(0).Source!,
+            DPS = dps,
+            HPS = hps,
+            DPSCritP = dpsCritP,
+            HPSCritP = hpsCritP
+        };
     }
 
     private CombatLogsMonitor(ILogger<CombatLogsMonitor> logger) : this()
@@ -143,7 +140,10 @@ public class CombatLogsMonitor
                 {
                     current = _lastFileName;
                     position = 0;
-                    fileStream?.Dispose();
+
+                    if (fileStream is not null)
+                        await fileStream.DisposeAsync();
+                    
                     streamReader?.Dispose();
                     fileStream = null;
                     streamReader = null;
@@ -161,27 +161,24 @@ public class CombatLogsMonitor
 
                 streamReader ??= new StreamReader(fileStream);
 
-                while (!streamReader.EndOfStream)
+                while (await streamReader.ReadLineAsync(cancellationToken) is { } line)
                 {
-                    var line = streamReader.ReadLine();
+                    try
+                    {
+                        var item = CombatLogLine.Parse(line.AsMemory());
 
-                    if (line is not null)
-                        try
+                        if (item is not null)
                         {
-                            var item = CombatLogLine.Parse(line.AsMemory());
-
-                            if (item is not null)
-                            {
-                                CombatLogLines.OnNext(item);
-                                CombatLogChanged?.Invoke(this, item);
-                            }
+                            CombatLogLines.OnNext(item);                   
+                            CombatLogChanged?.Invoke(this, item);
                         }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e, "Failed to parse line: {Line}", line);
-                        }
-
-                    position = streamReader.BaseStream.Position;
+                            
+                        position = streamReader.BaseStream.Position;
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to parse line: {Line}", line);
+                    }
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
@@ -189,7 +186,8 @@ public class CombatLogsMonitor
         }
         finally
         {
-            fileStream?.DisposeAsync();
+            if (fileStream is not null)
+                await fileStream.DisposeAsync();
             streamReader?.Dispose();
         }
     }

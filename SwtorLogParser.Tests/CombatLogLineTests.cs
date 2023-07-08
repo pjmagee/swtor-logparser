@@ -60,9 +60,7 @@ public class CombatLogLineTests
     [Fact]
     public void Line_With_Valid_Sections_Is_Parsed()
     {
-        var line = CombatLogLine.Parse(
-            "[18:12:13] [Powerful Subscriber 688623358308676 (1/401177)] [] [] [AreaEntered {836045448953664}: Imperial Fleet {137438989504}]"
-                .AsMemory());
+        var line = CombatLogLine.Parse("[18:12:13] [Powerful Subscriber 688623358308676 (1/401177)] [] [] [AreaEntered {836045448953664}: Imperial Fleet {137438989504}]".AsMemory());
 
         Assert.NotNull(line);
 
@@ -78,9 +76,7 @@ public class CombatLogLineTests
     [Fact]
     public void Line_With_Valid_Sections_And_Threat_Is_Parsed()
     {
-        var line = CombatLogLine.Parse(
-            "[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>"
-                .AsMemory());
+        var line = CombatLogLine.Parse("[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>".AsMemory());
 
         Assert.NotNull(line);
 
@@ -92,5 +88,26 @@ public class CombatLogLineTests
         Assert.NotNull(line.Ability);
         Assert.NotNull(line.Value);
         Assert.NotNull(line.Threat);
+    }
+
+    [Fact]
+    public void Duplicated_Line_Appears_In_HashSet_Once()
+    {
+        // A
+        var comparer = new CombatLogLineComparer();
+        var line1 = CombatLogLine.Parse("[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>".AsMemory());
+        var line2 = CombatLogLine.Parse("[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>".AsMemory());
+        var set = new HashSet<CombatLogLine>(comparer);
+
+        Assert.NotNull(line1);
+        Assert.NotNull(line2);
+        
+        // A
+        set.Add(line1);
+        set.Add(line2);
+        
+        // A
+        Assert.Single(set);
+        Assert.True(comparer.Equals(line1, line2));
     }
 }

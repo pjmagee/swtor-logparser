@@ -54,8 +54,7 @@ public static class Program
         var consoleRenderer = new ConsoleRenderer(context.Console, OutputMode.Ansi);
 
         CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DPS.Subscribe(playerStats => Update(consoleRenderer, playerStats));
-        CombatLogsMonitor.Instance.HPS.Subscribe(playerStats => Update(consoleRenderer, playerStats));
+        CombatLogsMonitor.Instance.DpsHps.Subscribe(playerStats => Update(consoleRenderer, playerStats));
         CombatLogsMonitor.Instance.Start(token);
 
         manualResetEvent.WaitOne();

@@ -1,12 +1,11 @@
 ﻿namespace SwtorLogParser.Model;
 
-public class CombatLogLine
+public class CombatLogLine : IEquatable<CombatLogLine>
 {
     private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms)
     {
         Rom = rom;
         Roms = roms;
-
         TimeStamp = DateTime.Parse(Roms[0].Span);
         Source = Actor.Parse(Roms[1]);
         Target = Actor.Parse(Roms[2]);
@@ -15,6 +14,8 @@ public class CombatLogLine
         Value = Value.Parse(Rom);
         Threat = Threat.Parse(Rom);
     }
+
+    public override int GetHashCode() => Rom.GetHashCode();
 
     public DateTime TimeStamp { get; }
 
@@ -41,6 +42,8 @@ public class CombatLogLine
         return sections.Count != 5 ? null : new CombatLogLine(rom, sections);
     }
 
+    public bool Equals(CombatLogLine? other) => Rom.Equals(other?.Rom);
+
     public override string ToString()
     {
         var v = Value is not null ? $"({Value})" : null;
@@ -59,6 +62,7 @@ public class CombatLogLine
         var end = -1;
 
         for (var i = 0; i < rom.Length; i++)
+        {
             if (rom.Span[i] == sectionOpen)
             {
                 start = i + 1;
@@ -73,6 +77,7 @@ public class CombatLogLine
                     start = -1;
                 }
             }
+        }
 
         return roms;
     }

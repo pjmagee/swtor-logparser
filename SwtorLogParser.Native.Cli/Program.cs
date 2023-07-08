@@ -27,8 +27,7 @@ public static class Program
         manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
 
         CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DPS.Subscribe(playerStats => Update(list, playerStats));
-        CombatLogsMonitor.Instance.HPS.Subscribe(playerStats => Update(list, playerStats));
+        CombatLogsMonitor.Instance.DpsHps.Subscribe(playerStats => Update(list, playerStats));
         CombatLogsMonitor.Instance.Start(token);
 
         manualResetEvent.WaitOne();
