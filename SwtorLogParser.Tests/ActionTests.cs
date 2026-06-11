@@ -48,4 +48,16 @@ public class ActionTests
 
         Assert.StrictEqual(action1, action2);
     }
+
+    // Graceful-null (Pattern C, green TODAY). Action.Parse wraps construction in try/catch: when a
+    // child GameObject.Parse hits a non-numeric id brace it throws EAGERLY (GameObject.Parse reads
+    // .Id), the exception is caught (Console.Error), and Action.Parse returns null. Distinct literal
+    // per row — Action/GameObject caches key on Rom.GetHashCode and never clear between tests.
+    [Theory]
+    [InlineData("ZqxBadEvent {abc}: Imperial Fleet {137438989504}")]
+    [InlineData("AreaEntered {836045448953664}: ZqxBadEffect {xyz}")]
+    public void Action_Malformed_Inner_Fragment_Returns_Null(string raw)
+    {
+        Assert.Null(Action.Parse(raw.AsMemory()));
+    }
 }
