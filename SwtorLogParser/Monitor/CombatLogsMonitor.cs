@@ -59,7 +59,7 @@ public class CombatLogsMonitor
             );
     }
 
-    private static object Lock = new object();
+    private static readonly object Lock = new();
 
     private HashSet<CombatLogLine> Accumulator(
         HashSet<CombatLogLine> state,
