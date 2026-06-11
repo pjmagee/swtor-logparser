@@ -12,16 +12,15 @@ public class Ability : GameObject
         if (rom.Length == 0 || rom.IsEmpty)
             return null;
 
-        if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out var value))
-            return (Ability?)value;
+        // Separate AbilityCache (BoundedCache<Ability>) — no cross-type cast, no collision
+        // with GameObjectCache under content keys.
+        var key = rom.ToString();
+        if (CombatLogs.AbilityCache.TryGetValue(key, out var cached))
+            return cached;
 
         var ability = new Ability(rom);
 
-        var key = ability.GetHashCode();
-        if (CombatLogs.GameObjectCache.TryAdd(key, ability))
-            return ability;
-
-        // Another thread won the race for this key — return the cached instance.
-        return CombatLogs.GameObjectCache.TryGetValue(key, out var existing) ? (Ability?)existing : ability;
+        // GetOrAdd preserves the TryAdd race idiom: returns the race winner's instance.
+        return CombatLogs.AbilityCache.GetOrAdd(key, ability);
     }
 }

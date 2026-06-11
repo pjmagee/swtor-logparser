@@ -100,18 +100,15 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 
     public static GameObject? Parse(ReadOnlyMemory<char> rom)
     {
-        if (CombatLogs.GameObjectCache.TryGetValue(rom.GetHashCode(), out var value))
-            return (GameObject?)value;
+        var key = rom.ToString();
+        if (CombatLogs.GameObjectCache.TryGetValue(key, out var cached))
+            return cached;
 
         var gameObject = new GameObject(rom);
         if (gameObject.Id == null) return null;
 
-        var key = gameObject.GetHashCode();
-        if (CombatLogs.GameObjectCache.TryAdd(key, gameObject))
-            return gameObject;
-
-        // Another thread won the race for this key — return the cached instance.
-        return CombatLogs.GameObjectCache.TryGetValue(key, out var existing) ? existing : gameObject;
+        // GetOrAdd preserves the TryAdd race idiom: returns the race winner's instance.
+        return CombatLogs.GameObjectCache.GetOrAdd(key, gameObject);
     }
 
     public override string ToString()

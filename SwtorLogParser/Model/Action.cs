@@ -44,19 +44,16 @@ public class Action : IEquatable<Action>
 
     public static Action? Parse(ReadOnlyMemory<char> rom)
     {
-        if (CombatLogs.ActionCache.TryGetValue(rom.GetHashCode(), out var value)) return (Action?)value;
+        var key = rom.ToString();
+        if (CombatLogs.ActionCache.TryGetValue(key, out var cached)) return cached;
 
         if (rom.Span.IndexOf(':') != -1)
             try
             {
                 var action = new Action(rom);
 
-                var key = action.GetHashCode();
-                if (CombatLogs.ActionCache.TryAdd(key, action))
-                    return action;
-
-                // Another thread won the race for this key — return the cached instance.
-                return CombatLogs.ActionCache.TryGetValue(key, out var existing) ? existing : action;
+                // GetOrAdd preserves the TryAdd race idiom: returns the race winner's instance.
+                return CombatLogs.ActionCache.GetOrAdd(key, action);
             }
             catch (Exception e)
             {

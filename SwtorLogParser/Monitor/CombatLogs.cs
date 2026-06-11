@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+﻿using SwtorLogParser.Caching;
 using SwtorLogParser.Model;
 using Action = SwtorLogParser.Model.Action;
 
@@ -6,8 +6,12 @@ namespace SwtorLogParser.Monitor;
 
 public static class CombatLogs
 {
-    internal static readonly ConcurrentDictionary<int, Action> ActionCache = new();
-    internal static readonly ConcurrentDictionary<int, GameObject> GameObjectCache = new();
+    // Separate per-concrete-type content-keyed bounded caches (RFCT-03).
+    // AbilityCache is NEW: Ability no longer shares GameObjectCache, eliminating the
+    // latent (Ability?)value cross-type cast bug. Cap 4096 entries, FIFO eviction.
+    internal static readonly BoundedCache<GameObject> GameObjectCache = new(4096);
+    internal static readonly BoundedCache<Ability> AbilityCache = new(4096);
+    internal static readonly BoundedCache<Action> ActionCache = new(4096);
 
     private static readonly string LogsPath =
         Path.Combine(

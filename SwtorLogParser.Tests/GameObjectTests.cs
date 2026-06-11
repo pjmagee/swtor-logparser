@@ -17,32 +17,32 @@ public class GameObjectTests
         Assert.Equal(name, gameObject.Name);
     }
 
-    // [Rule 1 - Bug] This [Fact] was RED on the committed baseline (HEAD) before this plan ran.
-    // It asserted Assert.StrictEqual on two GameObjects parsed from two SEPARATE string literals.
-    // GameObject.Equals/GetHashCode delegate to ReadOnlyMemory<char>.GetHashCode (GameObject.cs:35,53),
-    // which is identity-based on the backing string object + range — so two distinct literals yield
-    // different hashes and the objects are NOT equal under the current contract. The original
-    // assertion can never pass. Per the Phase-1 "characterize CURRENT behavior" mandate, this now
-    // locks the actual contract: distinct backing memory => NOT equal; same backing memory => equal.
+    // RFCT-03 (Phase 3): the parse caches are now keyed by string CONTENT (rom.ToString()), not by
+    // identity-based ReadOnlyMemory<char>.GetHashCode. The Phase-1 version of this test locked the
+    // OLD contract (distinct backing memory => NOT equal). RFCT-03 intentionally inverts that: two
+    // roms with identical CONTENT but different backing memory now resolve to the SAME cached
+    // instance (the ME-02 dedup fix). This test is re-characterized to lock the new content-keyed
+    // contract — same content => same cached instance (ReferenceEquals) regardless of backing memory.
     [Fact]
-    public void Game_Objects_Equality_Reflects_Backing_Memory()
+    public void Game_Objects_Equality_Reflects_Content_Key()
     {
         var name = "ApplyEffect";
         var id = 836045448945477u;
 
-        // Two distinct backing strings -> distinct ReadOnlyMemory hashes -> NOT equal today.
+        // Two DISTINCT backing strings with identical content -> same content key -> SAME instance.
         var a = GameObject.Parse($"{name} {{{id}}}".AsMemory());
         var b = GameObject.Parse($"{name} {{{id}}}".AsMemory());
         Assert.NotNull(a);
         Assert.NotNull(b);
-        Assert.NotEqual(a, b);
+        Assert.Same(a, b);
+        Assert.Equal(a, b);
 
-        // Same backing memory reused -> equal (cache returns the same instance).
+        // Same backing memory reused -> still the same cached instance.
         var shared = $"{name} {{{id}}}".AsMemory();
         var c = GameObject.Parse(shared);
         var d = GameObject.Parse(shared);
         Assert.NotNull(c);
-        Assert.Equal(c, d);
+        Assert.Same(c, d);
     }
 
     [Fact]
