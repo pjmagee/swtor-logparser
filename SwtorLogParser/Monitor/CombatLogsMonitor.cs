@@ -115,6 +115,11 @@ public class CombatLogsMonitor
 
     public void Start(CancellationToken cancellationToken)
     {
+        // Dispose any previous linked source before creating a new one so a repeated
+        // Start() does not orphan the prior CTS (which would leak a registration on the
+        // outer token for its lifetime). Cancel first so existing workers wind down.
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken
         );
@@ -128,12 +133,19 @@ public class CombatLogsMonitor
         try
         {
             _cancellationTokenSource?.Cancel();
-            _monitor = null;
-            _reader = null;
         }
         catch (Exception e)
         {
             _logger?.LogError(e, "_cancellationTokenSource.Cancel() failed");
+        }
+        finally
+        {
+            // Dispose and null the linked CTS so it does not leak; null-safe so a
+            // Stop()-before-Start() (BUG-02) stays a no-op.
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+            _monitor = null;
+            _reader = null;
         }
     }
 
