@@ -86,30 +86,77 @@ public class CombatLogsMonitor
     // null-on-zero/infinity logic are unchanged.
     internal PlayerStats CalculateDpsHpsStats(HashSet<CombatLogLine> state)
     {
-        // Oldest to latest
-        var items = state.OrderBy(x => x.TimeStamp.TimeOfDay).ToList();
+        // PERF-03: single pass over `state` — replaces the OrderBy(TimeOfDay) sort plus the six
+        // separate Where/Sum/Count LINQ scans. Output is byte-for-byte identical to the locked
+        // original (see DpsHpsMathTests). Min/max are tracked by `.TimeStamp.TimeOfDay` — the SAME
+        // key the dropped OrderBy used — so the endpoints (and the pre-existing across-midnight
+        // quirk, IN-01) are preserved exactly; timeSpan is the delta of the corresponding lines'
+        // full TimeStamp, matching old `items[^1].TimeStamp - items[0].TimeStamp`.
+        TimeSpan minTod = TimeSpan.MaxValue,
+            maxTod = TimeSpan.MinValue;
+        DateTime minStamp = default,
+            maxStamp = default;
 
-        var heals = items.Where(pe => pe.IsPlayerHeal()).ToList();
-        var damage = items.Where(pe => pe.IsPlayerDamage()).ToList();
+        int damageCount = 0,
+            damageTotal = 0,
+            damageCrit = 0;
+        int healCount = 0,
+            healTotal = 0,
+            healCrit = 0;
 
-        var timeSpan =
-            items.Count > 1 ? (items[^1].TimeStamp - items[0].TimeStamp) : TimeSpan.FromSeconds(1);
+        Actor? player = null;
 
-        int damageTotal = damage.Sum(pe => pe.Value!.Total);
-        int healTotal = heals.Sum(pe => pe.Value!.Total);
+        foreach (var line in state)
+        {
+            var tod = line.TimeStamp.TimeOfDay;
+            if (tod < minTod)
+            {
+                minTod = tod;
+                minStamp = line.TimeStamp;
+            }
+            if (tod > maxTod)
+            {
+                maxTod = tod;
+                maxStamp = line.TimeStamp;
+            }
 
-        double dpsCrit = (double)damage.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
-        double hpsCrit = (double)heals.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
+            // Any element's Source — order-invariant because GroupBy(Source.Name) upstream
+            // guarantees one player per state (replaces state.ElementAt(0).Source).
+            player ??= line.Source;
 
-        double? dps = damage.Count > 0 ? damageTotal / timeSpan.TotalSeconds : null;
-        double? hps = heals.Count > 0 ? healTotal / timeSpan.TotalSeconds : null;
+            // INDEPENDENT ifs (NOT else-if) — matches the original's independent Where passes,
+            // so a line satisfying both predicates would be counted in both (Pitfall 3).
+            if (line.IsPlayerDamage())
+            {
+                damageCount++;
+                damageTotal += line.Value!.Total;
+                if (line.Value!.IsCritical)
+                    damageCrit++;
+            }
+
+            if (line.IsPlayerHeal())
+            {
+                healCount++;
+                healTotal += line.Value!.Total;
+                if (line.Value!.IsCritical)
+                    healCrit++;
+            }
+        }
+
+        var timeSpan = state.Count > 1 ? (maxStamp - minStamp) : TimeSpan.FromSeconds(1);
+
+        double dpsCrit = (double)damageCrit / state.Count * 100;
+        double hpsCrit = (double)healCrit / state.Count * 100;
+
+        double? dps = damageCount > 0 ? damageTotal / timeSpan.TotalSeconds : null;
+        double? hps = healCount > 0 ? healTotal / timeSpan.TotalSeconds : null;
 
         double? dpsCritP = double.IsInfinity(dpsCrit) || dpsCrit == 0.0d ? null : dpsCrit;
         double? hpsCritP = double.IsInfinity(hpsCrit) || hpsCrit == 0.0d ? null : hpsCrit;
 
         return new PlayerStats
         {
-            Player = state.ElementAt(0).Source!,
+            Player = player!,
             DPS = dps,
             HPS = hps,
             DPSCritP = dpsCritP,
