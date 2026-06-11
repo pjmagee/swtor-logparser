@@ -149,14 +149,14 @@ public class ValueTests
         Assert.Null(Value.Parse(raw.AsMemory()));
     }
 
-    // BUG-05 (Pattern E, LAZY throw): Parse guards pass (parens present, not HeroEngine), so a
-    // non-null Value is returned; the ulong.Parse of the brace content (Value.cs:47) is deferred
-    // to .Id access and throws on non-numeric content. Phase 2 (TryParse) inverts to graceful.
+    // BUG-05 (Pattern E): Parse guards pass (parens present, not HeroEngine), so a non-null
+    // Value is returned; the brace content is now read via ulong.TryParse (Value.cs), so
+    // non-numeric content reads as null instead of throwing. Phase 2: now graceful (BUG-05).
     [Fact]
-    public void Value_NonNumeric_Id_Throws_On_Access_Today()
+    public void Value_NonNumeric_Id_Returns_Null()
     {
         var value = Value.Parse("(123 {abc})".AsMemory());
         Assert.NotNull(value); // Parse is LAZY — guards pass, returns non-null
-        Assert.Throws<FormatException>(() => _ = value.Id); // ulong.Parse("abc") at Value.cs:47
+        Assert.Null(value.Id); // ulong.TryParse("abc") fails -> null (was FormatException)
     }
 }

@@ -61,7 +61,10 @@ public class Actor
 
     private int? GetHealth()
     {
-        return Roms.Count == 3 ? int.Parse(Roms[2].Slice(1, Roms[2].Span.IndexOf('/') - 1).Span) : null;
+        if (Roms.Count != 3) return null;
+        var slashIndex = Roms[2].Span.IndexOf('/');
+        if (slashIndex == -1) return null;
+        return int.TryParse(Roms[2].Slice(1, slashIndex - 1).Span, out var h) ? h : (int?)null;
     }
 
     private int? GetMaxHealth()
@@ -70,7 +73,7 @@ public class Actor
         var health = Roms[2].Span;
         var maxStart = health.IndexOf('/') + 1;
         var maxLength = health.Length - maxStart - 1;
-        return int.Parse(Roms[2].Slice(maxStart, maxLength).Span);
+        return int.TryParse(Roms[2].Slice(maxStart, maxLength).Span, out var mh) ? mh : (int?)null;
     }
 
     private (float X, float Y, float Z, float D)? GetPosition()
@@ -90,21 +93,21 @@ public class Actor
         {
             var idStart = Roms[0].Span.IndexOf('{');
             var idEnd = Roms[0].Span.IndexOf('}');
-            return long.Parse(Roms[0].Span.Slice(idStart + 1, idEnd - idStart - 1));
+            return long.TryParse(Roms[0].Span.Slice(idStart + 1, idEnd - idStart - 1), out var id) ? id : (long?)null;
         }
 
         if (IsPlayer)
         {
             var hash = Roms[0].Span.IndexOf('#');
             var slash = Roms[0].Span.IndexOf('/');
-            return long.Parse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash));
+            return long.TryParse(Roms[0].Span.Slice(hash + 1, Roms[0].Span.Length - 1 - hash), out var id) ? id : (long?)null;
         }
 
         if (IsNpc)
         {
             var openIndex = Roms[0].Span.IndexOf('{');
             var closeIndex = Roms[0].Span.IndexOf('}');
-            return long.Parse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1));
+            return long.TryParse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1), out var id) ? id : (long?)null;
         }
 
         return null;

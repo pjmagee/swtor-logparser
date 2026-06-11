@@ -100,27 +100,25 @@ public class ActorTests
         Assert.Equal((4641.05f, 4529.71f, 694.02f, -124.45f), actor.Position);
     }
 
-    // BUG-05 (Pattern E, LAZY throw): Actor.Parse succeeds on a structurally-present but
-    // non-numeric health section; the throw is deferred to property access. GetHealth
-    // (Actor.cs:62-65) requires Roms.Count == 3 then int.Parse on the slice before '/'.
-    // This literal has 3 pipe sections and health "(x/y)" -> int.Parse("x") throws.
-    // Phase 2 (TryParse) will invert this characterization to Assert.Null.
+    // BUG-05 (Pattern E): Actor.Parse succeeds on a structurally-present but non-numeric
+    // health section. GetHealth (Actor.cs) now uses int.TryParse, so non-numeric health
+    // "(x/y)" reads as null instead of throwing. Phase 2: now graceful (BUG-05).
     [Fact]
-    public void Actor_NonNumeric_Health_Throws_On_Access_Today()
+    public void Actor_NonNumeric_Health_Returns_Null()
     {
         var a = Actor.Parse("@Name#123|(0,0,0,0)|(x/y)".AsMemory());
-        Assert.NotNull(a); // Parse is LAZY — succeeds today
-        Assert.Throws<FormatException>(() => _ = a.Health); // int.Parse("x") at Actor.cs:64
+        Assert.NotNull(a); // Parse is LAZY — succeeds
+        Assert.Null(a.Health); // int.TryParse("x") fails -> null (was FormatException)
     }
 
-    // BUG-05 (Pattern E, LAZY throw): parallel .Id characterization. For an NPC line the id
-    // is read between '{' and '}' via long.Parse (GetId, Actor.cs:103-108). Non-numeric brace
-    // content throws on access. Distinct literal. Phase 2 -> Assert.Null.
+    // BUG-05 (Pattern E): parallel .Id characterization. For an NPC line the id is read
+    // between '{' and '}' via long.TryParse (GetId, Actor.cs). Non-numeric brace content
+    // reads as null instead of throwing. Phase 2: now graceful (BUG-05).
     [Fact]
-    public void Actor_NonNumeric_Id_Throws_On_Access_Today()
+    public void Actor_NonNumeric_Id_Returns_Null()
     {
         var a = Actor.Parse("NpcWithBadId {abc}:5577004295094|(0,0,0,0)|(1/2)".AsMemory());
-        Assert.NotNull(a); // Parse is LAZY — succeeds today
-        Assert.Throws<FormatException>(() => _ = a.Id); // long.Parse("abc") at Actor.cs:107
+        Assert.NotNull(a); // Parse is LAZY — succeeds
+        Assert.Null(a.Id); // long.TryParse("abc") fails -> null (was FormatException)
     }
 }

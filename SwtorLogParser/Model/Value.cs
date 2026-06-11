@@ -44,7 +44,7 @@ public class Value
             var end = Rom.Span.IndexOf('}');
 
             if (start != -1 && end != -1)
-                return ulong.Parse(Rom.Span.Slice(start + 1, end - start - 1));
+                return ulong.TryParse(Rom.Span.Slice(start + 1, end - start - 1), out var id) ? id : (ulong?)null;
 
             return null;
         }
