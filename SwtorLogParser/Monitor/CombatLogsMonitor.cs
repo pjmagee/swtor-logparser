@@ -11,16 +11,11 @@ public class CombatLogsMonitor
 {
     private readonly ILogger<CombatLogsMonitor> _logger;
 
-#if RELEASE
+    // RFCT-02: defined unconditionally in every build configuration (previously gated behind
+    // #if RELEASE/#elif DEBUG with no #else, leaving Instance undefined for any other config).
+    // The default singleton is NullLogger-backed; console/debug logging providers move host-side
+    // to keep the core library IsAotCompatible (no reflection/DI container here).
     public static CombatLogsMonitor Instance { get; } = new(NullLogger<CombatLogsMonitor>.Instance);
-#elif DEBUG
-    public static CombatLogsMonitor Instance { get; } =
-        new(
-            LoggerFactory
-                .Create(x => x.ClearProviders().AddConsole().AddDebug())
-                .CreateLogger<CombatLogsMonitor>()
-        );
-#endif
 
     private Task? _monitor;
     private Task? _reader;
@@ -34,6 +29,10 @@ public class CombatLogsMonitor
 
     private Subject<CombatLogLine> CombatLogLines { get; } = new Subject<CombatLogLine>();
 
+    // TEST-01 seam: lets tests push lines into the Rx pipeline through the
+    // InternalsVisibleTo(SwtorLogParser.Tests) grant without exposing the Subject itself.
+    internal void PublishForTest(CombatLogLine line) => CombatLogLines.OnNext(line);
+
     private DateTime? _lastWriteTime;
     private string? _lastFileName;
     public IObservable<PlayerStats> DpsHps { get; private set; }
@@ -42,12 +41,16 @@ public class CombatLogsMonitor
 
     private CombatLogsMonitor()
     {
-        ConfigureObservables();
+        // Default to NullLogger so _logger is always non-null even on this base path; the public
+        // ILogger ctor (which chains here) overwrites it afterwards. DpsHps is assigned in
+        // ConfigureObservables. Together these clear the CS8618 warnings (RFCT-02).
+        _logger = NullLogger<CombatLogsMonitor>.Instance;
+        DpsHps = ConfigureObservables();
     }
 
-    private void ConfigureObservables()
+    private IObservable<PlayerStats> ConfigureObservables()
     {
-        DpsHps = CombatLogLines
+        return CombatLogLines
             .Where(x => x.TimeStamp > DateTime.Now.AddSeconds(-10))
             .Where(x => x.Source is not null && x.Source.Name is not null)
             .GroupBy(x => x.Source?.Name)
@@ -107,7 +110,11 @@ public class CombatLogsMonitor
         };
     }
 
-    private CombatLogsMonitor(ILogger<CombatLogsMonitor> logger)
+    // RFCT-02: public constructor injection (was private) so the monitor is constructible for
+    // DI hosts and tests. Chains to the parameterless ctor so ConfigureObservables() runs and
+    // DpsHps/the Subject are assigned. Because Instance now flows through this ctor too, _logger
+    // and DpsHps are always assigned — clearing the two CS8618 warnings on the parameterless ctor.
+    public CombatLogsMonitor(ILogger<CombatLogsMonitor> logger)
         : this()
     {
         _logger = logger;

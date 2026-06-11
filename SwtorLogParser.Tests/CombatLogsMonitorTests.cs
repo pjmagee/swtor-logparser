@@ -1,9 +1,30 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using SwtorLogParser.Monitor;
 
 namespace SwtorLogParser.Tests;
 
 public class CombatLogsMonitorTests
 {
+    // RFCT-02: the ILogger<CombatLogsMonitor> ctor is now public, so the monitor can be
+    // constructed directly (for DI/tests) without going through the singleton. The
+    // ConfigureObservables() chain still runs via the parameterless ctor, so DpsHps is wired.
+    [Fact]
+    public void Monitor_Constructs_Via_Public_Ctor()
+    {
+        var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
+
+        Assert.NotNull(monitor);
+        Assert.NotNull(monitor.DpsHps);
+    }
+
+    // RFCT-02: Instance is now defined unconditionally (NullLogger-backed) in every build
+    // configuration, closing the #if RELEASE/#elif DEBUG gap that left it undefined elsewhere.
+    [Fact]
+    public void Instance_Is_Defined()
+    {
+        Assert.NotNull(CombatLogsMonitor.Instance);
+    }
+
     // BUG-02: Stop() before Start() must be a safe no-op. The _cancellationTokenSource is now
     // nullable and Stop() uses ?.Cancel() with null-safe logging, so calling Stop() on a freshly
     // obtained (never-started) monitor does not throw NullReferenceException.
