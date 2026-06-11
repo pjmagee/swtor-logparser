@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-06-11T21:57:30.697Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-06-11T22:03:40.040Z"
 last_activity: 2026-06-11 -- Phase 02 Plan 01 executed
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 11
+  completed_plans: 7
   percent: 33
 ---
 
@@ -58,6 +58,7 @@ Progress: [███████░░░] 67%
 | Phase 02 P01 | 12min | 3 tasks | 6 files |
 | Phase 02 P02 | 9min | 3 tasks | 6 files |
 | Phase 02 P03 | 3min | 4 tasks | 8 files |
+| Phase 03 P01 | 9min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase ?]: BUG-03 timestamp validated via InvariantCulture TryParseExact in static factory; bad timestamp returns null
 - [Phase ?]: BUG-01 Start/Stop lifecycle test deferred to Phase-3 TEST-01; verified by inspection + BUG-02 no-op test
 - [Phase ?]: Added InternalsVisibleTo(SwtorLogParser.Tests) to unit-test the BUG-04 internal helper
+- [Phase 03]: RFCT-02 collapsed #if RELEASE/#elif DEBUG into unconditional NullLogger-backed Instance; ILogger ctor made public; console/debug providers stay host-side (core lib AOT-safe)
+- [Phase 03]: TEST-01 Stop_Halts_Delivery asserts IsRunning==false; Stop() does NOT complete the Rx Subject by design; PublishForTest pushes now-relative timestamps to clear the 10s DpsHps window
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T21:06:48.821Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-06-11T22:03:39.768Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

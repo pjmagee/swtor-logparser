@@ -20,7 +20,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 ### Refactor (RFCT)
 
 - [ ] **RFCT-01**: The duplicated `View/` types (`Entry`, `SlidingExpirationList`) live in one shared location (core library), consumed by all three hosts — `*/View/*.cs`
-- [ ] **RFCT-02**: `CombatLogsMonitor` is constructible in any build configuration (no `#if RELEASE/#elif DEBUG` gap that leaves `Instance` undefined); construction prefers DI over a hard-coded singleton — `Monitor/CombatLogsMonitor.cs:15-20`
+- [x] **RFCT-02**: `CombatLogsMonitor` is constructible in any build configuration (no `#if RELEASE/#elif DEBUG` gap that leaves `Instance` undefined); construction prefers DI over a hard-coded singleton — `Monitor/CombatLogsMonitor.cs:15-20`
 - [ ] **RFCT-03**: The static caches use content-based keys (not `ReadOnlyMemory<char>.GetHashCode()`) and have bounded growth — `CombatLogs.cs:8-9`, `Action.cs:47-53`, `GameObject.cs:103-108`, `Ability.cs:15-18`
 
 ### Performance (PERF)
@@ -42,7 +42,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 ### Test Coverage (TEST)
 
-- [ ] **TEST-01**: Automated tests cover `CombatLogsMonitor` lifecycle (start/stop/cancellation) and the Rx pipeline
+- [x] **TEST-01**: Automated tests cover `CombatLogsMonitor` lifecycle (start/stop/cancellation) and the Rx pipeline
 - [ ] **TEST-02**: Automated tests cover the DPS/HPS math — `CombatLogsMonitor.cs:70-100`
 - [x] **TEST-03**: Parser edge-case tests exist for malformed lines, locale-formatted numbers/dates, and delimiter characters inside names
 
@@ -70,7 +70,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | BUG-06 | Phase 2 | Complete |
 | BUG-07 | Phase 2 | Complete |
 | RFCT-01 | Phase 3 | Pending |
-| RFCT-02 | Phase 3 | Pending |
+| RFCT-02 | Phase 3 | Complete |
 | RFCT-03 | Phase 3 | Pending |
 | PERF-01 | Phase 4 | Pending |
 | PERF-02 | Phase 4 | Pending |
@@ -80,7 +80,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | DEP-03 | Phase 5 | Pending |
 | INFRA-01 | Phase 6 | Pending |
 | INFRA-02 | Phase 5 | Pending |
-| TEST-01 | Phase 3 | Pending |
+| TEST-01 | Phase 3 | Complete |
 | TEST-02 | Phase 3 | Pending |
 | TEST-03 | Phase 1 | Complete |
 
