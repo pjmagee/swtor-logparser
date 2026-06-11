@@ -1,4 +1,4 @@
-﻿using SwtorLogParser.Model;
+using SwtorLogParser.Model;
 
 namespace SwtorLogParser.Monitor;
 
@@ -13,7 +13,17 @@ public sealed class CombatLog
 
     public override string ToString()
     {
-        var count = GetLogLines().Count;
+        // PERF-01: report the line count WITHOUT constructing CombatLogLine objects (no Parse).
+        // Locked count semantics: the number of NON-EMPTY lines (matching the old empty-line skip),
+        // computed by the same offset-tracking splitter GetLogLines() uses — one source of truth.
+        var text = ReadAllText();
+
+        var count = 0;
+        foreach (var (_, length) in EnumerateLineSpans(text))
+        {
+            if (length > 0) count++;
+        }
+
         return $"{FileInfo.Name}: {count}";
     }
 
@@ -21,21 +31,55 @@ public sealed class CombatLog
     {
         var items = new List<CombatLogLine>();
 
-        using (var stream = FileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-        {
-            using (var reader = new StreamReader(stream, System.Text.Encoding.Latin1))
-            {
-                var span = reader.ReadToEnd().AsSpan();
+        // Single heap string from ReadToEnd() — GC-rooted via the slices held by the returned list,
+        // so every AsMemory window stays valid for the lifetime of the list (no use-after-free).
+        var text = ReadAllText();
 
-                foreach (var line in span.EnumerateLines())
-                {
-                    if (line.IsEmpty) continue;
-                    var combatLogLine = CombatLogLine.Parse(new ReadOnlyMemory<char>(line.ToArray()));
-                    if (combatLogLine is not null) items.Add(combatLogLine);
-                }
-            }
+        foreach (var (start, length) in EnumerateLineSpans(text))
+        {
+            if (length == 0) continue; // skip empty lines (matches the old `if (line.IsEmpty) continue;`)
+
+            // Zero-copy: slice a window into the single backing string — NO per-line char[] copy.
+            var rom = text.AsMemory(start, length);
+            var combatLogLine = CombatLogLine.Parse(rom);
+            if (combatLogLine is not null) items.Add(combatLogLine);
         }
 
         return items;
+    }
+
+    private string ReadAllText()
+    {
+        // BUG-07 (locked): least-privilege read access while keeping FileShare.ReadWrite so the live
+        // SWTOR writer is never blocked. Latin1 encoding is the established decode for these logs.
+        using var stream = FileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream, System.Text.Encoding.Latin1);
+        return reader.ReadToEnd();
+    }
+
+    // Single offset-tracking line splitter — the ONE source of truth for both ToString()'s count and
+    // GetLogLines()'s slices. Reproduces MemoryExtensions.EnumerateLines for the terminators these
+    // logs use: '\r\n' is ONE break, bare '\r' and bare '\n' each break; the terminator is EXCLUDED
+    // from every emitted span (no trailing '\r'). Indices are bounded by construction (within text).
+    private static IEnumerable<(int Start, int Length)> EnumerateLineSpans(string text)
+    {
+        var i = 0;
+        var n = text.Length;
+
+        while (i < n)
+        {
+            var start = i;
+            while (i < n && text[i] != '\r' && text[i] != '\n') i++;
+
+            yield return (start, i - start); // terminator excluded
+
+            if (i < n)
+            {
+                if (text[i] == '\r' && i + 1 < n && text[i + 1] == '\n')
+                    i += 2; // CRLF counts as a single break
+                else
+                    i += 1; // bare '\r' or bare '\n'
+            }
+        }
     }
 }
