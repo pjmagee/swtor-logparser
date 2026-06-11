@@ -1,27 +1,30 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using SwtorLogParser.Monitor;
+using CoreList = SwtorLogParser.View.SlidingExpirationList;
 using Timer = System.Threading.Timer;
 
 namespace SwtorLogParser.Overlay.View;
 
 /*
  * In WinForms, it supports IBindingList<T>
- * We inherit from the basic BindingList<T> and add auto removal logic using the Timer class
+ * We inherit from the basic BindingList<T> to bind to the DataGridView.
+ *
+ * The add/update bookkeeping and the sliding-expiration logic live in exactly ONE place:
+ * the UI-free core list (SwtorLogParser.View.SlidingExpirationList). This WinForms adapter
+ * COMPOSES that core list and only owns the host-side concern: projecting the core's
+ * PlayerStats into display Entry rows and refreshing the DataGridView on a render timer.
  */
 public class SlidingExpirationList : BindingList<Entry>
 {
     private static readonly object Lock = new();
-    private readonly TimeSpan _expirationTime;
-    private readonly Timer _expirationTimer;
+    private readonly CoreList _core;
     private readonly Timer _renderTimer;
     private readonly Control _control;
-    private readonly List<Entry> _list = new();
 
     public SlidingExpirationList(Control control, TimeSpan expirationTime)
     {
         _control = control;
-        _expirationTime = expirationTime;
-        _expirationTimer = new Timer(RemoveExpiredItems, null, expirationTime, expirationTime);
+        _core = new CoreList(expirationTime);
         _renderTimer = new Timer(Redraw, null, 1000, 1000);
     }
 
@@ -32,58 +35,24 @@ public class SlidingExpirationList : BindingList<Entry>
 
     public void AddOrUpdate(CombatLogsMonitor.PlayerStats item)
     {
-        lock (Lock)
-        {
-            Entry? entry = _list.Find(x => x.Stats.Player.Id == item.Player.Id);
-
-            if (entry is null)
-            {
-                _list.Add(new Entry { Stats = item, Expiration = DateTime.Now.Add(_expirationTime) });
-            }
-            else
-            {
-                entry.Stats = item;
-                entry.Expiration = DateTime.Now.Add(_expirationTime);
-            }
-                
-            _list.Sort();
-        }
+        _core.AddOrUpdate(item);
     }
 
     private void Refresh()
     {
         lock (Lock)
         {
+            var stats = _core.Items
+                .OrderBy(x => x.Player.Name, StringComparer.Ordinal)
+                .ToList();
+
             ClearItems();
-            for (var index = 0; index < _list.Count; index++)
+            for (var index = 0; index < stats.Count; index++)
             {
-                var item = _list[index];
-                InsertItem(index, item);
+                InsertItem(index, new Entry { Stats = stats[index] });
             }
-        
+
             _control.Refresh();
         }
-    }
-
-    private void RemoveExpiredItems(object? state)
-    {
-        lock (Lock)
-        {
-            var expiredItems = new List<Entry>();
-                
-            foreach (var item in _list)
-            {
-                if (item.Expiration <= DateTime.Now)
-                    expiredItems.Add(item);
-            }
-
-            foreach (var item in expiredItems)
-            {
-                _list.Remove(item);
-            }
-
-            _list.Sort();
-        }
-        
     }
 }
