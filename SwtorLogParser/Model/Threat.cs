@@ -9,9 +9,9 @@ public class Threat
 
     private ReadOnlyMemory<char> Rom { get; }
 
-    public bool IsPositive => Value >= 0;
-    public bool IsNegative => Value < 0;
-    public int Value => int.Parse(Rom.Span);
+    public bool IsPositive => Value is >= 0;
+    public bool IsNegative => Value is < 0;
+    public int? Value => int.TryParse(Rom.Span, out var v) ? v : (int?)null;
 
     public override string ToString()
     {

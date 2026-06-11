@@ -60,14 +60,14 @@ public class ThreatTests
         Assert.Null(Threat.Parse(raw.AsMemory()));
     }
 
-    // BUG-05 (Pattern E, LAZY throw): scope "abc" passes the non-'v' guard so Parse returns a
-    // non-null Threat; the int.Parse (Threat.cs:14) is deferred to .Value access and throws on
-    // non-numeric scope. Phase 2 (TryParse) inverts this to a graceful value.
+    // BUG-05 (Pattern E): scope "abc" passes the non-'v' guard so Parse returns a non-null
+    // Threat; the int.TryParse (Threat.cs) reads non-numeric scope as null instead of throwing.
+    // Phase 2: now graceful (BUG-05) — Value is int?.
     [Fact]
-    public void Threat_NonNumeric_Value_Throws_On_Access_Today()
+    public void Threat_NonNumeric_Value_Returns_Null()
     {
         var threat = Threat.Parse("<abc>".AsMemory());
         Assert.NotNull(threat); // Parse is LAZY — "abc" passes the non-'v' guard, returns non-null
-        Assert.Throws<FormatException>(() => _ = threat.Value); // int.Parse("abc") at Threat.cs:14
+        Assert.Null(threat.Value); // int.TryParse("abc") fails -> null (was FormatException)
     }
 }
