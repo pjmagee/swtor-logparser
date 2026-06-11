@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="arm64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SwtorLogParser.Cli/SwtorLogParser.Cli.csproj" />
+  <Project Path="SwtorLogParser.Native.Cli/SwtorLogParser.Native.Cli.csproj" />
+  <Project Path="SwtorLogParser.Overlay/SwtorLogParser.Overlay.csproj" />
+  <Project Path="SwtorLogParser.Tests/SwtorLogParser.Tests.csproj" />
+  <Project Path="SwtorLogParser/SwtorLogParser.csproj" />
+</Solution>

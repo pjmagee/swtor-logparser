@@ -1,0 +1,11 @@
+{
+  "[csharp]": {
+    "editor.defaultFormatter": "csharpier.csharpier-vscode"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "csharpier.csharpier-vscode"
+  },
+  "Workspace_Formatter.saveAfterFormat": true,
+  "csharpier.enableDiagnostics": true,
+  "csharpier.diagnosticsLevel": "1"
+}

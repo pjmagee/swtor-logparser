@@ -11,12 +11,15 @@ public class CombatLogsMonitor
 {
     private readonly ILogger<CombatLogsMonitor> _logger;
 
-
 #if RELEASE
     public static CombatLogsMonitor Instance { get; } = new(NullLogger<CombatLogsMonitor>.Instance);
 #elif DEBUG
     public static CombatLogsMonitor Instance { get; } =
- new(LoggerFactory.Create(x => x.ClearProviders().AddConsole().AddDebug()).CreateLogger<CombatLogsMonitor>());
+        new(
+            LoggerFactory
+                .Create(x => x.ClearProviders().AddConsole().AddDebug())
+                .CreateLogger<CombatLogsMonitor>()
+        );
 #endif
 
     private Task? _monitor;
@@ -26,44 +29,48 @@ public class CombatLogsMonitor
     public event EventHandler<CombatLogLine>? CombatLogChanged;
     public event EventHandler<CombatLog>? CombatLogAdded;
 
-    public bool IsRunning => _monitor is { IsCompleted: false } && _reader is { IsCompleted: false };
+    public bool IsRunning =>
+        _monitor is { IsCompleted: false } && _reader is { IsCompleted: false };
 
     private Subject<CombatLogLine> CombatLogLines { get; } = new Subject<CombatLogLine>();
 
     private DateTime? _lastWriteTime;
     private string? _lastFileName;
     public IObservable<PlayerStats> DpsHps { get; private set; }
-    
+
     private static readonly CombatLogLineComparer CombatLogLineComparer = new();
 
     private CombatLogsMonitor()
     {
         ConfigureObservables();
     }
-    
+
     private void ConfigureObservables()
     {
         DpsHps = CombatLogLines
-            
             .Where(x => x.TimeStamp > DateTime.Now.AddSeconds(-10))
             .Where(x => x.Source is not null && x.Source.Name is not null)
             .GroupBy(x => x.Source?.Name)
-            .SelectMany(g => g
-                .Where(l => l.IsPlayerDamage() || l.IsPlayerHeal())
-                .DistinctUntilChanged()
-                .Scan(new HashSet<CombatLogLine>(CombatLogLineComparer), Accumulator)
-                .Select(CalculateDpsHpsStats));
+            .SelectMany(g =>
+                g.Where(l => l.IsPlayerDamage() || l.IsPlayerHeal())
+                    .DistinctUntilChanged()
+                    .Scan(new HashSet<CombatLogLine>(CombatLogLineComparer), Accumulator)
+                    .Select(CalculateDpsHpsStats)
+            );
     }
-    
+
     private static object Lock = new object();
 
-    private HashSet<CombatLogLine> Accumulator(HashSet<CombatLogLine> state, CombatLogLine combatLog)
+    private HashSet<CombatLogLine> Accumulator(
+        HashSet<CombatLogLine> state,
+        CombatLogLine combatLog
+    )
     {
         lock (Lock)
         {
             state.RemoveWhere(line => line.TimeStamp < combatLog.TimeStamp.AddSeconds(-10));
             state.Add(combatLog);
-            return state;    
+            return state;
         }
     }
 
@@ -71,17 +78,18 @@ public class CombatLogsMonitor
     {
         // Oldest to latest
         var items = state.OrderBy(x => x.TimeStamp.TimeOfDay).ToList();
-        
+
         var heals = items.Where(pe => pe.IsPlayerHeal()).ToList();
         var damage = items.Where(pe => pe.IsPlayerDamage()).ToList();
 
-        var timeSpan = items.Count > 1 ? (items[^1].TimeStamp - items[0].TimeStamp) : TimeSpan.FromSeconds(1);
+        var timeSpan =
+            items.Count > 1 ? (items[^1].TimeStamp - items[0].TimeStamp) : TimeSpan.FromSeconds(1);
 
         int damageTotal = damage.Sum(pe => pe.Value!.Total);
         int healTotal = heals.Sum(pe => pe.Value!.Total);
 
-        double dpsCrit = (double) damage.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
-        double hpsCrit = (double) heals.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
+        double dpsCrit = (double)damage.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
+        double hpsCrit = (double)heals.Count(pe => pe.Value!.IsCritical) / state.Count * 100;
 
         double? dps = damage.Count > 0 ? damageTotal / timeSpan.TotalSeconds : null;
         double? hps = heals.Count > 0 ? healTotal / timeSpan.TotalSeconds : null;
@@ -95,18 +103,21 @@ public class CombatLogsMonitor
             DPS = dps,
             HPS = hps,
             DPSCritP = dpsCritP,
-            HPSCritP = hpsCritP
+            HPSCritP = hpsCritP,
         };
     }
 
-    private CombatLogsMonitor(ILogger<CombatLogsMonitor> logger) : this()
+    private CombatLogsMonitor(ILogger<CombatLogsMonitor> logger)
+        : this()
     {
         _logger = logger;
     }
 
     public void Start(CancellationToken cancellationToken)
     {
-        _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken
+        );
         _monitor = Task.Factory.StartNew(() => MonitorAsync(cancellationToken), cancellationToken);
         _reader = Task.Factory.StartNew(() => ReadAsync(cancellationToken), cancellationToken);
     }
@@ -143,7 +154,7 @@ public class CombatLogsMonitor
 
                     if (fileStream is not null)
                         await fileStream.DisposeAsync();
-                    
+
                     streamReader?.Dispose();
                     fileStream = null;
                     streamReader = null;
@@ -151,11 +162,17 @@ public class CombatLogsMonitor
                     _logger.LogDebug("current: {Current}. position: {Position}", current, position);
                 }
 
-                if (string.IsNullOrWhiteSpace(current)) continue;
+                if (string.IsNullOrWhiteSpace(current))
+                    continue;
 
                 if (fileStream is null)
                 {
-                    fileStream = new FileStream(current, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    fileStream = new FileStream(
+                        current,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.ReadWrite
+                    );
                     fileStream.Seek(position, SeekOrigin.Begin);
                 }
 
@@ -169,10 +186,10 @@ public class CombatLogsMonitor
 
                         if (item is not null)
                         {
-                            CombatLogLines.OnNext(item);                   
+                            CombatLogLines.OnNext(item);
                             CombatLogChanged?.Invoke(this, item);
                         }
-                            
+
                         position = streamReader.BaseStream.Position;
                     }
                     catch (Exception e)
