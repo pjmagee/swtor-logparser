@@ -18,31 +18,35 @@ public class DpsHpsMathTests
     // Build a player-damage line whose timestamp is a controlled time-of-day so deltas between
     // lines are exact. Distinct text per line keeps each CombatLogLine distinct in the HashSet
     // (CombatLogLineComparer hashes on the raw Rom content).
+    // Crit is encoded as a `*` inside the value parentheses (CombatLogs.Critical = "*"), e.g.
+    // `(1000*)`. A distinct trailing threat keeps each raw line distinct in the HashSet.
     private static CombatLogLine DamageLine(string time, int value, bool critical)
     {
-        var crit = critical ? " <3880>" : string.Empty;
+        var crit = critical ? "*" : string.Empty;
         var raw =
             $"[{time}] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] "
             + "[Progressive Scan {3394132265402368}] "
-            + $"[ApplyEffect {{836045448945477}}: Damage {{836045448945501}}] ({value}){crit}";
+            + $"[ApplyEffect {{836045448945477}}: Damage {{836045448945501}}] ({value}{crit})";
 
         var line = CombatLogLine.Parse(raw.AsMemory());
         Assert.NotNull(line);
         Assert.True(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
+        Assert.Equal(critical, line.Value!.IsCritical);
         return line;
     }
 
     private static CombatLogLine HealLine(string time, int value, bool critical)
     {
-        var crit = critical ? " <3880>" : string.Empty;
+        var crit = critical ? "*" : string.Empty;
         var raw =
             $"[{time}] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] "
             + "[Progressive Scan {3394132265402368}] "
-            + $"[ApplyEffect {{836045448945477}}: Heal {{836045448945500}}] ({value}){crit}";
+            + $"[ApplyEffect {{836045448945477}}: Heal {{836045448945500}}] ({value}{crit})";
 
         var line = CombatLogLine.Parse(raw.AsMemory());
         Assert.NotNull(line);
         Assert.True(line!.IsPlayerHeal(), "test line must satisfy IsPlayerHeal()");
+        Assert.Equal(critical, line.Value!.IsCritical);
         return line;
     }
 

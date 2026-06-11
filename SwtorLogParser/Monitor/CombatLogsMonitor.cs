@@ -64,7 +64,11 @@ public class CombatLogsMonitor
 
     private static readonly object Lock = new();
 
-    private HashSet<CombatLogLine> Accumulator(
+    // TEST-02 seam: internal (was private) so DpsHpsMathTests can call the DPS/HPS math directly
+    // via the existing InternalsVisibleTo(SwtorLogParser.Tests) grant — this bypasses the
+    // DateTime.Now Where filter in the Rx pipeline for deterministic assertions. VISIBILITY-ONLY
+    // change: the lock, the 10s RemoveWhere, and the body are byte-identical to before.
+    internal HashSet<CombatLogLine> Accumulator(
         HashSet<CombatLogLine> state,
         CombatLogLine combatLog
     )
@@ -77,7 +81,10 @@ public class CombatLogsMonitor
         }
     }
 
-    private PlayerStats CalculateDpsHpsStats(HashSet<CombatLogLine> state)
+    // TEST-02 seam: internal (was private) so DpsHpsMathTests can assert DPS/HPS/crit% against
+    // known inputs directly. VISIBILITY-ONLY change: crit% formula, order-by-TimeOfDay, and the
+    // null-on-zero/infinity logic are unchanged.
+    internal PlayerStats CalculateDpsHpsStats(HashSet<CombatLogLine> state)
     {
         // Oldest to latest
         var items = state.OrderBy(x => x.TimeStamp.TimeOfDay).ToList();
