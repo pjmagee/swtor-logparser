@@ -16,7 +16,12 @@ public class Ability : GameObject
             return (Ability?)value;
 
         var ability = new Ability(rom);
-        CombatLogs.GameObjectCache.Add(ability.GetHashCode(), ability);
-        return ability;
+
+        var key = ability.GetHashCode();
+        if (CombatLogs.GameObjectCache.TryAdd(key, ability))
+            return ability;
+
+        // Another thread won the race for this key — return the cached instance.
+        return CombatLogs.GameObjectCache.TryGetValue(key, out var existing) ? (Ability?)existing : ability;
     }
 }

@@ -50,8 +50,13 @@ public class Action : IEquatable<Action>
             try
             {
                 var action = new Action(rom);
-                CombatLogs.ActionCache.Add(action.GetHashCode(), action);
-                return action;
+
+                var key = action.GetHashCode();
+                if (CombatLogs.ActionCache.TryAdd(key, action))
+                    return action;
+
+                // Another thread won the race for this key — return the cached instance.
+                return CombatLogs.ActionCache.TryGetValue(key, out var existing) ? existing : action;
             }
             catch (Exception e)
             {

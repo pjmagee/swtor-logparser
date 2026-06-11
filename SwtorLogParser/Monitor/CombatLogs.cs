@@ -1,12 +1,13 @@
-﻿using SwtorLogParser.Model;
+﻿using System.Collections.Concurrent;
+using SwtorLogParser.Model;
 using Action = SwtorLogParser.Model.Action;
 
 namespace SwtorLogParser.Monitor;
 
 public static class CombatLogs
 {
-    internal static readonly Dictionary<int, Action> ActionCache = new();
-    internal static readonly Dictionary<int, GameObject> GameObjectCache = new();
+    internal static readonly ConcurrentDictionary<int, Action> ActionCache = new();
+    internal static readonly ConcurrentDictionary<int, GameObject> GameObjectCache = new();
 
     private static readonly string LogsPath =
         Path.Combine(

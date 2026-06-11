@@ -105,8 +105,13 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 
         var gameObject = new GameObject(rom);
         if (gameObject.Id == null) return null;
-        CombatLogs.GameObjectCache.Add(gameObject.GetHashCode(), gameObject);
-        return gameObject;
+
+        var key = gameObject.GetHashCode();
+        if (CombatLogs.GameObjectCache.TryAdd(key, gameObject))
+            return gameObject;
+
+        // Another thread won the race for this key — return the cached instance.
+        return CombatLogs.GameObjectCache.TryGetValue(key, out var existing) ? existing : gameObject;
     }
 
     public override string ToString()
