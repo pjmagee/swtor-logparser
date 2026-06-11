@@ -21,8 +21,17 @@ public static class CombatLogs
 
     static CombatLogs()
     {
-        PlayerNames = SettingsDirectory.EnumerateFiles("*PlayerGUIState.ini").Select(x => x.Name.Split('_')[1])
+        PlayerNames = SettingsDirectory.EnumerateFiles("*PlayerGUIState.ini")
+            .Select(x => SecondSegmentOrNull(x.Name))
+            .Where(n => n is not null)
+            .Select(n => n!)
             .ToHashSet();
+    }
+
+    internal static string? SecondSegmentOrNull(string fileName)
+    {
+        var parts = fileName.Split('_');
+        return parts.Length > 1 ? parts[1] : null;
     }
 
     internal static DirectoryInfo CombatLogsDirectory { get; } = new(LogsPath);
