@@ -89,10 +89,30 @@ public static class Program
 
     private static void OnCombatLogAdded(object? _, CombatLog combatLog)
     {
-        Console.SetCursorPosition(0, 0);
-        Console.Write(new string(' ', Console.WindowWidth - 1));
-        Console.SetCursorPosition(0, 0);
-        Console.Write(combatLog.FileInfo);
+        // Redirected output (e.g. piped to a file) has no cursor buffer — SetCursorPosition /
+        // WindowWidth throw or misbehave. Fall back to a plain write that never touches cursor
+        // state (mirrors the guard in Update).
+        if (Console.IsOutputRedirected)
+        {
+            Console.WriteLine(combatLog.FileInfo);
+            return;
+        }
+
+        // This runs on the Rx subscription thread; a console window resize between reading
+        // WindowWidth and the SetCursorPosition calls can push us out of bounds. Swallow the
+        // transient resize failure so it does not tear down the subscription.
+        try
+        {
+            int width = Math.Max(1, Console.WindowWidth - 1);
+            Console.SetCursorPosition(0, 0);
+            Console.Write(new string(' ', width));
+            Console.SetCursorPosition(0, 0);
+            Console.Write(combatLog.FileInfo);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentOutOfRangeException)
+        {
+            // Transient console resize/buffer state — skip this header refresh.
+        }
     }
 
     private static void ListCombatLogs()
