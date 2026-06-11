@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-06-11T23:13:29.119Z"
+last_updated: "2026-06-11T23:17:28.968Z"
 last_activity: 2026-06-11 -- Phase 02 Plan 01 executed
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   percent: 50
 ---
 
@@ -63,6 +63,7 @@ Progress: [███████░░░] 67%
 | Phase 03 P03 | 8min | 2 tasks | 9 files |
 | Phase 03 P04 | 7min | 1 tasks | 2 files |
 | Phase 03 P05 | 6min | 2 tasks | 6 files |
+| Phase 04 P01 | 9min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Action.GetHashCode left unchanged per Pitfall 3 (RFCT-03 scope is the cache KEY, not GetHashCode)
 - [Phase ?]: [Phase 03]: TEST-02 tests Accumulator + CalculateDpsHpsStats directly via InternalsVisibleTo (made internal) to bypass the DateTime.Now Where filter for deterministic DPS/HPS/crit% + 10s window assertions; no IClock/TimeProvider, no behavior change (PERF-03 stays Phase 4)
 - [Phase ?]: [Phase 03]: TEST-01/02 CI-readiness via injectable ICombatLogSource seam behind the static CombatLogs facade; deferred tests rewritten hermetic over in-memory fixtures (no real SWTOR folders, no TypeInitializationException)
+- [Phase ?]: PERF-01: ToString() count semantics locked to non-empty lines (diagnostic-only, not test-pinned)
+- [Phase ?]: PERF-01: zero-copy line slices via string.AsMemory into the single ReadToEnd() backing string; one shared offset-tracking splitter for count + slices
 
 ### Pending Todos
 
@@ -109,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T22:27:39.341Z
+Last session: 2026-06-11T23:17:10.322Z
 Stopped at: Completed 03-03-PLAN.md
 Resume file: None
