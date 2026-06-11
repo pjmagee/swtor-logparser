@@ -1,5 +1,6 @@
 ﻿using SwtorLogParser.Model;
 using SwtorLogParser.Monitor;
+using SwtorLogParser.Tests.Fixtures;
 
 namespace SwtorLogParser.Tests;
 
@@ -22,17 +23,33 @@ public class ActorTests
         Assert.Equal((4641.05f, 4529.71f, 694.02f, -124.45f), actor.Position);
     }
 
+    // Phase 3 Plan 05 (TEST-02): HERMETIC. Previously this iterated CombatLogs.PlayerNames
+    // sourced from the REAL %LocalAppData% settings folder (empty / threw without it). It now
+    // installs an in-memory source with a KNOWN PlayerNames set, asserts IsLocalPlayer against
+    // it, and restores the default source in finally. Passes deterministically with NO real
+    // settings folder present.
     [Fact]
     public void Player_Is_Local_Is_True()
     {
-        foreach (var name in CombatLogs.PlayerNames)
+        using var fixture = new InMemoryCombatLogSource(new HashSet<string> { "Aegrae" });
+        CombatLogs.SetSource(fixture);
+        try
         {
-            var actor = Actor.Parse(
-                $"@{name}#{Random.Shared.Next(1000000000)}|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
+            Assert.NotEmpty(CombatLogs.PlayerNames);
 
-            Assert.NotNull(actor);
-            Assert.True(actor.IsPlayer);
-            Assert.True(actor.IsLocalPlayer);
+            foreach (var name in CombatLogs.PlayerNames)
+            {
+                var actor = Actor.Parse(
+                    $"@{name}#{Random.Shared.Next(1000000000)}|(4641.05,4529.71,694.02,-124.45)|(1/401177)".AsMemory());
+
+                Assert.NotNull(actor);
+                Assert.True(actor.IsPlayer);
+                Assert.True(actor.IsLocalPlayer);
+            }
+        }
+        finally
+        {
+            CombatLogs.ResetSource();
         }
     }
 
