@@ -138,4 +138,25 @@ public class ValueTests
         var value = Value.Parse("(he)".AsMemory());
         Assert.Null(value);
     }
+
+    // Pattern C (guard-null matrix, green today): Value.Parse rejects cleanly for the HeroEngine
+    // prefix and for input with no '(' / ')' (Value.cs:64-70). Extends HeroEnginePrefix_Is_Not_Parsed.
+    [Theory]
+    [InlineData("(he)")]       // HeroEngine prefix guard
+    [InlineData("no parens")]  // no '(' / ')' -> start/end == -1 guard
+    public void Value_Parse_Rejects_Cleanly(string raw)
+    {
+        Assert.Null(Value.Parse(raw.AsMemory()));
+    }
+
+    // BUG-05 (Pattern E, LAZY throw): Parse guards pass (parens present, not HeroEngine), so a
+    // non-null Value is returned; the ulong.Parse of the brace content (Value.cs:47) is deferred
+    // to .Id access and throws on non-numeric content. Phase 2 (TryParse) inverts to graceful.
+    [Fact]
+    public void Value_NonNumeric_Id_Throws_On_Access_Today()
+    {
+        var value = Value.Parse("(123 {abc})".AsMemory());
+        Assert.NotNull(value); // Parse is LAZY — guards pass, returns non-null
+        Assert.Throws<FormatException>(() => _ = value.Id); // ulong.Parse("abc") at Value.cs:47
+    }
 }
