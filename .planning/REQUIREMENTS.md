@@ -44,7 +44,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 - [ ] **TEST-01**: Automated tests cover `CombatLogsMonitor` lifecycle (start/stop/cancellation) and the Rx pipeline
 - [ ] **TEST-02**: Automated tests cover the DPS/HPS math — `CombatLogsMonitor.cs:70-100`
-- [ ] **TEST-03**: Parser edge-case tests exist for malformed lines, locale-formatted numbers/dates, and delimiter characters inside names
+- [x] **TEST-03**: Parser edge-case tests exist for malformed lines, locale-formatted numbers/dates, and delimiter characters inside names
 
 ## v2 Requirements
 
@@ -82,9 +82,10 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | INFRA-02 | Phase 5 | Pending |
 | TEST-01 | Phase 3 | Pending |
 | TEST-02 | Phase 3 | Pending |
-| TEST-03 | Phase 1 | Pending |
+| TEST-03 | Phase 1 | Complete |
 
 **Coverage:**
+
 - v1 requirements: 21 total
 - Mapped to phases: 21
 - Unmapped: 0 ✓
