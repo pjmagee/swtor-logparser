@@ -80,7 +80,19 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Automated tests cover monitor Start/Stop lifecycle transitions (including the cancellation wiring fixed in Phase 2) and assert that the Rx Subject receives lines after Start and stops receiving them after Stop
   5. Automated tests verify DPS/HPS arithmetic against known inputs and sliding-window expiry behavior
 
-**Plans**: TBD
+**Plans**: 5 plans (Wave 1: 03-01, 03-02 parallel; Wave 2: 03-03, 03-04, 03-05 — sequenced after wave 1, no intra-wave file overlap)
+
+- [ ] 03-01-PLAN.md — RFCT-02 unconditional NullLogger Instance + public DI ctor + internal push seam; TEST-01 monitor Start/Stop/Rx-delivery lifecycle tests
+- [ ] 03-02-PLAN.md — RFCT-03 in-repo BoundedCache + content (rom.ToString()) keys + separate per-type caches (fixes Ability/GameObject cast bug) + cache dedup/concurrency/cap tests
+- [ ] 03-03-PLAN.md — RFCT-01 promote UI-free Entry/SlidingExpirationList to core SwtorLogParser.View, delete CLI/Native duplicates, Overlay adapter composes the core expiry logic (no WinForms in core)
+- [ ] 03-04-PLAN.md — TEST-02 make Accumulator/CalculateDpsHpsStats internal (behavior-preserving) + deterministic DPS/HPS/crit%/10s-window tests (bypass DateTime.Now)
+- [ ] 03-05-PLAN.md — Filesystem hermeticity: ICombatLogSource seam + Directory.Exists guard behind the static CombatLogs facade; make All_Logs_Are_Not_Null + Player_Is_Local_Is_True hermetic/CI-safe
+
+**Cross-cutting constraints:**
+
+- dotnet test GREEN with zero skips after EVERY commit (77 baseline, growing with TEST-01/02); after RFCT-01 and RFCT-02 also `dotnet build SwtorLogParser.slnx` succeeds
+- Core lib `SwtorLogParser` stays `IsAotCompatible=true` — NO reflection, NO DI container, NO WinForms types in the core lib
+- The live `IObservable<PlayerStats>` DpsHps behavior and all 3 hosts must behave IDENTICALLY after
 
 ### Phase 4: Performance
 
@@ -132,7 +144,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 |-------|----------------|--------|-----------|
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
-| 3. Monitor Refactor + Coverage | 0/? | Not started | - |
+| 3. Monitor Refactor + Coverage | 0/5 | Planned | - |
 | 4. Performance | 0/? | Not started | - |
 | 5. Dependency Upgrades | 0/? | Not started | - |
 | 6. CI Pipeline | 0/? | Not started | - |
