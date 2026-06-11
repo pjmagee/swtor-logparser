@@ -105,7 +105,17 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The Native CLI host renders updates without calling `Console.Clear()` per event — existing displayed rows are updated or overwritten in-place, eliminating the full-screen repaint flicker
   3. The stats accumulator's sliding-window update does not re-sort or re-scan the entire window collection on every incoming line; incremental maintenance replaces the full-scan loop
 
-**Plans**: TBD
+**Plans**: 3 plans (all Wave 1 — parallel; PERF-01/02/03 each own a different production file, no overlap; each plan writes Wave-0 tests FIRST, then its optimization. Executors run sequentially on the main tree.)
+
+- [ ] 04-01-PLAN.md — PERF-01: offset-tracking splitter + zero-copy `AsMemory` line slices + parse-free `ToString()` count in CombatLog.cs; Wave-0 read/slice + EnumerateLines-parity tests
+- [ ] 04-02-PLAN.md — PERF-02: Native CLI `Update()` in-place cursor render (no `Console.Clear()`), IsOutputRedirected guard + width/height clamps + vacated-row clearing; manual flicker checkpoint (no automated console test)
+- [ ] 04-03-PLAN.md — PERF-03: single-pass `CalculateDpsHpsStats` (drop OrderBy + 6 LINQ passes) with identical output; Wave-0 `Single_Line_Uses_OneSecond_Window` edge test; Accumulator + DateTime.Now filter untouched
+
+**Cross-cutting constraints:**
+
+- PURE perf refactors — OUTPUT IDENTICAL, ZERO behavior change. `dotnet test` GREEN with zero skips after EVERY commit (102 baseline + Wave-0 additions); `DpsHpsMathTests` pass UNCHANGED (PERF-03)
+- Core lib `SwtorLogParser` stays `IsAotCompatible=true` — no reflection added; `dotnet build SwtorLogParser.slnx` succeeds
+- Do NOT touch the `DateTime.Now` window filter (IN-01, deferred), the Accumulator body, or the managed CLI renderer (Phase 5)
 
 ### Phase 5: Dependency Upgrades
 
@@ -145,6 +155,6 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
 | 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
-| 4. Performance | 0/? | Not started | - |
+| 4. Performance | 0/3 | Planned | - |
 | 5. Dependency Upgrades | 0/? | Not started | - |
 | 6. CI Pipeline | 0/? | Not started | - |
