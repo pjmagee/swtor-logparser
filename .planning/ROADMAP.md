@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes (completed 2026-06-11)
 - [x] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode) (completed 2026-06-11)
-- [ ] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests
+- [x] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests (completed 2026-06-11)
 - [ ] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line
 - [ ] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha
 - [ ] **Phase 6: CI Pipeline** - Add GitHub Actions build + test pipeline and remove the misleading DockerDefaultTargetOS=Linux
@@ -86,7 +86,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] 03-02-PLAN.md — RFCT-03 in-repo BoundedCache + content (rom.ToString()) keys + separate per-type caches (fixes Ability/GameObject cast bug) + cache dedup/concurrency/cap tests
 - [x] 03-03-PLAN.md — RFCT-01 promote UI-free Entry/SlidingExpirationList to core SwtorLogParser.View, delete CLI/Native duplicates, Overlay adapter composes the core expiry logic (no WinForms in core)
 - [x] 03-04-PLAN.md — TEST-02 make Accumulator/CalculateDpsHpsStats internal (behavior-preserving) + deterministic DPS/HPS/crit%/10s-window tests (bypass DateTime.Now)
-- [ ] 03-05-PLAN.md — Filesystem hermeticity: ICombatLogSource seam + Directory.Exists guard behind the static CombatLogs facade; make All_Logs_Are_Not_Null + Player_Is_Local_Is_True hermetic/CI-safe
+- [x] 03-05-PLAN.md — Filesystem hermeticity: ICombatLogSource seam + Directory.Exists guard behind the static CombatLogs facade; make All_Logs_Are_Not_Null + Player_Is_Local_Is_True hermetic/CI-safe
 
 **Cross-cutting constraints:**
 
@@ -144,7 +144,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 |-------|----------------|--------|-----------|
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
-| 3. Monitor Refactor + Coverage | 4/5 | In Progress|  |
+| 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
 | 4. Performance | 0/? | Not started | - |
 | 5. Dependency Upgrades | 0/? | Not started | - |
 | 6. CI Pipeline | 0/? | Not started | - |
