@@ -21,7 +21,7 @@ public sealed class CombatLog
     {
         var items = new List<CombatLogLine>();
 
-        using (var stream = FileInfo.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+        using (var stream = FileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
             using (var reader = new StreamReader(stream))
             {

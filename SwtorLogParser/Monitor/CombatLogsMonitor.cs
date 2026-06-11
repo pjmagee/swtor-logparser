@@ -24,7 +24,7 @@ public class CombatLogsMonitor
 
     private Task? _monitor;
     private Task? _reader;
-    private CancellationTokenSource _cancellationTokenSource;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public event EventHandler<CombatLogLine>? CombatLogChanged;
     public event EventHandler<CombatLog>? CombatLogAdded;
@@ -118,21 +118,22 @@ public class CombatLogsMonitor
         _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken
         );
-        _monitor = Task.Factory.StartNew(() => MonitorAsync(cancellationToken), cancellationToken);
-        _reader = Task.Factory.StartNew(() => ReadAsync(cancellationToken), cancellationToken);
+        var token = _cancellationTokenSource.Token;
+        _monitor = Task.Factory.StartNew(() => MonitorAsync(token), token);
+        _reader = Task.Factory.StartNew(() => ReadAsync(token), token);
     }
 
     public void Stop()
     {
         try
         {
-            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource?.Cancel();
             _monitor = null;
             _reader = null;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "_cancellationTokenSource.CancelAsync() failed");
+            _logger?.LogError(e, "_cancellationTokenSource.Cancel() failed");
         }
     }
 
