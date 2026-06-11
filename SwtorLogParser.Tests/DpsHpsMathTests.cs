@@ -162,4 +162,23 @@ public class DpsHpsMathTests
         Assert.Contains(newLine, state);
         Assert.Equal(2, state.Count);
     }
+
+    // PERF-03 Wave-0: lock the `state.Count <= 1 ⇒ timeSpan == TimeSpan.FromSeconds(1)` branch
+    // explicitly (previously only covered transitively). With a SINGLE line, the divisor is 1.0s,
+    // so DPS == the single line's value. The single-pass rewrite must preserve this exactly.
+    [Fact]
+    public void Single_Line_Uses_OneSecond_Window()
+    {
+        var monitor = NewMonitor();
+        var state = new HashSet<CombatLogLine>(new CombatLogLineComparer());
+
+        state = monitor.Accumulator(state, DamageLine("20:00:00.000", 1500, critical: false));
+
+        var stats = monitor.CalculateDpsHpsStats(state);
+
+        Assert.Single(state);
+        Assert.NotNull(stats.DPS);
+        Assert.Equal(1500d, stats.DPS!.Value, precision: 3); // one line => divisor is 1.0s => DPS == value
+        Assert.Null(stats.HPS); // no heals => null
+    }
 }
