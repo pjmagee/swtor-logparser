@@ -26,7 +26,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 ### Performance (PERF)
 
 - [x] **PERF-01**: `CombatLog` no longer re-parses the whole file just to count lines, and `GetLogLines()` avoids a `char[]` allocation per line — `Monitor/CombatLog.cs:16,28,33`
-- [ ] **PERF-02**: The Native CLI renders incrementally instead of `Console.Clear()` + full redraw per event — `Native.Cli/Program.cs:40-49`
+- [x] **PERF-02**: The Native CLI renders incrementally instead of `Console.Clear()` + full redraw per event — `Native.Cli/Program.cs:40-49`
 - [ ] **PERF-03**: The stats accumulator avoids re-scanning and re-sorting the entire window on every line — `CombatLogsMonitor.cs:58-100`
 
 ### Dependencies (DEP)
@@ -73,7 +73,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | RFCT-02 | Phase 3 | Complete |
 | RFCT-03 | Phase 3 | Complete |
 | PERF-01 | Phase 4 | Complete |
-| PERF-02 | Phase 4 | Pending |
+| PERF-02 | Phase 4 | Complete |
 | PERF-03 | Phase 4 | Pending |
 | DEP-01 | Phase 5 | Pending |
 | DEP-02 | Phase 5 | Pending |
