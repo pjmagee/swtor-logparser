@@ -14,8 +14,9 @@ public sealed class CombatLog
     public override string ToString()
     {
         // PERF-01: report the line count WITHOUT constructing CombatLogLine objects (no Parse).
-        // Locked count semantics: the number of NON-EMPTY lines (matching the old empty-line skip),
-        // computed by the same offset-tracking splitter GetLogLines() uses — one source of truth.
+        // Counts non-empty lines (NOT parse-filtered like the old GetLogLines().Count) — intentional
+        // per PERF-01 (no re-parse); the reported number may exceed the count of parseable combat
+        // lines. Uses the same offset-tracking splitter GetLogLines() uses — one source of truth.
         var text = ReadAllText();
 
         var count = 0;
@@ -58,9 +59,11 @@ public sealed class CombatLog
     }
 
     // Single offset-tracking line splitter — the ONE source of truth for both ToString()'s count and
-    // GetLogLines()'s slices. Reproduces MemoryExtensions.EnumerateLines for the terminators these
-    // logs use: '\r\n' is ONE break, bare '\r' and bare '\n' each break; the terminator is EXCLUDED
-    // from every emitted span (no trailing '\r'). Indices are bounded by construction (within text).
+    // GetLogLines()'s slices. Splits on '\r\n' (one break), bare '\r', and bare '\n' — the terminators
+    // SWTOR logs actually use; the terminator is EXCLUDED from every emitted span (no trailing '\r').
+    // Intentionally does NOT split on the exotic Unicode terminators (VT/FF/NEL/LS/PS) that
+    // MemoryExtensions.EnumerateLines treats as breaks, because Latin-1-decoded log content can
+    // legitimately contain those bytes (e.g. 0x85) inside names. Indices are bounded by construction.
     private static IEnumerable<(int Start, int Length)> EnumerateLineSpans(string text)
     {
         var i = 0;
