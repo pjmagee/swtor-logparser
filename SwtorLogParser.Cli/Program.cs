@@ -2,8 +2,8 @@
 using System.CommandLine.Invocation;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
-using SwtorLogParser.Cli.View;
 using SwtorLogParser.Monitor;
+using SwtorLogParser.View;
 
 namespace SwtorLogParser.Cli;
 

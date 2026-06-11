@@ -1,7 +1,7 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using SwtorLogParser.Monitor;
 
-namespace SwtorLogParser.Native.Cli.View;
+namespace SwtorLogParser.View;
 
 public class SlidingExpirationList
 {
