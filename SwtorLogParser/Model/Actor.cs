@@ -69,10 +69,13 @@ public class Actor
 
     private int? GetMaxHealth()
     {
-        if (IsEmpty) return null;
+        if (Roms.Count != 3) return null;
         var health = Roms[2].Span;
-        var maxStart = health.IndexOf('/') + 1;
+        var slash = health.IndexOf('/');
+        if (slash == -1) return null;
+        var maxStart = slash + 1;
         var maxLength = health.Length - maxStart - 1;
+        if (maxLength < 0) return null;
         return int.TryParse(Roms[2].Slice(maxStart, maxLength).Span, out var mh) ? mh : (int?)null;
     }
 

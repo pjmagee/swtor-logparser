@@ -121,4 +121,21 @@ public class ActorTests
         Assert.NotNull(a); // Parse is LAZY — succeeds
         Assert.Null(a.Id); // long.TryParse("abc") fails -> null (was FormatException)
     }
+
+    // HI-01 (completes BUG-05): a non-empty actor with fewer than 3 '|'-delimited sections
+    // is NOT IsEmpty, so the old GetMaxHealth (guarded only on IsEmpty) indexed Roms[2] and
+    // threw IndexOutOfRangeException. GetMaxHealth now bounds-checks (Roms.Count != 3 -> null)
+    // matching GetHealth, so .MaxHealth returns null instead of throwing.
+    [Theory]
+    [InlineData("@Name#123")]                       // 1 section
+    [InlineData("@Name#123|(0,0,0,0)")]             // 2 sections
+    [InlineData("NpcShort {3158140992356352}:55")]  // 1 non-'=' section (not IsEmpty)
+    public void Actor_Short_Sections_MaxHealth_Returns_Null_No_Throw(string raw)
+    {
+        var a = Actor.Parse(raw.AsMemory());
+        Assert.NotNull(a); // Parse is LAZY for non-empty input
+        var ex = Record.Exception(() => a.MaxHealth);
+        Assert.Null(ex);        // no IndexOutOfRangeException escapes
+        Assert.Null(a.MaxHealth); // Roms.Count != 3 -> null
+    }
 }
