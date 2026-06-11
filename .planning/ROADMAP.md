@@ -13,7 +13,7 @@ This milestone turns a working multi-prototype experiment into a correct, mainta
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes
+- [x] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes (completed 2026-06-11)
 - [ ] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode)
 - [ ] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests
 - [ ] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line
@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] 01-01-PLAN.md — EAGER models: GameObject + CombatLogLine (Assert.Throws characterization, brace/delimiter [Theory], timestamp locale, golden lines)
 - [x] 01-02-PLAN.md — LAZY models: Actor + Threat + Value (property-throw characterization, delimiter [Theory], position locale, guard-null [Theory], golden lines)
-- [ ] 01-03-PLAN.md — Inheriting/guarded models: Ability (LAZY .Id throw) + Action (graceful-null [Theory], golden lines)
+- [x] 01-03-PLAN.md — Inheriting/guarded models: Ability (LAZY .Id throw) + Action (graceful-null [Theory], golden lines)
 
 **Cross-cutting constraints:**
 
@@ -122,7 +122,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Parser Safety Net | 2/3 | In Progress|  |
+| 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
 | 2. Correctness Bugs | 0/? | Not started | - |
 | 3. Monitor Refactor + Coverage | 0/? | Not started | - |
 | 4. Performance | 0/? | Not started | - |
