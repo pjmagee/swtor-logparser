@@ -21,7 +21,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 - [ ] **RFCT-01**: The duplicated `View/` types (`Entry`, `SlidingExpirationList`) live in one shared location (core library), consumed by all three hosts — `*/View/*.cs`
 - [x] **RFCT-02**: `CombatLogsMonitor` is constructible in any build configuration (no `#if RELEASE/#elif DEBUG` gap that leaves `Instance` undefined); construction prefers DI over a hard-coded singleton — `Monitor/CombatLogsMonitor.cs:15-20`
-- [ ] **RFCT-03**: The static caches use content-based keys (not `ReadOnlyMemory<char>.GetHashCode()`) and have bounded growth — `CombatLogs.cs:8-9`, `Action.cs:47-53`, `GameObject.cs:103-108`, `Ability.cs:15-18`
+- [x] **RFCT-03**: The static caches use content-based keys (not `ReadOnlyMemory<char>.GetHashCode()`) and have bounded growth — `CombatLogs.cs:8-9`, `Action.cs:47-53`, `GameObject.cs:103-108`, `Ability.cs:15-18`
 
 ### Performance (PERF)
 
@@ -71,7 +71,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | BUG-07 | Phase 2 | Complete |
 | RFCT-01 | Phase 3 | Pending |
 | RFCT-02 | Phase 3 | Complete |
-| RFCT-03 | Phase 3 | Pending |
+| RFCT-03 | Phase 3 | Complete |
 | PERF-01 | Phase 4 | Pending |
 | PERF-02 | Phase 4 | Pending |
 | PERF-03 | Phase 4 | Pending |
