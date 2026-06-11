@@ -90,6 +90,38 @@ public class CombatLogLineTests
         Assert.NotNull(line.Threat);
     }
 
+    // BUG-03: CombatLogLine.Parse requires 5 [...] sections, then the ctor calls
+    // DateTime.Parse(Roms[0].Span) EAGERLY with NO InvariantCulture (CombatLogLine.cs:9).
+    // A non-parseable first section throws FormatException FROM Parse today. Characterization only —
+    // Phase 2 adds InvariantCulture / TryParse and inverts this assertion. (TEST-03)
+    // Per RESEARCH Assumption A1: if a run shows DateTime.Parse misparses instead of throwing,
+    // switch to assert the OBSERVED behavior and annotate.
+    [Fact]
+    public void CombatLogLine_NonParseable_Timestamp_Throws_Today()
+    {
+        // Well-formed 5-section line whose FIRST section is not a parseable timestamp.
+        var line =
+            "[notatime] [Powerful Subscriber 688623358308991 (1/401177)] [] [] [AreaEntered {836045448953991}: Imperial Fleet {137438989991}]";
+
+        Assert.Throws<FormatException>(() => CombatLogLine.Parse(line.AsMemory()));
+    }
+
+    // Golden lock: SWTOR emits time-only stamps (HH:mm:ss[.fff]) which are culture-robust.
+    // Distinct literals from the existing goldens so this exercises a fresh parse. (TEST-03)
+    [Fact]
+    public void CombatLogLine_Golden_TimeOnly_Stamp_Parses()
+    {
+        var line =
+            "[21:45:02.123] [@Goldenpc#688623358300042|(100.10,200.20,300.30,40.40)|(300042/379942)] [=] [Progressive Scan {3394132265400042}] [ApplyEffect {836045448940042}: Heal {836045448940500}] (1234) <567>".AsMemory();
+
+        var parsed = CombatLogLine.Parse(line);
+
+        Assert.NotNull(parsed);
+        Assert.True(parsed.TimeStamp != default);
+        Assert.NotNull(parsed.Source);
+        Assert.NotNull(parsed.Action);
+    }
+
     [Fact]
     public void Duplicated_Line_Appears_In_HashSet_Once()
     {
