@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-06-11T19:44:41.223Z"
+last_updated: "2026-06-11T20:14:50.479Z"
 last_activity: 2026-06-11 -- Phase 01 execution started
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-11)
 ## Current Position
 
 Phase: 01 (Parser Safety Net) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-11 -- Phase 01 execution started
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 4min | 2 tasks | 2 files |
+| Phase 01 P02 | 6min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Recent decisions affecting current work:
 - System.CommandLine.Rendering alpha will be replaced (Spectre.Console or equivalent) in Phase 5
 - [Phase 01]: Phase 1 characterizes EAGER parse-site throws with Assert.Throws (zero skips) rather than [Fact(Skip)] placeholders
 - [Phase 01]: Fixed pre-existing RED Game_Objects_Are_Equal test by recharacterizing to the actual ReadOnlyMemory-identity equality contract (no production change)
+- [Phase 01]: [Phase 01]: LAZY parse sites (Actor.Health/Id, Threat.Value, Value.Id) characterized via Assert.Throws on property access — never Assert.Null(Parse(...)) — to avoid the lazy-null trap; Phase 2 BUG-05 will invert these to graceful
 
 ### Pending Todos
 
@@ -85,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T19:44:41.217Z
+Last session: 2026-06-11T20:14:39.989Z
 Stopped at: Completed 01-01-PLAN.md
 Resume file: None

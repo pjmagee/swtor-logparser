@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans (all Wave 1 — parallel; no file overlap)
 
 - [x] 01-01-PLAN.md — EAGER models: GameObject + CombatLogLine (Assert.Throws characterization, brace/delimiter [Theory], timestamp locale, golden lines)
-- [ ] 01-02-PLAN.md — LAZY models: Actor + Threat + Value (property-throw characterization, delimiter [Theory], position locale, guard-null [Theory], golden lines)
+- [x] 01-02-PLAN.md — LAZY models: Actor + Threat + Value (property-throw characterization, delimiter [Theory], position locale, guard-null [Theory], golden lines)
 - [ ] 01-03-PLAN.md — Inheriting/guarded models: Ability (LAZY .Id throw) + Action (graceful-null [Theory], golden lines)
 
 **Cross-cutting constraints:**
@@ -122,7 +122,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Parser Safety Net | 1/3 | In Progress|  |
+| 1. Parser Safety Net | 2/3 | In Progress|  |
 | 2. Correctness Bugs | 0/? | Not started | - |
 | 3. Monitor Refactor + Coverage | 0/? | Not started | - |
 | 4. Performance | 0/? | Not started | - |
