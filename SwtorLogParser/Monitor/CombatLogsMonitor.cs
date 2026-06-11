@@ -195,7 +195,7 @@ public class CombatLogsMonitor
                     fileStream.Seek(position, SeekOrigin.Begin);
                 }
 
-                streamReader ??= new StreamReader(fileStream);
+                streamReader ??= new StreamReader(fileStream, System.Text.Encoding.Latin1);
 
                 while (await streamReader.ReadLineAsync(cancellationToken) is { } line)
                 {

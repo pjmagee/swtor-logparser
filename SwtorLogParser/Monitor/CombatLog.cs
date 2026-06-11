@@ -23,7 +23,7 @@ public sealed class CombatLog
 
         using (var stream = FileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
-            using (var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream, System.Text.Encoding.Latin1))
             {
                 var span = reader.ReadToEnd().AsSpan();
 
