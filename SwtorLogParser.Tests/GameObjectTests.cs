@@ -67,14 +67,14 @@ public class GameObjectTests
         Assert.Equal(name, gameObject.Name);
     }
 
-    // BUG-05: GameObject.Parse reads .Id eagerly (GameObject.cs:107 -> GetId at :95),
-    // so ulong.Parse on non-numeric brace content throws FormatException FROM Parse today.
-    // Characterization only — Phase 2 (TryParse) flips this to Assert.Null. (TEST-03)
+    // Phase 2: now returns null (BUG-05). GameObject.Parse reads .Id eagerly
+    // (GameObject.cs:107 -> GetId), and GetId now uses ulong.TryParse, so non-numeric
+    // brace content yields a null Id and Parse returns null instead of throwing. (TEST-03)
     [Fact]
     public void GameObject_NonNumeric_Id_Throws_Today()
     {
         // Unique literal so the static GameObjectCache cannot serve a cached object.
-        Assert.Throws<FormatException>(() => GameObject.Parse("WidgetEager {abc}".AsMemory()));
+        Assert.Null(GameObject.Parse("WidgetEager {abc}".AsMemory()));
     }
 
     // Brace-edge inputs the IndexOf('{')/IndexOf('}') != -1 guard catches -> Parse returns null

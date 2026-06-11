@@ -39,10 +39,10 @@ public class AbilityTests
         Assert.Equal(814792340963328u, ability.Id);
     }
 
-    // LAZY inherited-Id throw (Pattern E, BUG-05). Ability.Parse is LAZY (unlike GameObject.Parse
+    // Phase 2: now returns null .Id (BUG-05). Ability.Parse is LAZY (unlike GameObject.Parse
     // which reads .Id eagerly): Parse does NOT touch .Id, so it returns a non-null Ability even for
-    // non-numeric brace content; the throw only happens on .Id access via the inherited GetId
-    // (GameObject.cs:79-99 → ulong.Parse). Phase 2 will make this graceful.
+    // non-numeric brace content. The inherited GetId (GameObject.cs) now uses ulong.TryParse, so
+    // .Id returns null instead of throwing FormatException — fixed transitively via GameObject.GetId.
     // Cache hygiene: the GameObjectCache keys on Rom.GetHashCode and never clears between tests,
     // so use a literal UNIQUE to this test ("ZqxAbilityLazyWidget") to avoid a cached hit masking
     // the parse path.
@@ -52,6 +52,6 @@ public class AbilityTests
         var ability = Ability.Parse("ZqxAbilityLazyWidget {abc}".AsMemory());
 
         Assert.NotNull(ability);
-        Assert.Throws<FormatException>(() => _ = ability.Id);
+        Assert.Null(ability.Id);
     }
 }

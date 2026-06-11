@@ -72,7 +72,7 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
         var endIndex = Rom.Span.IndexOf('}');
 
         return startIndex != -1 && endIndex != -1
-            ? ulong.Parse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1))
+            ? (ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var pid) ? pid : (ulong?)null)
             : null;
     }
 
@@ -84,7 +84,7 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
             var endIndex = Rom.Span.LastIndexOf('}');
 
             if (startIndex != -1 && endIndex != -1)
-                return ulong.Parse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1));
+                return ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var id) ? id : (ulong?)null;
         }
         else
         {
@@ -92,7 +92,7 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
             var endIndex = Rom.Span.IndexOf('}');
 
             if (startIndex != -1 && endIndex != -1)
-                return ulong.Parse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1));
+                return ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var id) ? id : (ulong?)null;
         }
 
         return null;
