@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-06-11T22:14:26.624Z"
+last_updated: "2026-06-11T22:20:01.802Z"
 last_activity: 2026-06-11 -- Phase 02 Plan 01 executed
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 33
 ---
 
@@ -61,6 +61,7 @@ Progress: [███████░░░] 67%
 | Phase 03 P01 | 9min | 2 tasks | 2 files |
 | Phase 03 P02 | 2min | 2 tasks | 7 files |
 | Phase 03 P03 | 8min | 2 tasks | 9 files |
+| Phase 03 P04 | 7min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Recent decisions affecting current work:
 - [Phase 03]: TEST-01 Stop_Halts_Delivery asserts IsRunning==false; Stop() does NOT complete the Rx Subject by design; PublishForTest pushes now-relative timestamps to clear the 10s DpsHps window
 - [Phase 03]: RFCT-03 caches re-keyed to string content (rom.ToString), bounded at 4096 with FIFO eviction via in-repo AOT-safe BoundedCache; separate per-type caches (GameObjectCache/AbilityCache/ActionCache) fix the shared-cache (Ability?) cast bug
 - [Phase 03]: Action.GetHashCode left unchanged per Pitfall 3 (RFCT-03 scope is the cache KEY, not GetHashCode)
+- [Phase ?]: [Phase 03]: TEST-02 tests Accumulator + CalculateDpsHpsStats directly via InternalsVisibleTo (made internal) to bypass the DateTime.Now Where filter for deterministic DPS/HPS/crit% + 10s window assertions; no IClock/TimeProvider, no behavior change (PERF-03 stays Phase 4)
 
 ### Pending Todos
 
@@ -105,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T22:14:26.617Z
+Last session: 2026-06-11T22:19:35.314Z
 Stopped at: Completed 03-03-PLAN.md
 Resume file: None
