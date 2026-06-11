@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: verifying
 stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-06-11T20:46:59.438Z"
+last_updated: "2026-06-11T20:53:16.082Z"
 last_activity: 2026-06-11 -- Phase 01 execution started
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 17
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-06-11)
 
 ## Current Position
 
-Phase: 01 (Parser Safety Net) — EXECUTING
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-06-11 -- Phase 01 execution started
+Phase: 02 (Correctness Bugs) — EXECUTING
+Plan: 1 of 3 complete
+Status: 02-01 complete (BUG-05 leaf-parse hardening); ready for 02-02
+Last activity: 2026-06-11 -- Phase 02 Plan 01 executed
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 4min | 2 tasks | 2 files |
 | Phase 01 P02 | 6min | 2 tasks | 3 files |
 | Phase 01 P03 | 4min | 2 tasks | 2 files |
+| Phase 02 P01 | 12min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Fixed pre-existing RED Game_Objects_Are_Equal test by recharacterizing to the actual ReadOnlyMemory-identity equality contract (no production change)
 - [Phase 01]: [Phase 01]: LAZY parse sites (Actor.Health/Id, Threat.Value, Value.Id) characterized via Assert.Throws on property access — never Assert.Null(Parse(...)) — to avoid the lazy-null trap; Phase 2 BUG-05 will invert these to graceful
 - [Phase ?]: [Phase 01]: Ability.Parse is LAZY (does not read .Id) unlike eager GameObject.Parse — characterized via Assert.NotNull(Parse) then Assert.Throws on .Id; Action.Parse already graceful (try/catch) locked via Assert.Null [Theory]; seven-model coverage complete
+- [Phase ?]: [Phase 02]: BUG-05 leaf-parse fixed via BCL TryParse (Threat.Value now int?, Actor/Value getters null-on-bad-input)
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T20:18:29.710Z
+Last session: 2026-06-11T20:52:47.976Z
 Stopped at: Completed 01-01-PLAN.md
 Resume file: None
