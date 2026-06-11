@@ -176,7 +176,13 @@ public class CombatLogsMonitor
                 }
 
                 if (string.IsNullOrWhiteSpace(current))
+                {
+                    // No file selected yet: await the read cadence before retrying so the
+                    // loop does not busy-spin at 100% CPU (the read-loop Task.Delay below is
+                    // skipped by the continue). Respects cancellation.
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
                     continue;
+                }
 
                 if (fileStream is null)
                 {
