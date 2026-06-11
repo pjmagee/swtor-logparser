@@ -57,7 +57,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Feeding a malformed line (missing numeric token, truncated record) to any model Parse factory results in a null return or skipped line, never an unhandled exception during normal log tailing
   5. Log files are opened with FileAccess.Read so the game client is never blocked from writing
 
-**Plans**: TBD
+**Plans**: 3 plans (Wave 1: 02-01, 02-02 parallel; Wave 2: 02-03 — shares CombatLogs.cs with 02-02)
+
+- [ ] 02-01-PLAN.md — BUG-05 leaf numeric guards: Threat/Actor/Value TryParse + 4 flipped tests (no cache coupling)
+- [ ] 02-02-PLAN.md — BUG-05 (GameObject/Ability) + BUG-06 ConcurrentDictionary caches + 2 flipped tests + concurrency smoke
+- [ ] 02-03-PLAN.md — BUG-03 timestamp gate, BUG-01/02 monitor lifecycle, BUG-04 static-ctor guard, BUG-07 read-only open + lifecycle/helper tests
+
+**Cross-cutting constraints:**
+
+- dotnet test stays GREEN with zero skips after EVERY commit; each bug fix lands with its flipped/added test(s) in the same commit
 
 ### Phase 3: Monitor Refactor + Coverage
 
@@ -123,7 +131,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
-| 2. Correctness Bugs | 0/? | Not started | - |
+| 2. Correctness Bugs | 0/3 | Planned | - |
 | 3. Monitor Refactor + Coverage | 0/? | Not started | - |
 | 4. Performance | 0/? | Not started | - |
 | 5. Dependency Upgrades | 0/? | Not started | - |
