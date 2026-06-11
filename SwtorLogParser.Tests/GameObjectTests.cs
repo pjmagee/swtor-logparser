@@ -113,4 +113,26 @@ public class GameObjectTests
         Assert.Equal("Imperial Fleet", go.Name);
         Assert.Equal(137438989504u, go.Id);
     }
+
+    // BUG-06 concurrency smoke test: N threads concurrently calling GameObject.Parse on the SAME
+    // shared backing memory must never throw (no InvalidOperationException / torn ConcurrentDictionary)
+    // and must converge on a SINGLE cached instance (first-writer-wins). Type-consistent literal only
+    // (GameObject, never mixed with Ability on the same backing memory — RESEARCH Pitfall 4).
+    [Fact]
+    public void GameObject_Concurrent_Parse_Same_Memory_Single_Instance()
+    {
+        // Literal UNIQUE to this test so the static GameObjectCache cannot pre-serve it.
+        var shared = "ZqxConcurrencyWidget {137438989777}".AsMemory();
+
+        var results = new GameObject?[256];
+        var ex = Record.Exception(() =>
+            Parallel.For(0, results.Length, i => results[i] = GameObject.Parse(shared)));
+
+        Assert.Null(ex);
+        Assert.All(results, r => Assert.NotNull(r));
+
+        // First-writer-wins: every reference must be the same cached instance.
+        var first = results[0];
+        Assert.All(results, r => Assert.Same(first, r));
+    }
 }
