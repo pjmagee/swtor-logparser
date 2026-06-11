@@ -1,12 +1,16 @@
-﻿namespace SwtorLogParser.Model;
+﻿using System.Globalization;
+
+namespace SwtorLogParser.Model;
 
 public class CombatLogLine : IEquatable<CombatLogLine>
 {
-    private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms)
+    private static readonly string[] TimeFormats = { "HH:mm:ss", "HH:mm:ss.fff" };
+
+    private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms, DateTime timeStamp)
     {
         Rom = rom;
         Roms = roms;
-        TimeStamp = DateTime.Parse(Roms[0].Span);
+        TimeStamp = timeStamp;
         Source = Actor.Parse(Roms[1]);
         Target = Actor.Parse(Roms[2]);
         Ability = Ability.Parse(Roms[3]);
@@ -39,7 +43,10 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         if (rom.IsEmpty) return null;
         var sections = GetSections(rom);
-        return sections.Count != 5 ? null : new CombatLogLine(rom, sections);
+        if (sections.Count != 5) return null;
+        if (!DateTime.TryParseExact(sections[0].Span, TimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var ts))
+            return null;
+        return new CombatLogLine(rom, sections, ts);
     }
 
     public bool Equals(CombatLogLine? other) => Rom.Equals(other?.Rom);

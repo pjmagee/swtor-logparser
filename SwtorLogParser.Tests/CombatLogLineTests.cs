@@ -90,20 +90,17 @@ public class CombatLogLineTests
         Assert.NotNull(line.Threat);
     }
 
-    // BUG-03: CombatLogLine.Parse requires 5 [...] sections, then the ctor calls
-    // DateTime.Parse(Roms[0].Span) EAGERLY with NO InvariantCulture (CombatLogLine.cs:9).
-    // A non-parseable first section throws FormatException FROM Parse today. Characterization only —
-    // Phase 2 adds InvariantCulture / TryParse and inverts this assertion. (TEST-03)
-    // Per RESEARCH Assumption A1: if a run shows DateTime.Parse misparses instead of throwing,
-    // switch to assert the OBSERVED behavior and annotate.
+    // Phase 2: bad timestamp now returns null (BUG-03). CombatLogLine.Parse gates the
+    // first section through DateTime.TryParseExact + InvariantCulture in the static factory,
+    // so a non-parseable timestamp skips the line (returns null) instead of throwing. (TEST-03)
     [Fact]
-    public void CombatLogLine_NonParseable_Timestamp_Throws_Today()
+    public void CombatLogLine_NonParseable_Timestamp_Returns_Null()
     {
         // Well-formed 5-section line whose FIRST section is not a parseable timestamp.
         var line =
             "[notatime] [Powerful Subscriber 688623358308991 (1/401177)] [] [] [AreaEntered {836045448953991}: Imperial Fleet {137438989991}]";
 
-        Assert.Throws<FormatException>(() => CombatLogLine.Parse(line.AsMemory()));
+        Assert.Null(CombatLogLine.Parse(line.AsMemory()));
     }
 
     // Golden lock: SWTOR emits time-only stamps (HH:mm:ss[.fff]) which are culture-robust.
