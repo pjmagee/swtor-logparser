@@ -1,10 +1,31 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging.Abstractions;
+using SwtorLogParser.Extensions;
+using SwtorLogParser.Model;
 using SwtorLogParser.Monitor;
 
 namespace SwtorLogParser.Tests;
 
 public class CombatLogsMonitorTests
 {
+    // TEST-01: build a player-damage line with a NOW-RELATIVE timestamp so the
+    // DpsHps pipeline's `.Where(x => x.TimeStamp > DateTime.Now.AddSeconds(-10))` window
+    // (CombatLogsMonitor.ConfigureObservables) does NOT silently drop it. A fixed literal
+    // timestamp like [20:33:17.759] would be dropped by that filter.
+    private static CombatLogLine NowRelativePlayerDamageLine()
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture);
+        var raw =
+            $"[{ts}] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] "
+            + "[Progressive Scan {3394132265402368}] "
+            + "[ApplyEffect {836045448945477}: Damage {836045448945501}] (8622) <3880>";
+
+        var line = CombatLogLine.Parse(raw.AsMemory());
+        Assert.NotNull(line);
+        Assert.True(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
+        return line;
+    }
+
     // RFCT-02: the ILogger<CombatLogsMonitor> ctor is now public, so the monitor can be
     // constructed directly (for DI/tests) without going through the singleton. The
     // ConfigureObservables() chain still runs via the parameterless ctor, so DpsHps is wired.
@@ -66,5 +87,72 @@ public class CombatLogsMonitorTests
         {
             if (File.Exists(path)) File.Delete(path);
         }
+    }
+
+    // TEST-01 (BUG-01 deferred from Phase 2): after Start the Rx pipeline must deliver
+    // PlayerStats for a pushed player-damage line. Constructed via the public ctor (not the
+    // singleton) to avoid leaking state across tests. Subject<T>.OnNext is synchronous, so
+    // delivery lands on the calling thread — no scheduler/sleep needed for this assertion.
+    [Fact]
+    public void Start_Then_Push_Delivers()
+    {
+        var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
+        var received = new List<CombatLogsMonitor.PlayerStats>();
+        using var _ = monitor.DpsHps.Subscribe(received.Add);
+
+        monitor.Start(CancellationToken.None);
+        monitor.PublishForTest(NowRelativePlayerDamageLine());
+
+        Assert.NotEmpty(received);
+        // Assert delivery + player identity only — exact DPS numbers are time-dependent (TEST-02).
+        Assert.All(received, s => Assert.NotNull(s.Player));
+
+        monitor.Stop();
+    }
+
+    // TEST-01: Stop must halt the running monitor so the file-tailing feed (the real source that
+    // pushes parsed lines into the Subject) stops. We assert via IsRunning that the started reader/
+    // monitor tasks are torn down by Stop().
+    //
+    // NOTE: Stop() cancels the file-reading tasks (Phase 2 cancellation wiring) but, by design, does
+    // NOT complete/dispose the Rx Subject — the DpsHps pipeline is intentionally independent of
+    // Start/Stop and the locked constraint forbids changing the Rx semantics here. The PublishForTest
+    // seam injects directly into that Subject, so it bypasses the reader the way the live game writer
+    // never could; therefore we verify "Stop halts the feed" through IsRunning (the reader that feeds
+    // the Subject), not by pushing through the bypass seam after Stop.
+    [Fact]
+    public void Stop_Halts_Delivery()
+    {
+        var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
+        var received = new List<CombatLogsMonitor.PlayerStats>();
+        using var _ = monitor.DpsHps.Subscribe(received.Add);
+
+        monitor.Start(CancellationToken.None);
+        monitor.PublishForTest(NowRelativePlayerDamageLine());
+        Assert.NotEmpty(received); // pipeline delivers while running
+
+        monitor.Stop();
+        Thread.Sleep(50); // let cooperative cancellation settle
+
+        // The reader/monitor tasks that feed the Subject are torn down — the live feed has halted.
+        Assert.False(monitor.IsRunning);
+    }
+
+    // TEST-01: a second Start (after Stop) must not throw — exercises the linked-CTS
+    // dispose/recreate path in Start().
+    [Fact]
+    public void Second_Start_Does_Not_Throw()
+    {
+        var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
+
+        var ex = Record.Exception(() =>
+        {
+            monitor.Start(CancellationToken.None);
+            monitor.Stop();
+            monitor.Start(CancellationToken.None);
+        });
+
+        Assert.Null(ex);
+        monitor.Stop();
     }
 }
