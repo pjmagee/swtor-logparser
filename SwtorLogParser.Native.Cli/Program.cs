@@ -33,21 +33,59 @@ public static class Program
         manualResetEvent.WaitOne();
     }
 
+    private static int _lastRowCount;
+
     private static void Update(SlidingExpirationList list, CombatLogsMonitor.PlayerStats playerStats)
     {
         list.AddOrUpdate(playerStats);
 
-        Console.Clear();
-        Console.SetCursorPosition(0, 1);
+        // Redirected output (e.g. piped to a file) has no cursor buffer — SetCursorPosition /
+        // WindowWidth / WindowHeight throw or misbehave. Fall back to plain writes and do not
+        // touch cursor state or _lastRowCount (Pitfall 5).
+        if (Console.IsOutputRedirected)
+        {
+            foreach (var redirectedItem in list.Items)
+                Console.WriteLine(FormatRow(redirectedItem));
+            return;
+        }
 
+        // Clamp width so a 0/odd window cannot break PadRight; clamp the bottom row to the
+        // buffer height so SetCursorPosition cannot exceed it on a short window.
+        int width = Math.Max(1, Console.WindowWidth - 1);
+        int maxRow = Math.Max(1, Console.WindowHeight - 1);
+
+        int row = 0;
         foreach (var item in list.Items)
-            Console.WriteLine("{0}: DPS: {1} ({2}%); HPS: {3} ({4}%)",
-                item.Player.Name!,
-                item.DPS.HasValue ? item.DPS.Value.ToString("N") : "-",
-                item.DPSCritP.HasValue ? item.DPSCritP.Value.ToString("N") : "-",
-                item.HPS.HasValue ? item.HPS.Value.ToString("N") : "-",
-                item.HPSCritP.HasValue ? item.HPSCritP.Value.ToString("N") : "-");
+        {
+            // Row 0 stays the filename header (OnCombatLogAdded); the stats block starts at row 1.
+            int targetRow = 1 + row;
+            if (targetRow > maxRow) break;
+
+            Console.SetCursorPosition(0, targetRow);
+            var text = FormatRow(item);
+            Console.Write(text.Length > width ? text[..width] : text.PadRight(width));
+            row++;
+        }
+
+        // Clear rows that were drawn last frame but not this frame (row count shrank).
+        for (int r = row; r < _lastRowCount; r++)
+        {
+            int targetRow = 1 + r;
+            if (targetRow > maxRow) break;
+            Console.SetCursorPosition(0, targetRow);
+            Console.Write(new string(' ', width));
+        }
+
+        _lastRowCount = row;
     }
+
+    private static string FormatRow(CombatLogsMonitor.PlayerStats item) =>
+        string.Format("{0}: DPS: {1} ({2}%); HPS: {3} ({4}%)",
+            item.Player.Name!,
+            item.DPS.HasValue ? item.DPS.Value.ToString("N") : "-",
+            item.DPSCritP.HasValue ? item.DPSCritP.Value.ToString("N") : "-",
+            item.HPS.HasValue ? item.HPS.Value.ToString("N") : "-",
+            item.HPSCritP.HasValue ? item.HPSCritP.Value.ToString("N") : "-");
 
     private static void OnCombatLogAdded(object? _, CombatLog combatLog)
     {
