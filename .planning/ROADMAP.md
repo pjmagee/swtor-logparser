@@ -14,7 +14,7 @@ This milestone turns a working multi-prototype experiment into a correct, mainta
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes (completed 2026-06-11)
-- [ ] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode)
+- [x] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode) (completed 2026-06-11)
 - [ ] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests
 - [ ] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line
 - [ ] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha
@@ -61,7 +61,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] 02-01-PLAN.md — BUG-05 leaf numeric guards: Threat/Actor/Value TryParse + 4 flipped tests (no cache coupling)
 - [x] 02-02-PLAN.md — BUG-05 (GameObject/Ability) + BUG-06 ConcurrentDictionary caches + 2 flipped tests + concurrency smoke
-- [ ] 02-03-PLAN.md — BUG-03 timestamp gate, BUG-01/02 monitor lifecycle, BUG-04 static-ctor guard, BUG-07 read-only open + lifecycle/helper tests
+- [x] 02-03-PLAN.md — BUG-03 timestamp gate, BUG-01/02 monitor lifecycle, BUG-04 static-ctor guard, BUG-07 read-only open + lifecycle/helper tests
 
 **Cross-cutting constraints:**
 
@@ -131,7 +131,7 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
-| 2. Correctness Bugs | 2/3 | In Progress|  |
+| 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
 | 3. Monitor Refactor + Coverage | 0/? | Not started | - |
 | 4. Performance | 0/? | Not started | - |
 | 5. Dependency Upgrades | 0/? | Not started | - |

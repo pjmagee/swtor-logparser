@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-06-11T20:59:37.825Z"
+last_updated: "2026-06-11T21:06:56.176Z"
 last_activity: 2026-06-11 -- Phase 02 Plan 01 executed
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
-  percent: 17
+  completed_plans: 6
+  percent: 33
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-11)
 ## Current Position
 
 Phase: 02 (Correctness Bugs) — EXECUTING
-Plan: 2 of 3 complete
+Plan: 3 of 3 complete
 Status: 02-01 complete (BUG-05 leaf-parse hardening); ready for 02-02
 Last activity: 2026-06-11 -- Phase 02 Plan 01 executed
 
@@ -57,6 +57,7 @@ Progress: [███████░░░] 67%
 | Phase 01 P03 | 4min | 2 tasks | 2 files |
 | Phase 02 P01 | 12min | 3 tasks | 6 files |
 | Phase 02 P02 | 9min | 3 tasks | 6 files |
+| Phase 02 P03 | 3min | 4 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 02]: BUG-05 leaf-parse fixed via BCL TryParse (Threat.Value now int?, Actor/Value getters null-on-bad-input)
 - [Phase 02]: BUG-05 GameObject/Ability subset fixed via ulong.TryParse — GameObject.Parse returns null eagerly, Ability.Id null transitively via inherited GetId
 - [Phase 02]: BUG-06 caches are ConcurrentDictionary with first-writer-wins TryAdd (not blind GetOrAdd); never cache null/failed parse; Rom.GetHashCode key kept for RFCT-03/Phase 3
+- [Phase ?]: BUG-03 timestamp validated via InvariantCulture TryParseExact in static factory; bad timestamp returns null
+- [Phase ?]: BUG-01 Start/Stop lifecycle test deferred to Phase-3 TEST-01; verified by inspection + BUG-02 no-op test
+- [Phase ?]: Added InternalsVisibleTo(SwtorLogParser.Tests) to unit-test the BUG-04 internal helper
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-11T20:59:22.109Z
+Last session: 2026-06-11T21:06:48.821Z
 Stopped at: Completed 01-01-PLAN.md
 Resume file: None

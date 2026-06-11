@@ -9,13 +9,13 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 ### Correctness (BUG)
 
-- [ ] **BUG-01**: `CombatLogsMonitor.Stop()` actually cancels the monitor and reader worker tasks (worker tasks observe `_cancellationTokenSource.Token`, not the outer token) — `Monitor/CombatLogsMonitor.cs:107-126`
-- [ ] **BUG-02**: Calling `Stop()` before `Start()` does not throw (no NRE on unassigned `_cancellationTokenSource`) — `Monitor/CombatLogsMonitor.cs`
-- [ ] **BUG-03**: All `DateTime` and numeric parsing uses `InvariantCulture` so behavior is locale-independent — `Model/CombatLogLine.cs:9` and numeric parse sites
-- [ ] **BUG-04**: The `CombatLogs` static constructor tolerates settings filenames without `_` (no startup `TypeInitializationException`) — `Monitor/CombatLogs.cs:23`
+- [x] **BUG-01**: `CombatLogsMonitor.Stop()` actually cancels the monitor and reader worker tasks (worker tasks observe `_cancellationTokenSource.Token`, not the outer token) — `Monitor/CombatLogsMonitor.cs:107-126`
+- [x] **BUG-02**: Calling `Stop()` before `Start()` does not throw (no NRE on unassigned `_cancellationTokenSource`) — `Monitor/CombatLogsMonitor.cs`
+- [x] **BUG-03**: All `DateTime` and numeric parsing uses `InvariantCulture` so behavior is locale-independent — `Model/CombatLogLine.cs:9` and numeric parse sites
+- [x] **BUG-04**: The `CombatLogs` static constructor tolerates settings filenames without `_` (no startup `TypeInitializationException`) — `Monitor/CombatLogs.cs:23`
 - [x] **BUG-05**: Numeric parse paths (`int/long/ulong.Parse`) skip malformed lines instead of throwing — `Threat.cs:14`, `Actor.cs:64,73,93,100,107`, `Value.cs:47`, `GameObject.cs:75,87,95`
 - [x] **BUG-06**: The shared parse caches are thread-safe — no `Dictionary.Add` races from the reader task — `Action.cs:53`, `GameObject.cs:108`, `Ability.cs:18`
-- [ ] **BUG-07**: Combat-log files are opened read-only (`FileAccess.Read`/`FileShare.Read`) — `Monitor/CombatLog.cs:24`
+- [x] **BUG-07**: Combat-log files are opened read-only (`FileAccess.Read`/`FileShare.Read`) — `Monitor/CombatLog.cs:24`
 
 ### Refactor (RFCT)
 
@@ -62,13 +62,13 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 2 | Pending |
-| BUG-02 | Phase 2 | Pending |
-| BUG-03 | Phase 2 | Pending |
-| BUG-04 | Phase 2 | Pending |
+| BUG-01 | Phase 2 | Complete |
+| BUG-02 | Phase 2 | Complete |
+| BUG-03 | Phase 2 | Complete |
+| BUG-04 | Phase 2 | Complete |
 | BUG-05 | Phase 2 | Complete |
 | BUG-06 | Phase 2 | Complete |
-| BUG-07 | Phase 2 | Pending |
+| BUG-07 | Phase 2 | Complete |
 | RFCT-01 | Phase 3 | Pending |
 | RFCT-02 | Phase 3 | Pending |
 | RFCT-03 | Phase 3 | Pending |
