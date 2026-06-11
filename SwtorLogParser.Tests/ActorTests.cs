@@ -155,4 +155,31 @@ public class ActorTests
         Assert.Null(ex);        // no IndexOutOfRangeException escapes
         Assert.Null(a.MaxHealth); // Roms.Count != 3 -> null
     }
+
+    // CR-01: a brace-less NPC actor (no '{id}' section) must NOT throw from Actor.Id.
+    // GetId's NPC branch found openIndex == closeIndex == -1 and called Slice(0, -1)
+    // (negative length) -> ArgumentOutOfRangeException, reachable via the public Actor.Id
+    // surface (e.g. CombatLogLine.Target.Id on a player-damages-NPC line). Guarded to
+    // return null on missing/inverted braces, matching the null-on-malformed-parse policy.
+    [Fact]
+    public void Actor_BraceLess_Npc_Id_Returns_Null_No_Throw()
+    {
+        var a = Actor.Parse("Yozusk Mauler:5577004295094|(0,0,0,0)|(1/2)".AsMemory());
+        Assert.NotNull(a);   // Parse is LAZY — succeeds
+        Assert.True(a.IsNpc);
+        var ex = Record.Exception(() => a.Id);
+        Assert.Null(ex);     // no ArgumentOutOfRangeException escapes (CR-01)
+        Assert.Null(a.Id);   // no '{' / '}' -> null
+    }
+
+    // CR-01 (counterpart): a brace-bearing NPC still parses its id correctly — the guard
+    // must not regress valid NPC actors.
+    [Fact]
+    public void Actor_BraceBearing_Npc_Id_Still_Parses()
+    {
+        var a = Actor.Parse("Yozusk Mauler {3158140992356352}:5577004295094|(0,0,0,0)|(1/2)".AsMemory());
+        Assert.NotNull(a);
+        Assert.True(a.IsNpc);
+        Assert.Equal(3158140992356352, a.Id);
+    }
 }

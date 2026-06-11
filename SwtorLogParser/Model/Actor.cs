@@ -110,6 +110,10 @@ public class Actor
         {
             var openIndex = Roms[0].Span.IndexOf('{');
             var closeIndex = Roms[0].Span.IndexOf('}');
+            // Brace-less NPC actor (no '{id}'): mirror GameObject.GetId's index guard and the
+            // codebase's null-on-malformed-parse policy. Without this, openIndex/closeIndex == -1
+            // makes the Slice length negative -> ArgumentOutOfRangeException (CR-01).
+            if (openIndex == -1 || closeIndex == -1 || closeIndex <= openIndex) return null;
             return long.TryParse(Roms[0].Span.Slice(openIndex + 1, closeIndex - openIndex - 1), out var id) ? id : (long?)null;
         }
 
