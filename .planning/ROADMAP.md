@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes (completed 2026-06-11)
 - [x] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode) (completed 2026-06-11)
 - [x] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests (completed 2026-06-11)
-- [ ] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line
+- [x] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line (completed 2026-06-11)
 - [ ] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha
 - [ ] **Phase 6: CI Pipeline** - Add GitHub Actions build + test pipeline and remove the misleading DockerDefaultTargetOS=Linux
 
@@ -109,7 +109,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] 04-01-PLAN.md — PERF-01: offset-tracking splitter + zero-copy `AsMemory` line slices + parse-free `ToString()` count in CombatLog.cs; Wave-0 read/slice + EnumerateLines-parity tests
 - [x] 04-02-PLAN.md — PERF-02: Native CLI `Update()` in-place cursor render (no `Console.Clear()`), IsOutputRedirected guard + width/height clamps + vacated-row clearing; manual flicker checkpoint (no automated console test)
-- [ ] 04-03-PLAN.md — PERF-03: single-pass `CalculateDpsHpsStats` (drop OrderBy + 6 LINQ passes) with identical output; Wave-0 `Single_Line_Uses_OneSecond_Window` edge test; Accumulator + DateTime.Now filter untouched
+- [x] 04-03-PLAN.md — PERF-03: single-pass `CalculateDpsHpsStats` (drop OrderBy + 6 LINQ passes) with identical output; Wave-0 `Single_Line_Uses_OneSecond_Window` edge test; Accumulator + DateTime.Now filter untouched
 
 **Cross-cutting constraints:**
 
@@ -155,6 +155,6 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
 | 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
-| 4. Performance | 2/3 | In Progress|  |
+| 4. Performance | 3/3 | Complete   | 2026-06-11 |
 | 5. Dependency Upgrades | 0/? | Not started | - |
 | 6. CI Pipeline | 0/? | Not started | - |
