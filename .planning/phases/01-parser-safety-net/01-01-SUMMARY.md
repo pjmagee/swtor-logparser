@@ -116,7 +116,7 @@ Passed!  - Failed: 0, Passed: 48, Skipped: 0, Total: 48
 
 ## Issues Encountered
 
-- `All_Logs_Are_Not_Null` (filesystem-backed, deferred to Phase 3) passed during the run — it iterates `CombatLogs.EnumerateCombatLogs()`, which is empty on this CI-style machine, so it is a no-op here. Left untouched per plan.
+- `All_Logs_Are_Not_Null` (filesystem-backed, deferred to Phase 3) is non-hermetic — it iterates `CombatLogs.EnumerateCombatLogs()` against the local machine. One of several full-suite runs flaked (1 failure) on this pre-existing test; immediate re-runs were GREEN (48/0/0 confirmed twice consecutively). This flakiness is exactly why Phase 3 (TEST-01/TEST-02) abstracts the filesystem. Left untouched per plan. The 20 tests in THIS plan's scope (GameObjectTests + CombatLogLineTests) pass deterministically every run.
 
 ## Known Stubs
 
