@@ -73,8 +73,6 @@ public static class CombatLogs
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
                     Environment.SpecialFolderOption.None), "SWTOR", "swtor", "settings");
 
-        private ISet<string>? _playerNames;
-
         public DirectoryInfo CombatLogsDirectory { get; } = new(LogsPath);
 
         private DirectoryInfo SettingsDirectory { get; } = new(SettingsPath);
@@ -82,7 +80,24 @@ public static class CombatLogs
         // Lazy + Directory.Exists-guarded: PlayerNames is no longer enumerated unconditionally
         // at type-load (the old static-ctor enumeration is what threw TypeInitializationException
         // on machines without the settings folder). Absent folder -> empty set.
-        public ISet<string> PlayerNames => _playerNames ??= LoadPlayerNames();
+        //
+        // WR-03: thread-safe one-time init. The prior `??=` was an unsynchronized data race —
+        // two threads racing first access could both run LoadPlayerNames and produce distinct
+        // sets (redundant file IO + identity divergence). Lazy<T> with the default
+        // ExecutionAndPublication mode restores the CLR-serialized one-time-init guarantee the
+        // base commit's static ctor had, WITHOUT reintroducing the type-load
+        // TypeInitializationException risk (the Lazy lives per-source-instance and its factory
+        // only runs on first PlayerNames access). The seam is unaffected: SetSource/ResetSource
+        // swap to a fresh DefaultCombatLogSource (fresh Lazy), and InMemoryCombatLogSource
+        // supplies PlayerNames directly without this lazy.
+        private readonly Lazy<ISet<string>> _playerNames;
+
+        public DefaultCombatLogSource()
+        {
+            _playerNames = new Lazy<ISet<string>>(LoadPlayerNames, LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        public ISet<string> PlayerNames => _playerNames.Value;
 
         private ISet<string> LoadPlayerNames()
         {

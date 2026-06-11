@@ -4,6 +4,10 @@ using SwtorLogParser.Tests.Fixtures;
 
 namespace SwtorLogParser.Tests;
 
+// Serialized with the other CombatLogs source-seam mutators: Player_Is_Local_Is_True calls
+// SetSource/ResetSource on the shared static `_source`, so it must not run in parallel with
+// the other source-swapping classes.
+[Collection(CombatLogsSourceCollection.Name)]
 public class ActorTests
 {
     [Fact]

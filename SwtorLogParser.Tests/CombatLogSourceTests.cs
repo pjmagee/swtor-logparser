@@ -8,6 +8,7 @@ namespace SwtorLogParser.Tests;
 // injectable ICombatLogSource guarded by Directory.Exists, so touching any CombatLogs member
 // no longer throws TypeInitializationException/DirectoryNotFoundException when the SWTOR
 // folders are absent (Pitfall 6). The static facade is preserved for hosts.
+[Collection(CombatLogsSourceCollection.Name)]
 public class CombatLogSourceTests
 {
     // Static_Ctor_Does_Not_Throw_When_Settings_Absent: touching CombatLogs.PlayerNames must

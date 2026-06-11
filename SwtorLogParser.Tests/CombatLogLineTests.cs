@@ -4,6 +4,9 @@ using SwtorLogParser.Tests.Fixtures;
 
 namespace SwtorLogParser.Tests;
 
+// Serialized with the other CombatLogs source-seam mutators (SetSource/ResetSource) to keep
+// the shared static `_source` deterministic under xUnit's default class-parallelism.
+[Collection(CombatLogsSourceCollection.Name)]
 public class CombatLogLineTests
 {
     // Phase 3 Plan 05 (TEST-01): HERMETIC. Previously this iterated the REAL %Documents%
