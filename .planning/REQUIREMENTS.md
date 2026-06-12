@@ -17,8 +17,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 - [ ] **OVL-04**: The overlay is transparent and borderless, at visual parity with the WinForms overlay
 - [ ] **OVL-05**: The user can drag the overlay to reposition it
 - [ ] **OVL-06**: The user can toggle click-through mode (mouse passes through to the game); default is **off** (overlay movable/interactive)
-- [ ] **OVL-07**: The overlay persists window position, size, and opacity across runs (local settings file; no core dependency)
-- [ ] **OVL-08**: The user can increase/decrease the overlay font size, at parity with the WinForms controls
+- [~] **OVL-07**: The overlay persists window position, size, and opacity across runs (local settings file; no core dependency) — **position + size DONE in Phase 9** (`%LocalAppData%\SwtorLogParser\settings.json`, source-gen JSON, corruption-safe); **opacity persistence DEFERRED to Phase 10 per D-04** (reserved `OverlaySettings.Opacity` field exists, not yet applied)
+- [x] **OVL-08**: The user can increase/decrease the overlay font size, at parity with the WinForms controls
 - [ ] **OVL-09**: After WinUI 3 parity is validated (transparent, draggable, live render, topmost over Fullscreen-Windowed), the WinForms overlay is removed and WinUI 3 is the **sole** overlay host
 
 ### Interop (INT) — CsWin32 + topmost
@@ -76,8 +76,8 @@ Which phases cover which requirements. Filled during roadmap creation.
 | OVL-04 | Phase 10 | Pending |
 | OVL-05 | Phase 10 | Pending |
 | OVL-06 | Phase 10 | Pending |
-| OVL-07 | Phase 9 | Pending |
-| OVL-08 | Phase 9 | Pending |
+| OVL-07 | Phase 9 / Phase 10 | Partial (pos+size done P9; opacity → P10) |
+| OVL-08 | Phase 9 | Complete |
 | OVL-09 | Phase 11 | Pending |
 | INT-01 | Phase 10 | Pending |
 | INT-02 | Phase 10 | Pending |

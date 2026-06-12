@@ -29,7 +29,7 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
 **Critical path (overlay):** Phase 8 scaffold → Phase 9 stream/render (integration crux) → Phase 10 CsWin32 interop → **Phase 11 HARD parity gate + WinForms deletion**. Each native behavior needs a live window to style, so render precedes interop, and WinForms is never deleted until parity holds. **Phase 12 (MSTest)** and **Phase 13 (tooling + docs)** are decoupled and do not block the parity gate; docs land last so they describe the shipped state.
 
 - [x] **Phase 8: WinUI 3 Scaffold + Dependencies + Guardrails** — WinUI 3 project opens an empty window; AOT/CI guardrails intact (OVL-01) (completed 2026-06-12)
-- [ ] **Phase 9: Live Stream Render + Dispatcher Marshaling** — overlay renders live per-player DPS/HPS rows with persistence + font controls (OVL-02, OVL-07, OVL-08)
+- [x] **Phase 9: Live Stream Render + Dispatcher Marshaling** — overlay renders live per-player DPS/HPS rows with persistence + font controls (OVL-02, OVL-07, OVL-08) (completed 2026-06-12)
 - [ ] **Phase 10: CsWin32 Interop — Transparency, Click-through, Drag, Topmost** — native overlay behaviors via CsWin32 (OVL-03..06, INT-01..03)
 - [ ] **Phase 11: Parity Gate + WinForms Removal** — WinUI 3 validated at parity, WinForms host deleted (OVL-09)
 - [ ] **Phase 12: MSTest Migration** — 106 tests on MSTest .NET SDK, CI + coverage preserved (TEST-01, TEST-02)
@@ -80,7 +80,7 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
 
 **Wave 2** *(blocked on Wave 1 — shares MainWindow.xaml(.cs))*
 
-  - [ ] 09-02-PLAN.md — Font +/- controls + settings persistence: OverlaySettings + source-gen JsonSerializerContext + corruption-safe SettingsService (%LocalAppData%\SwtorLogParser\settings.json) + load-on-startup/save-on-close of window position+size+font (OVL-07 pos+size, OVL-08)
+  - [x] 09-02-PLAN.md — Font +/- controls + settings persistence: OverlaySettings + source-gen JsonSerializerContext + corruption-safe SettingsService (%LocalAppData%\SwtorLogParser\settings.json) + load-on-startup/save-on-close of window position+size+font (OVL-07 pos+size, OVL-08)
 
 **UI hint**: yes
 
@@ -154,7 +154,7 @@ Overlay critical path 8 → 9 → 10 → 11 (hard parity gate). Phase 12 (MSTest
 | 6. .NET 10 Upgrade | v1.0 | Complete | 2026-06-12 |
 | 7. CI Pipeline | v1.0 | Complete | 2026-06-12 |
 | 8. WinUI 3 Scaffold + Guardrails | 2/2 | Complete    | 2026-06-12 |
-| 9. Live Stream Render + Dispatcher | 1/2 | In Progress|  |
+| 9. Live Stream Render + Dispatcher | 2/2 | Complete    | 2026-06-12 |
 | 10. CsWin32 Interop | v1.1 | Not started | - |
 | 11. Parity Gate + WinForms Removal | v1.1 | Not started | - |
 | 12. MSTest Migration | v1.1 | Not started | - |

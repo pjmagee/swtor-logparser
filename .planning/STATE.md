@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: WinUI 3 Overlay & Dev Tooling
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-06-12T09:19:41.845Z"
-last_activity: 2026-06-12 -- Phase 9 execution started
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-06-12T10:27:00.000Z"
+last_activity: 2026-06-12 -- Completed Phase 9 (09-02: font controls + settings persistence; OVL-07 pos+size, OVL-08)
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -25,18 +25,18 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 ## Current Position
 
-Phase: 9 (Live Stream Render + Dispatcher Marshaling) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute (09-01 complete; 09-02 next)
-Last activity: 2026-06-12 -- Completed 09-01 (live stream render + dispatcher marshaling, OVL-02)
+Phase: 9 (Live Stream Render + Dispatcher Marshaling) — COMPLETE
+Plan: 2 of 2 (all plans complete)
+Status: Phase 9 complete (09-01 + 09-02); ready for Phase 10
+Last activity: 2026-06-12 -- Completed 09-02 (font +/- controls + settings persistence: OVL-07 pos+size, OVL-08)
 
-Progress: [█████░░░░░] 50% (Phase 9: 1/2 plans)
+Progress: [██████████] 100% (Phase 9: 2/2 plans)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2 (this milestone)
+- Total plans completed: 4 (this milestone)
 - Average duration: —
 - Total execution time: 0 hours
 
@@ -55,6 +55,7 @@ Progress: [█████░░░░░] 50% (Phase 9: 1/2 plans)
 | Phase 8 P01 | 3min | 2 tasks | 9 files |
 | Phase 8 P02 | 25min | 3 tasks | 2 files |
 | Phase 9 P01 | 3min | 3 tasks | 6 files |
+| Phase 9 P02 | 3min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [09-01] Off-thread DpsHps aggregation in reused core SlidingExpirationList(10s); 1s DispatcherQueueTimer mirrors into ObservableCollection (DPS-desc, null/zero last); OnNext never touches XAML — no cross-thread COMException 0x8001010E
 - [Phase ?]: [09-01] OVL-02 satisfied at no-crash-launch level (window opens, monitor starts, marshaling holds); live-data visual confirmation of rows rendering/expiring deferred to Phase 11 parity gate
 - [Phase ?]: [09-01] Native AOT IL analysis warning-free (overlay->core ProjectReference did not contaminate core/Native.Cli AOT graph); native-link MSB3073 is env-gated (MSVC not on shell PATH), CI-covered
+- [Phase ?]: [09-02] Overlay persists window pos+size+font via corruption-safe local JSON at %LocalAppData%\SwtorLogParser\settings.json (source-gen System.Text.Json; missing/corrupt → defaults, never throws); load-on-startup/save-on-close via managed AppWindow.MoveAndResize — no CsWin32 interop, no core dependency. OVL-07 pos+size + OVL-08 confirmed end-to-end (human-verify APPROVED)
+- [Phase ?]: [09-02] OVL-07 opacity persistence DEFERRED to Phase 10 (D-04 scope split); reserved Opacity field on OverlaySettings exists for forward-compat but is not controlled/applied this phase
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T09:19:41.840Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-06-12T10:27:00.000Z
+Stopped at: Completed 09-02-PLAN.md (Phase 9 complete)
 Resume file: None
