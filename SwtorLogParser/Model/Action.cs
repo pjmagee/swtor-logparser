@@ -44,16 +44,17 @@ public class Action : IEquatable<Action>
 
     public static Action? Parse(ReadOnlyMemory<char> rom)
     {
-        var key = rom.ToString();
-        if (CombatLogs.ActionCache.TryGetValue(key, out var cached)) return cached;
+        // PERF-CACHE-01: span lookup FIRST — a cache HIT never materializes a string key.
+        if (CombatLogs.ActionCache.TryGetValue(rom.Span, out var cached)) return cached;
 
         if (rom.Span.IndexOf(':') != -1)
             try
             {
                 var action = new Action(rom);
 
-                // GetOrAdd preserves the TryAdd race idiom: returns the race winner's instance.
-                return CombatLogs.ActionCache.GetOrAdd(key, action);
+                // Miss: materialize the key once and insert. GetOrAdd preserves the TryAdd race
+                // idiom: returns the race winner's instance.
+                return CombatLogs.ActionCache.GetOrAdd(rom.ToString(), action);
             }
             catch (Exception e)
             {

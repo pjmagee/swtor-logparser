@@ -100,15 +100,16 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 
     public static GameObject? Parse(ReadOnlyMemory<char> rom)
     {
-        var key = rom.ToString();
-        if (CombatLogs.GameObjectCache.TryGetValue(key, out var cached))
+        // PERF-CACHE-01: span lookup FIRST — a cache HIT never materializes a string key.
+        if (CombatLogs.GameObjectCache.TryGetValue(rom.Span, out var cached))
             return cached;
 
         var gameObject = new GameObject(rom);
         if (gameObject.Id == null) return null;
 
-        // GetOrAdd preserves the TryAdd race idiom: returns the race winner's instance.
-        return CombatLogs.GameObjectCache.GetOrAdd(key, gameObject);
+        // Miss: materialize the key once and insert. GetOrAdd preserves the TryAdd race idiom:
+        // returns the race winner's instance.
+        return CombatLogs.GameObjectCache.GetOrAdd(rom.ToString(), gameObject);
     }
 
     public override string ToString()

@@ -71,6 +71,82 @@ public class ParseCacheTests
         Assert.All(results, r => Assert.Same(first, r));
     }
 
+    // PERF-CACHE-01: span lookup on a HIT returns the SAME instance the string lookup returns for
+    // identical content, and the span-lookup hit does NOT grow the cache (zero string-key alloc).
+    [Fact]
+    public void Span_Lookup_Returns_Same_Instance_As_String_Lookup()
+    {
+        const int cap = 16;
+        var cache = new BoundedCache<object>(cap);
+        const string content = "ZqxSpanLookupSameInstance";
+
+        var value = new object();
+        var added = cache.GetOrAdd(content, value);
+        Assert.Same(value, added);
+
+        var countAfterAdd = cache.Count;
+
+        Assert.True(cache.TryGetValue(content, out var byString));
+        Assert.True(cache.TryGetValue(content.AsSpan(), out var bySpan));
+
+        Assert.Same(byString, bySpan);
+        Assert.Same(value, bySpan);
+        Assert.Equal(countAfterAdd, cache.Count);
+    }
+
+    // PERF-CACHE-01: repeated span-lookup HITS never grow the cache.
+    [Fact]
+    public void Span_Lookup_Hit_Does_Not_Grow_Cache()
+    {
+        var cache = new BoundedCache<object>(32);
+        const string content = "ZqxSpanLookupNoGrow";
+        cache.GetOrAdd(content, new object());
+
+        var before = cache.Count;
+        for (var i = 0; i < 1000; i++)
+        {
+            Assert.True(cache.TryGetValue(content.AsSpan(), out _));
+        }
+
+        Assert.Equal(before, cache.Count);
+    }
+
+    // PERF-CACHE-01: span GetOrAdd materializes the key + inserts exactly once on a miss, and
+    // returns the cached instance on subsequent (span) hits without growing the cache.
+    [Fact]
+    public void Span_GetOrAdd_Inserts_Once_On_Miss_Then_Hits()
+    {
+        var cache = new BoundedCache<object>(32);
+        const string content = "ZqxSpanGetOrAddOnce";
+
+        var factoryCalls = 0;
+        var first = cache.GetOrAdd(content.AsSpan(), () => { factoryCalls++; return new object(); });
+        var afterInsert = cache.Count;
+
+        var second = cache.GetOrAdd(content.AsSpan(), () => { factoryCalls++; return new object(); });
+
+        Assert.Same(first, second);
+        Assert.Equal(1, factoryCalls);
+        Assert.Equal(afterInsert, cache.Count);
+    }
+
+    // PERF-CACHE-01: the span hot path in GameObject.Parse returns the same instance as a prior
+    // parse of identical content from a DISTINCT backing memory — content-keyed via span lookup.
+    [Fact]
+    public void GameObject_Span_Hot_Path_Dedups_Identical_Content()
+    {
+        const string content = "ZqxSpanHotPathWidget {3039943492375000}";
+
+        var a = ("Y" + content).AsMemory().Slice(1); // distinct backing array
+        var b = content.AsMemory();
+
+        var first = GameObject.Parse(a);
+        var second = GameObject.Parse(b);
+
+        Assert.NotNull(first);
+        Assert.Same(first, second);
+    }
+
     // Bound: a small-cap BoundedCache must never exceed its capacity, even after adding many more
     // distinct keys than the cap. Tested directly on BoundedCache<int> for a deterministic proof
     // (the shared static caches use cap 4096 and are awkward to flood in isolation).
