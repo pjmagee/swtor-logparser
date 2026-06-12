@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="SwtorLogParser.Overlay.WinUi.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Empty render surface. Transparency, click-through, drag, and the live
+         DPS/HPS grid are intentionally NOT here yet (Phases 9-10). -->
+    <Grid />
+</Window>
