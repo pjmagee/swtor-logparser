@@ -172,15 +172,19 @@ public class Actor
         var subSections = new List<ReadOnlyMemory<char>>();
         var start = 0;
 
+        // Zero-copy: each subsection is a window into the caller's backing memory (the per-line
+        // string retained by CombatLogLine.Rom, which outlives every Actor). The previous
+        // `new ReadOnlyMemory<char>(slice.ToArray())` copied each subsection into a fresh char[],
+        // defeating the span-parsing design — ~5-6 needless char[] allocations per combat line.
         for (var i = 0; i < rom.Length; i++)
             if (rom.Span[i] == '|')
             {
-                if (i > start) subSections.Add(new ReadOnlyMemory<char>(rom.Slice(start, i - start).ToArray()));
+                if (i > start) subSections.Add(rom.Slice(start, i - start));
                 start = i + 1;
             }
 
         if (rom.Length > start)
-            subSections.Add(new ReadOnlyMemory<char>(rom.Slice(start, rom.Length - start).ToArray()));
+            subSections.Add(rom.Slice(start, rom.Length - start));
 
         return subSections;
     }
