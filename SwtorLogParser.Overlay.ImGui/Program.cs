@@ -174,8 +174,14 @@ internal sealed class Program
     private void DrawControlBar()
     {
         // Drag grip — manual drag (OVL-05): track the global cursor and move the window by the delta.
-        // (The OS caption move-loop is unreliable on a WS_EX_NOACTIVATE window.)
-        ImGuiNET.ImGui.Button("☰");          // ☰ grip
+        // (The OS caption move-loop is unreliable on a WS_EX_NOACTIVATE window.) ASCII label — the
+        // default ImGui font has no glyph icons (they render as '?'); a Hand cursor signals "draggable".
+        ImGuiNET.ImGui.Button("Move");
+        if (ImGuiNET.ImGui.IsItemHovered())
+        {
+            ImGuiNET.ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+            ImGuiNET.ImGui.SetTooltip("Drag to move the overlay");
+        }
         if (ImGuiNET.ImGui.IsItemActive() && PInvoke.GetCursorPos(out var cursor))
         {
             if (!_dragging)
@@ -213,6 +219,11 @@ internal sealed class Program
             _showLog = showLog;
             ResizeForLog(); // grow/shrink the window to make room for the combat log
         }
+
+        // Close button — the borderless tool-window has no OS title-bar 'X', so provide one in-UI.
+        ImGuiNET.ImGui.SameLine();
+        if (ImGuiNET.ImGui.Button("X")) _window.Close();
+        if (ImGuiNET.ImGui.IsItemHovered()) ImGuiNET.ImGui.SetTooltip("Close the overlay");
 
         if (!_gameFound)
             ImGuiNET.ImGui.TextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Waiting for SWTOR…");
