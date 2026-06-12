@@ -1,0 +1,12 @@
+GetWindowLongPtr
+SetWindowLongPtr
+GetWindowRect
+IsWindow
+SetWindowPos
+SetWinEventHook
+UnhookWinEvent
+ReleaseCapture
+SendMessage
+GetAsyncKeyState
+EVENT_SYSTEM_FOREGROUND
+WINEVENT_OUTOFCONTEXT
