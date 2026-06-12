@@ -41,7 +41,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 ### Infrastructure (INFRA)
 
-- [ ] **INFRA-01**: A CI pipeline (GitHub Actions) builds the solution and runs the test suite on push/PR
+- [x] **INFRA-01**: A CI pipeline (GitHub Actions) builds the solution and runs the test suite on push/PR
 - [x] **INFRA-02**: The misleading `DockerDefaultTargetOS=Linux` is removed from the CLI projects — `*.csproj`
 
 ### Test Coverage (TEST)
@@ -83,7 +83,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | DEP-02 | Phase 5 | Complete |
 | DEP-03 | Phase 5 | Complete |
 | PLAT-01 | Phase 6 | Complete |
-| INFRA-01 | Phase 7 | Pending |
+| INFRA-01 | Phase 7 | Complete |
 | INFRA-02 | Phase 5 | Complete |
 | TEST-01 | Phase 3 | Complete |
 | TEST-02 | Phase 3 | Complete |

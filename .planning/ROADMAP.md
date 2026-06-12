@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line (completed 2026-06-11)
 - [x] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha (completed 2026-06-12)
 - [x] **Phase 6: .NET 10 Upgrade** - Move every project to .NET 10 (LTS); re-verify the solution builds, all 106 tests pass, and the Native AOT host still compiles AOT-clean (PLAT-01, closes issue #1) (completed 2026-06-12)
-- [ ] **Phase 7: CI Pipeline** - Add GitHub Actions build + test pipeline targeting .NET 10 (INFRA-01)
+- [x] **Phase 7: CI Pipeline** - Add GitHub Actions build + test pipeline targeting .NET 10 (INFRA-01)
 
 ## Phase Details
 

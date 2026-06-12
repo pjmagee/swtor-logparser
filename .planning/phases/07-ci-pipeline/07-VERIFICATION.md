@@ -1,7 +1,7 @@
 ---
 phase: 7
 slug: ci-pipeline
-status: human_needed
+status: passed
 verified: 2026-06-12
 ---
 
