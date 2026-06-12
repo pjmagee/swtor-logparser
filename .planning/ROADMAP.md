@@ -130,8 +130,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. `DockerDefaultTargetOS=Linux` is absent from all project files; no misleading cross-platform properties remain
 
 **Plans**: 2 plans (Wave 1: 05-01 — CPM migration touches all csproj, runs alone; Wave 2: 05-02 — System.CommandLine removal + Spectre.Console + Docker removal on the two CLI hosts)
+**Wave 1**
 
 - [ ] 05-01-PLAN.md — Directory.Packages.props (CPM) + all-GA versions; strip Version= from every csproj; drop 3 dead core-lib refs; add explicit Logging.Abstractions (DEP-01, DEP-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 05-02-PLAN.md — drop System.CommandLine(+Rendering) from both CLI hosts; hand-rolled list/monitor dispatch + Ctrl+C bridge; Spectre.Console table (managed CLI); remove DockerDefaultTargetOS (DEP-03, INFRA-02)
 
 ### Phase 6: CI Pipeline
