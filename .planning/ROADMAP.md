@@ -52,7 +52,7 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
 
 **Wave 1**
 
-  - [ ] 08-01-PLAN.md — Pin WinAppSDK 2.2.0 + CsWin32 0.3.275 in CPM; scaffold the unpackaged self-contained WinUI 3 project (empty window)
+  - [x] 08-01-PLAN.md — Pin WinAppSDK 2.2.0 + CsWin32 0.3.275 in CPM; scaffold the unpackaged self-contained WinUI 3 project (empty window)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -144,7 +144,7 @@ Overlay critical path 8 → 9 → 10 → 11 (hard parity gate). Phase 12 (MSTest
 | 5. Dependency Upgrades | v1.0 | Complete | 2026-06-12 |
 | 6. .NET 10 Upgrade | v1.0 | Complete | 2026-06-12 |
 | 7. CI Pipeline | v1.0 | Complete | 2026-06-12 |
-| 8. WinUI 3 Scaffold + Guardrails | v1.1 | Not started | - |
+| 8. WinUI 3 Scaffold + Guardrails | 1/2 | In Progress|  |
 | 9. Live Stream Render + Dispatcher | v1.1 | Not started | - |
 | 10. CsWin32 Interop | v1.1 | Not started | - |
 | 11. Parity Gate + WinForms Removal | v1.1 | Not started | - |
