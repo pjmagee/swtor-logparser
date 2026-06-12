@@ -480,3 +480,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Dear ImGui runtime layout dump (overlay disables it; ignore any stray copies)
+imgui.ini
+**/imgui.ini

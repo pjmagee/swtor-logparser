@@ -1,0 +1,47 @@
+name: Release
+
+# Tag a commit with vX.Y.Z and push the tag to cut a GitHub Release with binaries:
+#   git tag v1.1.0 && git push origin v1.1.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # required to create the GitHub Release
+
+jobs:
+  release:
+    name: Publish binaries (.NET 10 · Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # The CLI is Native AOT (PublishAot=true + RuntimeIdentifier=win-x64 in its csproj):
+      # a single self-contained native .exe, no .NET runtime required.
+      - name: Publish CLI (Native AOT)
+        run: dotnet publish SwtorLogParser.Cli -c Release -o publish/cli
+
+      # The overlay is a self-contained Silk.NET/OpenGL + Dear ImGui app (bundles the GLFW/OpenGL
+      # natives + the .NET runtime, so it runs without a separate install).
+      - name: Publish Overlay (self-contained)
+        run: dotnet publish SwtorLogParser.Overlay.ImGui -c Release -r win-x64 --self-contained -o publish/overlay
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item publish/cli/SwtorLogParser.Cli.exe "dist/SwtorLogParser.Cli-${{ github.ref_name }}-win-x64.exe"
+          Compress-Archive -Path publish/overlay/* -DestinationPath "dist/SwtorLogParser.Overlay-${{ github.ref_name }}-win-x64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

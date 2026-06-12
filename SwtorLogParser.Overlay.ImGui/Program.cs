@@ -89,6 +89,10 @@ internal sealed class Program
         _input = _window.CreateInput();
         _controller = new ImGuiController(_gl, _window, _input);
 
+        // Don't write an imgui.ini layout file next to the exe — our window state is persisted in our own
+        // settings, and the overlay window already uses NoSavedSettings.
+        unsafe { ImGuiNET.ImGui.GetIO().NativePtr->IniFilename = null; }
+
         // Keep the GL viewport in lock-step with the window size. Without this, resizing the window
         // (e.g. toggling the combat log) squishes the render into the old viewport — skewed, shrunk, and
         // with the mouse hit-test offset from where things are drawn.
