@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode) (completed 2026-06-11)
 - [x] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests (completed 2026-06-11)
 - [x] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line (completed 2026-06-11)
-- [ ] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha
+- [x] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha (completed 2026-06-12)
 - [ ] **Phase 6: CI Pipeline** - Add GitHub Actions build + test pipeline and remove the misleading DockerDefaultTargetOS=Linux
 
 ## Phase Details
@@ -136,7 +136,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — drop System.CommandLine(+Rendering) from both CLI hosts; hand-rolled list/monitor dispatch + Ctrl+C bridge; Spectre.Console table (managed CLI); remove DockerDefaultTargetOS (DEP-03, INFRA-02)
+- [x] 05-02-PLAN.md — drop System.CommandLine(+Rendering) from both CLI hosts; hand-rolled list/monitor dispatch + Ctrl+C bridge; Spectre.Console table (managed CLI); remove DockerDefaultTargetOS (DEP-03, INFRA-02)
 
 ### Phase 6: CI Pipeline
 
@@ -163,5 +163,5 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
 | 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
 | 4. Performance | 3/3 | Complete   | 2026-06-11 |
-| 5. Dependency Upgrades | 1/2 | In Progress|  |
+| 5. Dependency Upgrades | 2/2 | Complete   | 2026-06-12 |
 | 6. CI Pipeline | 0/? | Not started | - |

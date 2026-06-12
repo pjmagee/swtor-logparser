@@ -33,12 +33,12 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 - [x] **DEP-01**: All NuGet packages are on stable GA versions (no preview/alpha/beta) — all `*.csproj`
 - [x] **DEP-02**: Package versions are centrally managed via `Directory.Packages.props`
-- [ ] **DEP-03**: The CLI rendering no longer depends on the abandoned `System.CommandLine.Rendering 0.4.0-alpha`; it uses a supported rendering approach — `SwtorLogParser.Cli`
+- [x] **DEP-03**: The CLI rendering no longer depends on the abandoned `System.CommandLine.Rendering 0.4.0-alpha`; it uses a supported rendering approach — `SwtorLogParser.Cli`
 
 ### Infrastructure (INFRA)
 
 - [ ] **INFRA-01**: A CI pipeline (GitHub Actions) builds the solution and runs the test suite on push/PR
-- [ ] **INFRA-02**: The misleading `DockerDefaultTargetOS=Linux` is removed from the CLI projects — `*.csproj`
+- [x] **INFRA-02**: The misleading `DockerDefaultTargetOS=Linux` is removed from the CLI projects — `*.csproj`
 
 ### Test Coverage (TEST)
 
@@ -77,9 +77,9 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | PERF-03 | Phase 4 | Complete |
 | DEP-01 | Phase 5 | Complete |
 | DEP-02 | Phase 5 | Complete |
-| DEP-03 | Phase 5 | Pending |
+| DEP-03 | Phase 5 | Complete |
 | INFRA-01 | Phase 6 | Pending |
-| INFRA-02 | Phase 5 | Pending |
+| INFRA-02 | Phase 5 | Complete |
 | TEST-01 | Phase 3 | Complete |
 | TEST-02 | Phase 3 | Complete |
 | TEST-03 | Phase 1 | Complete |

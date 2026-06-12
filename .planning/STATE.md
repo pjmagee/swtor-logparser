@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-06-12T00:09:54.361Z"
+last_updated: "2026-06-12T00:15:24.713Z"
 last_activity: 2026-06-11 -- Phase 02 Plan 01 executed
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 16
-  completed_plans: 15
-  percent: 67
+  completed_plans: 16
+  percent: 83
 ---
 
 # Project State
@@ -67,6 +67,7 @@ Progress: [███████░░░] 67%
 | Phase 04 P02 | 7min | 1 tasks | 1 files |
 | Phase 04 P03 | 4min | 2 tasks | 2 files |
 | Phase 05 P01 | 3min | 3 tasks | 5 files |
+| Phase 05 P02 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,7 @@ Recent decisions affecting current work:
 - [Phase 04]: [Phase 04]: PERF-03 single-pass CalculateDpsHpsStats — dropped OrderBy(TimeOfDay)+6 LINQ scans for one foreach; min/max by .TimeStamp.TimeOfDay (preserves across-midnight quirk, IN-01); independent damage/heal ifs; crit% over state.Count; Accumulator + DateTime.Now filter untouched; DpsHpsMathTests pass unchanged (106/106)
 - [Phase ?]: [Phase 05]: CPM introduced via root Directory.Packages.props; all 7 managed packages on GA versions (no preview/alpha/beta)
 - [Phase ?]: [Phase 05]: System.CommandLine + System.CommandLine.Rendering pinned via VersionOverride (no central PackageVersion) to satisfy CPM without NU1008/NU1010, pending deletion in 05-02
+- [Phase ?]: [Phase 05]: DEP-03 removed System.CommandLine + System.CommandLine.Rendering from both CLI hosts; hand-rolled switch(args[0]) dispatch + Console.CancelKeyPress->CancellationTokenSource Ctrl+C bridge; managed CLI 5-column live table ported to Spectre.Console 0.57.0 (Native AOT host Spectre-free); INFRA-02 dropped DockerDefaultTargetOS from both csproj
 
 ### Pending Todos
 
@@ -119,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T00:09:54.355Z
+Last session: 2026-06-12T00:14:49.504Z
 Stopped at: Completed 05-01-PLAN.md
 Resume file: None
