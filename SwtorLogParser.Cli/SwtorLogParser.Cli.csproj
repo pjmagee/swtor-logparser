@@ -6,7 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>SwtorLogParser.Cli</RootNamespace>
     </PropertyGroup>
 
@@ -19,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.CommandLine.Rendering" VersionOverride="0.4.0-alpha.22272.1"/>   <!-- removed in plan 05-02; VersionOverride pins it without a central PackageVersion entry (avoids NU1008/NU1010) -->
+        <PackageReference Include="Spectre.Console"/>
     </ItemGroup>
 
 </Project>

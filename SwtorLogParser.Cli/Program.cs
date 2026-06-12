@@ -1,7 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Rendering;
-using System.CommandLine.Rendering.Views;
+using Spectre.Console;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
 
@@ -9,63 +6,70 @@ namespace SwtorLogParser.Cli;
 
 public static class Program
 {
-    private static readonly Region Region = new(0, 0);
     private static readonly SlidingExpirationList List = new(TimeSpan.FromSeconds(30));
 
-    private static void Update(ConsoleRenderer renderer, CombatLogsMonitor.PlayerStats playerStats)
+    public static int Main(string[] args)
     {
-        List.AddOrUpdate(playerStats);
-        var tableView = new TableView<CombatLogsMonitor.PlayerStats> { Items = List.Items };
-        tableView.AddColumn(x => x.Player.Name, "Player", ColumnDefinition.Star(0.2));
-        tableView.AddColumn(x => x.DPS.HasValue ? x.DPS.Value.ToString("N") : "-", "dps", ColumnDefinition.Star(0.2));
-        tableView.AddColumn(x => x.DPSCritP.HasValue ? x.DPSCritP.Value.ToString("N") : "-", "(crit %)",
-            ColumnDefinition.Star(0.2));
-        tableView.AddColumn(x => x.HPS.HasValue ? x.HPS.Value.ToString("N") : "-", "hps", ColumnDefinition.Star(0.2));
-        tableView.AddColumn(x => x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-", "(crit %)",
-            ColumnDefinition.Star(0.2));
-        tableView.Render(renderer, Region);
+        switch (args.Length > 0 ? args[0] : "")
+        {
+            case "list":
+                ListCombatLogs();
+                return 0;
+            case "monitor":
+                MonitorCombatLogs();
+                return 0;
+            default:
+                Console.Error.WriteLine("Usage: SwtorLogParser.Cli [list|monitor]");
+                return 1;
+        }
     }
 
-    public static async Task<int> Main(string[] args)
+    private static void MonitorCombatLogs()
     {
-        var rootCommand = new RootCommand("SWTOR Log Parser");
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, e) =>
+        {
+            e.Cancel = true;
+            cts.Cancel();
+        };
 
-        var listCommand = new Command("list", "list all swtor logs");
-        var monitorCommand = new Command("monitor", "monitor log file changes");
-
-        listCommand.SetHandler(ListCombatLogs);
-        monitorCommand.SetHandler(MonitorCombatLogs);
-
-        rootCommand.Add(listCommand);
-        rootCommand.Add(monitorCommand);
-
-        return await rootCommand.InvokeAsync(args);
-    }
-
-    private static void MonitorCombatLogs(InvocationContext context)
-    {
-        var token = context.GetCancellationToken();
-        var terminal = context.Console.GetTerminal();
-        terminal.HideCursor();
-
-        using var manualResetEvent = new ManualResetEvent(false);
-        manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
-
-        var consoleRenderer = new ConsoleRenderer(context.Console, OutputMode.Ansi);
+        Console.CursorVisible = false;
 
         CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DpsHps.Subscribe(playerStats => Update(consoleRenderer, playerStats));
-        CombatLogsMonitor.Instance.Start(token);
+        CombatLogsMonitor.Instance.DpsHps.Subscribe(Update);
+        CombatLogsMonitor.Instance.Start(cts.Token);
 
-        manualResetEvent.WaitOne();
+        cts.Token.WaitHandle.WaitOne();
+
+        CombatLogsMonitor.Instance.Stop();
+    }
+
+    private static void Update(CombatLogsMonitor.PlayerStats playerStats)
+    {
+        List.AddOrUpdate(playerStats);
+
+        var table = new Table()
+            .AddColumn("Player")
+            .AddColumn("dps")
+            .AddColumn("(crit %)")
+            .AddColumn("hps")
+            .AddColumn("(crit %)");
+
+        foreach (var x in List.Items)
+            table.AddRow(
+                x.Player.Name ?? "-",
+                x.DPS.HasValue ? x.DPS.Value.ToString("N") : "-",
+                x.DPSCritP.HasValue ? x.DPSCritP.Value.ToString("N") : "-",
+                x.HPS.HasValue ? x.HPS.Value.ToString("N") : "-",
+                x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-");
+
+        AnsiConsole.Clear();
+        AnsiConsole.Write(table);
     }
 
     private static void OnCombatLogAdded(object? _, CombatLog combatLog)
     {
-        Console.SetCursorPosition(0, 0);
-        Console.Write(new string(' ', Console.WindowWidth - 1));
-        Console.SetCursorPosition(0, 0);
-        Console.Write(combatLog.FileInfo);
+        AnsiConsole.MarkupLineInterpolated($"[grey]{combatLog.FileInfo}[/]");
     }
 
     private static void ListCombatLogs()
