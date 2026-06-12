@@ -57,13 +57,51 @@ public class Value
 
     public static Value? Parse(ReadOnlyMemory<char> rom)
     {
-        var start = rom.Span.LastIndexOf('(');
-        var end = rom.Span.LastIndexOf(')');
-        var lastSection = rom.Span.LastIndexOf(']');
+        var span = rom.Span;
+        var lastSection = span.LastIndexOf(']');
 
-        if (start == -1 || end == -1 || lastSection > start) return null;
+        // BUG-260612-dso: depth-aware OUTER-group extraction. The old LastIndexOf('(')/
+        // LastIndexOf(')') sliced the INNER nested group on a shield line
+        // (133 energy {…} -shield {…} (149 absorbed {…})) -> Total=149. The damage is the
+        // OUTER 133; the nested (149 absorbed {…}) is a separate absorbed amount (Value.Absorbed).
+        //
+        // 1. Find the FIRST '(' strictly after the final ']' (the value group follows the
+        //    last [action] section — preserves the old `lastSection > start` intent).
+        var open = -1;
+        for (var i = lastSection + 1; i < span.Length; i++)
+        {
+            if (span[i] == '(')
+            {
+                open = i;
+                break;
+            }
+        }
 
-        var scope = rom.Slice(start + 1, end - start - 1);
+        if (open == -1) return null; // no value group (preserves old start == -1 null path)
+
+        // 2. Walk forward tracking paren depth; the index where depth returns to 0 is the
+        //    BALANCING close. If the string ends before depth balances, the group is malformed.
+        var depth = 0;
+        var close = -1;
+        for (var i = open; i < span.Length; i++)
+        {
+            if (span[i] == '(') depth++;
+            else if (span[i] == ')')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    close = i;
+                    break;
+                }
+            }
+        }
+
+        if (close == -1) return null; // unbalanced parens -> malformed
+
+        // 3. scope = content INSIDE the outer parens (still includes any nested
+        //    (149 absorbed {…}) substring, which the Absorbed property reads).
+        var scope = rom.Slice(open + 1, close - open - 1);
 
         return !scope.Span.StartsWith(CombatLogs.HeroEnginePrefix.Span, StringComparison.OrdinalIgnoreCase)
             ? new Value(scope)
