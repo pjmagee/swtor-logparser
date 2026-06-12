@@ -15,8 +15,8 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-preview.5.23280.8"/>
-        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+        <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1"/>   <!-- removed in plan 05-02; VersionOverride pins it without a central PackageVersion entry (avoids NU1008/NU1010) -->
     </ItemGroup>
 
     <ItemGroup>
