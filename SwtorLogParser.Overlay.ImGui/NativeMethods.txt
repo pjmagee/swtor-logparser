@@ -5,9 +5,6 @@ IsWindow
 SetWindowPos
 SetWinEventHook
 UnhookWinEvent
-ReleaseCapture
-SendMessage
-GetAsyncKeyState
 GetCursorPos
 EVENT_SYSTEM_FOREGROUND
 WINEVENT_OUTOFCONTEXT

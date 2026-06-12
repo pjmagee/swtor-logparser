@@ -36,8 +36,6 @@ internal sealed class Program
 
     private float _fontScale;
     private double _opacity;
-    private bool _clickThrough;
-    private bool _chordWasDown;
 
     // SWTOR game-window tracking: poll until the game window appears, pin the overlay over it, follow it.
     private const double GamePollSeconds = 1.5d;
@@ -105,11 +103,6 @@ internal sealed class Program
 
     private void OnRender(double delta)
     {
-        // Global click-through toggle (Ctrl+Alt+O) — polled so it works while click-through/no-activate.
-        var chord = WindowInterop.IsToggleChordDown();
-        if (chord && !_chordWasDown) SetClickThrough(!_clickThrough);
-        _chordWasDown = chord;
-
         // Find / follow the SWTOR window so the overlay pins itself over the game (polled, resilient).
         _gamePollAccum += delta;
         if (_gamePollAccum >= GamePollSeconds)
@@ -188,10 +181,6 @@ internal sealed class Program
         if (ImGuiNET.ImGui.Button(" - ")) _fontScale = Math.Clamp(_fontScale - 0.1f, 0.8f, 3.0f);
 
         ImGuiNET.ImGui.SameLine();
-        var ct = _clickThrough;
-        if (ImGuiNET.ImGui.Checkbox("Click-through", ref ct)) SetClickThrough(ct);
-
-        ImGuiNET.ImGui.SameLine();
         ImGuiNET.ImGui.SetNextItemWidth(90f);
         var op = (float)_opacity;
         if (ImGuiNET.ImGui.SliderFloat("Opacity", ref op, 0.05f, 1.0f, "")) _opacity = op;
@@ -224,12 +213,6 @@ internal sealed class Program
         }
 
         ImGuiNET.ImGui.EndTable();
-    }
-
-    private void SetClickThrough(bool enabled)
-    {
-        _clickThrough = enabled;
-        _interop?.SetClickThrough(enabled);
     }
 
     /// <summary>
