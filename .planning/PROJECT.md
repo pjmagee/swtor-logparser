@@ -1,12 +1,24 @@
-# SWTOR Log Parser — Hardening Milestone
+# SWTOR Log Parser
 
 ## What This Is
 
-A .NET 8 / C# parser for *Star Wars: The Old Republic* combat logs. A shared core library (`SwtorLogParser`) tails the game's log files, parses each line with zero-allocation span parsing, and exposes a live reactive stream of per-player DPS/HPS/APM statistics. Three consumer hosts render that stream: a managed CLI, a Native AOT CLI, and a transparent WinForms overlay. The current milestone is **hardening** — turning a working multi-prototype experiment into a correct, maintainable, CI-backed codebase by resolving every issue catalogued in `.planning/codebase/CONCERNS.md`.
+A .NET 10 / C# parser for *Star Wars: The Old Republic* combat logs. A shared core library (`SwtorLogParser`) tails the game's log files, parses each line with zero-allocation span parsing, and exposes a live reactive stream of per-player DPS/HPS/APM statistics. Three consumer hosts render that stream: a managed CLI, a Native AOT CLI, and a transparent overlay. The v1.0 milestone hardened the codebase (correctness, GA deps, CI, .NET 10); the current milestone (**v1.1**) modernizes the overlay (WinForms → WinUI 3) and the dev/test toolchain.
 
 ## Core Value
 
 The live DPS/HPS stats pipeline must stay correct and reliable while the codebase becomes safe to maintain and extend — no regressions to parsing or the reactive stream.
+
+## Current Milestone: v1.1 WinUI 3 Overlay & Dev Tooling
+
+**Goal:** Replace the WinForms overlay with a modern WinUI 3 overlay (CsWin32 interop, fixed topmost-over-borderless), and modernize the toolchain (MSTest SDK, VSCode launch/tasks, refreshed docs) — without touching the core parser or the live DPS/HPS stream.
+
+**Target features:**
+- WinUI 3 transparent click-through overlay at parity with WinForms (drag, transparency, live DPS/HPS render), then retire the WinForms host
+- Win32 interop via Microsoft.Windows.CsWin32 source generator (replaces hand-written `NativeMethods`)
+- Overlay stays on top of borderless/windowed SWTOR (BL-01 fix, carried into WinUI 3)
+- Migrate the 106-test suite from xUnit to the new MSTest .NET SDK
+- VSCode `launch.json` (debug every host) + `tasks.json` (build / test / AOT-publish)
+- Docs refresh (README/docs: WinUI 3 overlay, .NET 10, run/debug story)
 
 ## Requirements
 
@@ -52,13 +64,21 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 
 ### Active
 
-(Next milestone not yet scoped — see `BACKLOG.md` and GitHub issues #2/#3/#4. Candidate clusters: Overlay/UI modernization, tooling, docs refresh.)
+<!-- v1.1 WinUI 3 Overlay & Dev Tooling — see REQUIREMENTS.md for REQ-IDs. -->
+
+- [ ] WinUI 3 overlay at parity with WinForms (transparent, click-through, drag, live DPS/HPS), then WinForms retired
+- [ ] Win32 interop via Microsoft.Windows.CsWin32 source generator (replaces `NativeMethods`) — closes #3
+- [ ] Overlay stays on top of borderless/windowed SWTOR (BL-01) — carried into WinUI 3
+- [ ] Test suite migrated from xUnit to the MSTest .NET SDK — closes #2
+- [ ] VSCode `launch.json` (all hosts) + `tasks.json` (build / test / AOT-publish)
+- [ ] Docs refresh (WinUI 3 overlay, .NET 10, run/debug story)
 
 ### Out of Scope
 
-- Cross-platform / Linux support — the app is intentionally Windows-only (WinForms + `user32.dll` P/Invoke + SWTOR client paths); the Docker target is being *removed*, not honored
-- New end-user features (new stats, new hosts, packaging/distribution) — this milestone is hardening only
-- Rewriting the parser's span-based design — it works and is validated; only its safety/perf edges are in scope
+- Cross-platform / Linux support — the app is intentionally Windows-only (Win32 P/Invoke + SWTOR client paths); WinUI 3 reinforces the Windows-only stance
+- New end-user features (new stats, new metrics, packaging/distribution) — v1.1 is overlay re-implementation + tooling, not new product capability
+- Rewriting the parser's span-based design or changing the live DPS/HPS stream — it works and is validated; v1.1 swaps the overlay *host* only, core is untouched
+- WinUI 3 overlay on Native AOT — AOT applies only to `Native.Cli`; the overlay stays a normal managed host
 
 ## Context
 
@@ -69,10 +89,10 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 
 ## Constraints
 
-- **Tech stack**: .NET 10 (LTS, upgraded from .NET 8 in v1.0), C#, Rx.NET (`System.Reactive`), WinForms, xUnit, Spectre.Console (managed CLI), central package management.
-- **Compatibility**: Windows-only is acceptable and intended; do not add cross-platform burden.
-- **AOT**: `SwtorLogParser.Native.Cli` uses Native AOT and the core library is `IsAotCompatible=true` — refactors (esp. DI) must not break AOT compatibility (no reflection-heavy patterns in the core library).
-- **No regressions**: the parser model and the live DPS/HPS stream must behave identically after hardening; new tests should lock in current correct behavior before refactors.
+- **Tech stack**: .NET 10 (LTS), C#, Rx.NET (`System.Reactive`), **WinUI 3 / Windows App SDK** (overlay, replacing WinForms in v1.1), **MSTest .NET SDK** (replacing xUnit in v1.1), Spectre.Console (managed CLI), Microsoft.Windows.CsWin32 (interop), central package management.
+- **Compatibility**: Windows-only is acceptable and intended; do not add cross-platform burden. WinUI 3 reinforces this.
+- **AOT**: `SwtorLogParser.Native.Cli` uses Native AOT and the core library is `IsAotCompatible=true` — refactors must not break AOT compatibility (no reflection-heavy patterns in the core library). The WinUI 3 overlay is a normal managed host and is **not** AOT-constrained.
+- **No regressions**: the parser model and the live DPS/HPS stream must behave identically after the overlay/test-framework swap; v1.1 changes hosts and tooling, never the core.
 
 ## Key Decisions
 
@@ -84,12 +104,16 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 | Remove `DockerDefaultTargetOS=Linux` rather than pursue cross-platform | App is Windows-only by design; the Docker target is misleading | ✓ Good |
 | Drop System.CommandLine entirely (hand-rolled dispatch + Spectre.Console table) | No GA at decision time; Rendering abandoned; 2-command surface is trivial + AOT-safe | ✓ Good |
 | Upgrade to .NET 10 LTS mid-milestone (issue #1) | User directive ("ASAP"); native `.slnx`/single-SDK; LTS; simplified CI | ✓ Good — AOT-clean, 106 tests green |
+| v1.1: replace WinForms overlay with **WinUI 3** (not MAUI) | User directive (issue #4); modern Windows-native UI; MAUI's better AOT story is moot since the overlay isn't AOT-constrained | — Pending |
+| v1.1: straight replace — delete WinForms once WinUI 3 reaches parity | One overlay host to maintain; sequence build-before-delete so there's never a window without a working overlay | — Pending |
+| v1.1: migrate xUnit → **MSTest .NET SDK** (issue #2) | Modern single-SDK test project; user directive | — Pending |
+| v1.1: adopt **Microsoft.Windows.CsWin32** for Win32 interop (issue #3) | Source-generated, type-safe P/Invoke replaces hand-written `NativeMethods`; lands with the overlay rewrite | — Pending |
 
 ---
 
-## Current State (v1.0 shipped 2026-06-12)
+## Current State (v1.0 shipped 2026-06-12; v1.1 started 2026-06-12)
 
-The SWTOR log parser is hardened and modernized: .NET 10 LTS, 106-test suite, GitHub Actions CI green on `main` (build + test + Native AOT publish), all CONCERNS.md items resolved. Live overlay validated end-to-end against real combat logs. Deferred/next: overlay topmost (BL-01), CsWin32 interop (#3), lightweight UI alternative (#4), xUnit→MSTest (#2), docs refresh.
+The SWTOR log parser is hardened and modernized: .NET 10 LTS, 106-test suite, GitHub Actions CI green on `main` (build + test + Native AOT publish), all CONCERNS.md items resolved. **v1.1 in progress:** replacing the WinForms overlay with a WinUI 3 overlay (CsWin32 interop, BL-01 topmost fix), migrating tests xUnit→MSTest, adding VSCode launch/tasks, and refreshing docs. Core parser and live DPS/HPS stream remain frozen.
 
 ## Evolution
 
@@ -109,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-12 after v1.0 Hardening milestone*
+*Last updated: 2026-06-12 — started milestone v1.1 (WinUI 3 Overlay & Dev Tooling)*
