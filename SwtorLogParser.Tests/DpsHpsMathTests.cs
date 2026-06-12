@@ -182,4 +182,26 @@ public class DpsHpsMathTests
         Assert.AreEqual(1500d, stats.DPS!.Value, 1e-3); // one line => divisor is 1.0s => DPS == value
         Assert.IsNull(stats.HPS); // no heals => null
     }
+
+    // Regression: two (or more) events sharing the EXACT same timestamp make maxStamp == minStamp, so the
+    // window is zero-length. Without the guard, total / 0 = Infinity HPS/DPS (the reported bug). The guard
+    // floors a zero-length window to 1s, so the result is finite.
+    [TestMethod]
+    public void Same_Timestamp_Events_Do_Not_Produce_Infinity()
+    {
+        var monitor = NewMonitor();
+        var state = new HashSet<CombatLogLine>(new CombatLogLineComparer());
+
+        // Distinct values keep the two raw lines distinct in the HashSet, but the timestamp is identical.
+        state = monitor.Accumulator(state, HealLine("20:00:00.000", 500, critical: false));
+        state = monitor.Accumulator(state, HealLine("20:00:00.000", 1500, critical: false));
+
+        Assert.AreEqual(2, state.Count); // both kept (> 1) => a zero-length window
+
+        var stats = monitor.CalculateDpsHpsStats(state);
+
+        Assert.IsNotNull(stats.HPS);
+        Assert.IsFalse(double.IsInfinity(stats.HPS!.Value)); // the bug produced Infinity here
+        Assert.AreEqual(2000d, stats.HPS!.Value, 1e-3); // (500 + 1500) over the 1s floor
+    }
 }

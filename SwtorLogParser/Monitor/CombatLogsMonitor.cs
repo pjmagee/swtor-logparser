@@ -145,6 +145,10 @@ public class CombatLogsMonitor
 
         var timeSpan = state.Count > 1 ? (maxStamp - minStamp) : TimeSpan.FromSeconds(1);
 
+        // Guard a zero-length window: 2+ events sharing the same timestamp make maxStamp == minStamp,
+        // so total / 0 = Infinity DPS/HPS. Fall back to the same 1s floor the single-event case uses.
+        if (timeSpan <= TimeSpan.Zero) timeSpan = TimeSpan.FromSeconds(1);
+
         double dpsCrit = (double)damageCrit / state.Count * 100;
         double hpsCrit = (double)healCrit / state.Count * 100;
 
