@@ -26,17 +26,4 @@
         <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj"/>
     </ItemGroup>
 
-    <!-- Link the WinUI-free overlay settings sources so they can be unit-tested from this plain
-         net10.0 project WITHOUT referencing the WinUI overlay assembly (which would drag the
-         net10.0-windows TFM + WinAppSDK into the test/AOT graph). These three files depend only on
-         System.Text.Json + System.IO, so compiling them here is safe (plan 09-02, Task 1). -->
-    <ItemGroup>
-        <Compile Include="..\SwtorLogParser.Overlay.WinUi\Settings\OverlaySettings.cs"
-                 Link="OverlaySettings\OverlaySettings.cs"/>
-        <Compile Include="..\SwtorLogParser.Overlay.WinUi\Settings\OverlaySettingsContext.cs"
-                 Link="OverlaySettings\OverlaySettingsContext.cs"/>
-        <Compile Include="..\SwtorLogParser.Overlay.WinUi\Settings\SettingsService.cs"
-                 Link="OverlaySettings\SettingsService.cs"/>
-    </ItemGroup>
-
 </Project>

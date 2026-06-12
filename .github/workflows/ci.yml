@@ -36,13 +36,10 @@ jobs:
       - name: Restore
         run: dotnet restore SwtorLogParser.slnx
 
-      # Builds the full .slnx (core lib + 4 hosts + tests). net10.0 / net10.0-windows;
-      # the WinForms Overlay AND the new unpackaged self-contained WinUI 3 overlay
-      # (SwtorLogParser.Overlay.WinUi) both require the Windows runner. The WinUI 3
-      # project restores the Windows App SDK metapackage from NuGet and builds with
-      # NO separate `dotnet workload` step on windows-latest (verified Phase 8 Plan 02:
-      # a clean restore+build of the WinUI project succeeds with zero installed
-      # workloads), so no workload-restore step is required here.
+      # Builds the full .slnx (core lib + CLI hosts + ImGui overlay + tests). net10.0 /
+      # net10.0-windows; the overlay (SwtorLogParser.Overlay.ImGui) is a GLFW/OpenGL +
+      # Dear ImGui window that requires the Windows runner (CsWin32 interop + win-x64
+      # native Silk/GLFW assets, resolved from NuGet — no `dotnet workload` step needed).
       - name: Build
         run: dotnet build SwtorLogParser.slnx -c Release --no-restore
 
