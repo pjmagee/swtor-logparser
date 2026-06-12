@@ -70,29 +70,37 @@ Which phases cover which requirements. Filled during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OVL-01 | TBD | Pending |
-| OVL-02 | TBD | Pending |
-| OVL-03 | TBD | Pending |
-| OVL-04 | TBD | Pending |
-| OVL-05 | TBD | Pending |
-| OVL-06 | TBD | Pending |
-| OVL-07 | TBD | Pending |
-| OVL-08 | TBD | Pending |
-| OVL-09 | TBD | Pending |
-| INT-01 | TBD | Pending |
-| INT-02 | TBD | Pending |
-| INT-03 | TBD | Pending |
-| TEST-01 | TBD | Pending |
-| TEST-02 | TBD | Pending |
-| DX-01 | TBD | Pending |
-| DX-02 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
+| OVL-01 | Phase 8 | Pending |
+| OVL-02 | Phase 9 | Pending |
+| OVL-03 | Phase 10 | Pending |
+| OVL-04 | Phase 10 | Pending |
+| OVL-05 | Phase 10 | Pending |
+| OVL-06 | Phase 10 | Pending |
+| OVL-07 | Phase 9 | Pending |
+| OVL-08 | Phase 9 | Pending |
+| OVL-09 | Phase 11 | Pending |
+| INT-01 | Phase 10 | Pending |
+| INT-02 | Phase 10 | Pending |
+| INT-03 | Phase 10 | Pending |
+| TEST-01 | Phase 12 | Pending |
+| TEST-02 | Phase 12 | Pending |
+| DX-01 | Phase 13 | Pending |
+| DX-02 | Phase 13 | Pending |
+| DOCS-01 | Phase 13 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17 ✓
+- Unmapped: 0
+
+**Phase distribution:**
+- Phase 8 (Scaffold + Guardrails): OVL-01
+- Phase 9 (Render + Dispatcher): OVL-02, OVL-07, OVL-08
+- Phase 10 (CsWin32 Interop): OVL-03, OVL-04, OVL-05, OVL-06, INT-01, INT-02, INT-03
+- Phase 11 (Parity Gate + WinForms Removal): OVL-09
+- Phase 12 (MSTest Migration): TEST-01, TEST-02
+- Phase 13 (Dev Tooling + Docs): DX-01, DX-02, DOCS-01
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-12 after initial definition*
+*Last updated: 2026-06-12 — traceability filled during roadmap creation (Phases 8-13)*
