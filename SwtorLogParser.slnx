@@ -8,6 +8,7 @@
   <Project Path="SwtorLogParser.Cli/SwtorLogParser.Cli.csproj" />
   <Project Path="SwtorLogParser.Native.Cli/SwtorLogParser.Native.Cli.csproj" />
   <Project Path="SwtorLogParser.Overlay/SwtorLogParser.Overlay.csproj" />
+  <Project Path="SwtorLogParser.Overlay.WinUi/SwtorLogParser.Overlay.WinUi.csproj" />
   <Project Path="SwtorLogParser.Tests/SwtorLogParser.Tests.csproj" />
   <Project Path="SwtorLogParser/SwtorLogParser.csproj" />
 </Solution>
