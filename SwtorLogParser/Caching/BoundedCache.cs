@@ -31,7 +31,9 @@ internal sealed class BoundedCache<TValue>
     // PERF-CACHE-01: zero-allocation span lookup. AOT-safe and reflection-free — the core library
     // stays IsAotCompatible=true. The alternate lookup hashes/compares the span directly, so a HIT
     // never materializes a string key (the per-line rom.ToString() allocation is removed).
-    private readonly ConcurrentDictionary<string, TValue>.AlternateLookup<ReadOnlySpan<char>> _altLookup;
+    private readonly ConcurrentDictionary<string, TValue>.AlternateLookup<
+        ReadOnlySpan<char>
+    > _altLookup;
 
     public BoundedCache(int capacity)
     {
@@ -58,7 +60,8 @@ internal sealed class BoundedCache<TValue>
     /// </summary>
     public TValue GetOrAdd(ReadOnlySpan<char> key, Func<TValue> valueFactory)
     {
-        if (_altLookup.TryGetValue(key, out var existing)) return existing;
+        if (_altLookup.TryGetValue(key, out var existing))
+            return existing;
 
         // Miss: materialize the string key once, then defer to the string overload (which repeats
         // the TryGetValue guard — benign — and owns the FIFO/eviction/lost-race semantics).
@@ -71,7 +74,8 @@ internal sealed class BoundedCache<TValue>
     /// </summary>
     public TValue GetOrAdd(string key, TValue value)
     {
-        if (_map.TryGetValue(key, out var existing)) return existing;
+        if (_map.TryGetValue(key, out var existing))
+            return existing;
 
         if (_map.TryAdd(key, value))
         {
