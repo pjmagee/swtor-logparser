@@ -37,7 +37,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 ### Platform (PLAT)
 
-- [ ] **PLAT-01**: Every project targets .NET 10 (LTS) — `net10.0` / `net10.0-windows`; framework packages on .NET 10 GA; solution builds, all tests pass, Native AOT compiles AOT-clean (added mid-milestone per issue #1; supersedes the earlier "stay on .NET 8" scope decision)
+- [x] **PLAT-01**: Every project targets .NET 10 (LTS) — `net10.0` / `net10.0-windows`; framework packages on .NET 10 GA; solution builds, all tests pass, Native AOT compiles AOT-clean (added mid-milestone per issue #1; supersedes the earlier "stay on .NET 8" scope decision)
 
 ### Infrastructure (INFRA)
 
@@ -82,7 +82,7 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | DEP-01 | Phase 5 | Complete |
 | DEP-02 | Phase 5 | Complete |
 | DEP-03 | Phase 5 | Complete |
-| PLAT-01 | Phase 6 | Pending |
+| PLAT-01 | Phase 6 | Complete |
 | INFRA-01 | Phase 7 | Pending |
 | INFRA-02 | Phase 5 | Complete |
 | TEST-01 | Phase 3 | Complete |
