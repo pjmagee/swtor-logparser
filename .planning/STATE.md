@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: WinUI 3 Overlay & Dev Tooling
-status: executing
-stopped_at: v1.1 ROADMAP.md created (Phases 8-13); REQUIREMENTS.md traceability filled
-last_updated: "2026-06-12T07:51:16.751Z"
+status: verifying
+stopped_at: Completed 08-02-PLAN.md — Phase 8 ready for verification (2/2 plans)
+last_updated: "2026-06-12T08:02:53.699Z"
 last_activity: 2026-06-12 -- Phase 8 execution started
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 17
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 Phase: 8 (WinUI 3 Scaffold + Dependencies + Guardrails) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-12 -- Phase 8 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100% (Phase 8: 2/2 plans)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 8 P01 | 3min | 2 tasks | 9 files |
+| Phase 8 P02 | 25min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [v1.1]: Core parser + `CombatLogsMonitor.Instance.DpsHps` stream are **FROZEN** — no phase changes them
 - [Phase ?]: [08-01] WinUI overlay csproj resolves a default RuntimeIdentifier so WindowsAppSDKSelfContained builds RID-less (keeps .slnx/CI green)
 - [Phase ?]: [08-01] WinAppSDK 2.2.0 + CsWin32 0.3.275 pinned in CPM but referenced only from SwtorLogParser.Overlay.WinUi (core + Native CLI stay AOT-clean)
+- [Phase ?]: [08-02] Headless windows-latest restores+builds the unpackaged self-contained WinUI 3 project with no dotnet workload step needed in CI
+- [Phase ?]: [08-02] Native AOT publish IL-analysis warning-free (0 IL2xxx/IL3xxx); WinAppSDK/CsWin32 absent from Native.Cli graph — AOT-contamination boundary holds
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T07:51:08.637Z
-Stopped at: v1.1 ROADMAP.md created (Phases 8-13); REQUIREMENTS.md traceability filled
+Last session: 2026-06-12T08:02:53.694Z
+Stopped at: Completed 08-02-PLAN.md — Phase 8 ready for verification (2/2 plans)
 Resume file: None
