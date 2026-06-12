@@ -13,11 +13,19 @@
     <Grid Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- Font +/- controls: parity with the WinForms cyan ➕/➖ buttons (D-07). Both buttons adjust
+             the row AND header font size together via the single bindable FontSize value. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+            <Button Content="➕" Click="IncreaseFont_Click" ToolTipService.ToolTip="Increase font size" />
+            <Button Content="➖" Click="DecreaseFont_Click" ToolTipService.ToolTip="Decrease font size" />
+        </StackPanel>
+
         <!-- Header row: 5 parity columns Player / DPS / Crit% / HPS / Crit% -->
-        <Grid Grid.Row="0" Margin="0,0,0,4">
+        <Grid Grid.Row="1" Margin="0,0,0,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="*" />
@@ -25,15 +33,19 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Player"  FontWeight="SemiBold" />
-            <TextBlock Grid.Column="1" Text="DPS"     FontWeight="SemiBold" TextAlignment="Right" />
-            <TextBlock Grid.Column="2" Text="Crit %"  FontWeight="SemiBold" TextAlignment="Right" />
-            <TextBlock Grid.Column="3" Text="HPS"     FontWeight="SemiBold" TextAlignment="Right" />
-            <TextBlock Grid.Column="4" Text="Crit %"  FontWeight="SemiBold" TextAlignment="Right" />
+            <TextBlock Grid.Column="0" Text="Player"  FontWeight="SemiBold" FontSize="{x:Bind FontSize, Mode=OneWay}" />
+            <TextBlock Grid.Column="1" Text="DPS"     FontWeight="SemiBold" FontSize="{x:Bind FontSize, Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="Crit %"  FontWeight="SemiBold" FontSize="{x:Bind FontSize, Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="3" Text="HPS"     FontWeight="SemiBold" FontSize="{x:Bind FontSize, Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="4" Text="Crit %"  FontWeight="SemiBold" FontSize="{x:Bind FontSize, Mode=OneWay}" TextAlignment="Right" />
         </Grid>
 
-        <ListView Grid.Row="1"
+        <!-- FontSize is an inherited dependency property: setting it on the ListView flows to the
+             row TextBlocks (which do not override it), so the +/- buttons resize rows + header
+             together (WinForms parity). -->
+        <ListView Grid.Row="2"
                   ItemsSource="{x:Bind ViewModel.Rows}"
+                  FontSize="{x:Bind FontSize, Mode=OneWay}"
                   SelectionMode="None"
                   IsItemClickEnabled="False">
             <ListView.ItemContainerStyle>
