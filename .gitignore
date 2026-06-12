@@ -93,6 +93,8 @@ StyleCopReport.xml
 *.tmp_proj
 *_wpftmp.csproj
 *.log
+# Committed benchmark fixture (sanitized combat log — intentional artifact, not a runtime log).
+!SwtorLogParser.Benchmarks/Fixtures/*.log
 *.tlog
 *.vspscc
 *.vssscc

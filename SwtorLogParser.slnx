@@ -5,6 +5,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="SwtorLogParser.Benchmarks/SwtorLogParser.Benchmarks.csproj" />
   <Project Path="SwtorLogParser.Cli/SwtorLogParser.Cli.csproj" />
   <Project Path="SwtorLogParser.Native.Cli/SwtorLogParser.Native.Cli.csproj" />
   <Project Path="SwtorLogParser.Overlay/SwtorLogParser.Overlay.csproj" />
