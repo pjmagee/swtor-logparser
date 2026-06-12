@@ -13,12 +13,23 @@
       "stopAtEntry": false
     },
     {
-      "name": "Managed CLI",
+      "name": "CLI — monitor",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-cli",
       "program": "${workspaceFolder}/SwtorLogParser.Cli/bin/Debug/net10.0/SwtorLogParser.Cli.dll",
-      "args": [],
+      "args": ["monitor"],
+      "cwd": "${workspaceFolder}/SwtorLogParser.Cli",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "CLI — list",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-cli",
+      "program": "${workspaceFolder}/SwtorLogParser.Cli/bin/Debug/net10.0/SwtorLogParser.Cli.dll",
+      "args": ["list"],
       "cwd": "${workspaceFolder}/SwtorLogParser.Cli",
       "console": "integratedTerminal",
       "stopAtEntry": false

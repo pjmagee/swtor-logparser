@@ -15,7 +15,6 @@ namespace SwtorLogParser.Overlay.ImGui;
 public sealed class WindowInterop : IDisposable
 {
     private const int GWL_EXSTYLE = -20;
-    private const long WS_EX_TOOLWINDOW = 0x00000080;
     private const long WS_EX_NOACTIVATE = 0x08000000;
 
     private static readonly HWND HWND_TOPMOST = new(-1);
@@ -27,11 +26,15 @@ public sealed class WindowInterop : IDisposable
 
     public WindowInterop(nint hwnd) => _hwnd = new HWND(hwnd);
 
-    /// <summary>Tool-window + no-activate styles (INT-03). Apply after the window is shown.</summary>
+    /// <summary>
+    /// No-activate style so the overlay never steals focus from the game (INT-03). NOTE: the tool-window
+    /// style is deliberately NOT set — it would hide the overlay from the taskbar (and its icon). The
+    /// trade-off is that the overlay now appears in the taskbar + Alt-Tab. Apply after the window is shown.
+    /// </summary>
     public void ApplyOverlayStyles()
     {
         long ex = PInvoke.GetWindowLongPtr(_hwnd, (WINDOW_LONG_PTR_INDEX)GWL_EXSTYLE);
-        ex |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+        ex |= WS_EX_NOACTIVATE;
         PInvoke.SetWindowLongPtr(_hwnd, (WINDOW_LONG_PTR_INDEX)GWL_EXSTYLE, (nint)ex);
     }
 
