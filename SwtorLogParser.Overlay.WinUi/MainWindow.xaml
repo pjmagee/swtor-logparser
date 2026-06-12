@@ -10,7 +10,7 @@
          constant alpha via WS_EX_LAYERED (WindowInterop.SetOpacity), so this opaque-dark panel renders as
          a readable translucent stats panel with the game showing through (WinForms Opacity parity).
          RequestedTheme=Dark gives light-on-dark text legible over a game scene. -->
-    <Grid x:Name="Root" RequestedTheme="Dark" Background="#FF101010" Padding="8">
+    <Grid x:Name="Root" RequestedTheme="Dark" Background="#CC101010" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />

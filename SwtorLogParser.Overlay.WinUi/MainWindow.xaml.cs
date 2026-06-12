@@ -7,6 +7,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.Overlay.WinUi.Interop;
 using SwtorLogParser.Overlay.WinUi.Settings;
@@ -62,18 +63,24 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         ViewModel = new MainViewModel();
 
         // Borderless + always-on-top presenter (the chrome the overlay needs; no title bar to drag,
-        // hence the custom drag handle below).
+        // hence the custom drag handle below). Acrylic backdrop gives reliable WinUI translucency
+        // (WS_EX_LAYERED is avoided — it blanks the compositor); the Root tint brush sets opacity.
         ConfigureBorderlessAlwaysOnTop();
+        SystemBackdrop = new DesktopAcrylicBackdrop();
 
-        // CsWin32 interop over this window's HWND: layered/tool-window/no-activate styles, then the
-        // foreground-topmost hook (BL-01). Order matters — WS_EX_LAYERED must be set before SetOpacity.
         _interop = new WindowInterop(WindowNative.GetWindowHandle(this));
-        _interop.ApplyOverlayStyles();
-        _interop.StartForegroundTopmostHook();
 
-        // Load persisted settings: placement + font + opacity (opacity persistence lands in Phase 10
-        // per D-04). Missing/corrupt settings degrade to defaults inside SettingsService.Load.
+        // Load persisted settings: placement + font + opacity. Missing/corrupt → defaults (never throws).
         ApplySavedSettings(_settings.Load());
+
+        // Apply the tool-window / no-activate styles and the foreground-topmost hook AFTER the window is
+        // shown — applying no-activate before first paint can suppress the window entirely. TryEnqueue
+        // runs once the message loop is pumping (post-Activate).
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _interop.ApplyOverlayStyles();          // INT-03 tool-window + no-activate
+            _interop.StartForegroundTopmostHook();  // INT-02 / BL-01 topmost re-assert
+        });
 
         // Start the monitor here rather than on Activated: WS_EX_NOACTIVATE means the window may never
         // raise a normal activation, so first-activation start (the WinForms pattern) is unreliable.
@@ -112,12 +119,17 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
     private void ClickThroughToggle_Click(object sender, RoutedEventArgs e)
         => ApplyClickThrough(ClickThroughToggle.IsChecked == true);
 
-    // OVL-07 opacity: slider is 25..100 (%). Apply as a layered whole-window alpha and remember it.
+    // OVL-07 opacity: slider is 25..100 (%). Apply as the Root panel tint-brush alpha (over the acrylic
+    // backdrop) and remember it. Lower opacity → more of the game's acrylic shows through.
     private void OpacitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         _opacity = e.NewValue / 100d;
-        _interop.SetOpacity(OpacityToAlpha(_opacity));
+        ApplyOpacity(_opacity);
     }
+
+    // Tint the Root panel with the chosen opacity over the acrylic backdrop. No WS_EX_LAYERED.
+    private void ApplyOpacity(double opacity) =>
+        Root.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(OpacityToAlpha(opacity), 0x10, 0x10, 0x10));
 
     private void OnHotkeyTick(DispatcherQueueTimer sender, object args)
     {
@@ -157,10 +169,10 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
             GetAppWindow().MoveAndResize(new RectInt32(x, y, w, h));
         }
 
-        // Opacity: setting the slider value raises ValueChanged, which applies it through the interop.
+        // Opacity: setting the slider value raises ValueChanged → ApplyOpacity (Root tint brush).
         _opacity = settings.Opacity is { } o && o is > 0d and <= 1d ? o : DefaultOpacity;
         OpacitySlider.Value = _opacity * 100d;
-        _interop.SetOpacity(OpacityToAlpha(_opacity)); // ensure applied even if the value didn't change
+        ApplyOpacity(_opacity); // ensure applied even if the slider value didn't actually change
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

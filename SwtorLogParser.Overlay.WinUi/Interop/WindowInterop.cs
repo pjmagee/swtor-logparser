@@ -47,20 +47,19 @@ public sealed class WindowInterop : IDisposable
     public WindowInterop(nint hwnd) => _hwnd = new HWND(hwnd);
 
     /// <summary>
-    /// Applies the base overlay extended styles once: layered (enables <see cref="SetOpacity"/>),
-    /// tool-window (stays out of Alt-Tab) and no-activate (never steals focus from the game) — INT-03.
-    /// Click-through is NOT applied here; it is an opt-in toggle (OVL-06, default off).
+    /// Applies the base overlay extended styles: tool-window (stays out of Alt-Tab) and no-activate
+    /// (never steals focus from the game) — INT-03. Click-through is NOT applied here; it is an opt-in
+    /// toggle (OVL-06, default off). NOTE: <c>WS_EX_LAYERED</c> is deliberately NOT used — on WinUI 3 it
+    /// breaks the DirectComposition swapchain and the window renders invisibly. Translucency is provided
+    /// by a WinUI Acrylic <c>SystemBackdrop</c> + a tint brush instead. Apply this AFTER the window is
+    /// shown (no-activate before first show can suppress the initial paint).
     /// </summary>
     public void ApplyOverlayStyles()
     {
         var ex = CurrentExStyle();
-        ex |= WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+        ex |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
         SetExStyle(ex);
     }
-
-    /// <summary>Sets whole-window opacity (0..255) via a layered-window constant alpha (OVL-07 opacity).</summary>
-    public void SetOpacity(byte alpha) =>
-        PInvoke.SetLayeredWindowAttributes(_hwnd, default, alpha, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
 
     /// <summary>
     /// Toggles whole-window click-through (OVL-06). When enabled, <c>WS_EX_TRANSPARENT</c> makes the
