@@ -6,22 +6,35 @@
     xmlns:vm="using:SwtorLogParser.Overlay.WinUi.ViewModels"
     Title="SWTOR Log Parser">
 
-    <!-- Phase 9: live DPS/HPS render surface. NORMAL, OPAQUE, movable window (standard title bar).
-         Transparency / borderless / click-through / drag / topmost are Phase 10 — NOT here yet.
-         Rows are bound via compiled x:Bind to MainViewModel.Rows; the VM marshals every update onto
-         the UI thread (see MainViewModel), so this XAML is only ever touched on the UI thread. -->
-    <Grid Padding="8">
+    <!-- Phase 10: borderless, always-on-top, layered translucent overlay. The whole window is given a
+         constant alpha via WS_EX_LAYERED (WindowInterop.SetOpacity), so this opaque-dark panel renders as
+         a readable translucent stats panel with the game showing through (WinForms Opacity parity).
+         RequestedTheme=Dark gives light-on-dark text legible over a game scene. -->
+    <Grid x:Name="Root" RequestedTheme="Dark" Background="#FF101010" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Font +/- controls: parity with the WinForms cyan ➕/➖ buttons (D-07). Both buttons adjust
-             the row AND header font size together via the single bindable FontSize value. -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+        <!-- Control bar: drag grip (OVL-05), font +/- (OVL-08), click-through toggle (OVL-06),
+             opacity slider (OVL-07 opacity). The grip is the move handle on a borderless window. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6"
+                    VerticalAlignment="Center">
+            <Border x:Name="DragHandle"
+                    Background="#33FFFFFF" CornerRadius="3" Padding="8,2"
+                    PointerPressed="DragHandle_PointerPressed"
+                    ToolTipService.ToolTip="Drag to move">
+                <TextBlock Text="⠿⠿" FontSize="14" />
+            </Border>
             <Button Content="➕" Click="IncreaseFont_Click" ToolTipService.ToolTip="Increase font size" />
             <Button Content="➖" Click="DecreaseFont_Click" ToolTipService.ToolTip="Decrease font size" />
+            <ToggleButton x:Name="ClickThroughToggle" Content="Click-through"
+                          Click="ClickThroughToggle_Click"
+                          ToolTipService.ToolTip="Pass the mouse through to the game (toggle with Ctrl+Alt+O)" />
+            <TextBlock Text="Opacity" VerticalAlignment="Center" />
+            <Slider x:Name="OpacitySlider" Width="90" Minimum="25" Maximum="100"
+                    ValueChanged="OpacitySlider_ValueChanged" VerticalAlignment="Center" />
         </StackPanel>
 
         <!-- Header row: 5 parity columns Player / DPS / Crit% / HPS / Crit% -->
@@ -47,7 +60,8 @@
                   ItemsSource="{x:Bind ViewModel.Rows}"
                   FontSize="{x:Bind FontSize, Mode=OneWay}"
                   SelectionMode="None"
-                  IsItemClickEnabled="False">
+                  IsItemClickEnabled="False"
+                  Background="Transparent">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

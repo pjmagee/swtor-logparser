@@ -1,1 +1,12 @@
 GetForegroundWindow
+GetWindowLongPtr
+SetWindowLongPtr
+SetLayeredWindowAttributes
+SetWindowPos
+SetWinEventHook
+UnhookWinEvent
+ReleaseCapture
+SendMessage
+GetAsyncKeyState
+EVENT_SYSTEM_FOREGROUND
+WINEVENT_OUTOFCONTEXT
