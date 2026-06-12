@@ -32,7 +32,7 @@ public static class SwtorCliApp
         switch (args.Length > 0 ? args[0] : "")
         {
             case "list":
-                List_();
+                ListCombatLogs();
                 return 0;
             case "monitor":
                 Monitor();
@@ -156,7 +156,7 @@ public static class SwtorCliApp
         _live?.Refresh();
     }
 
-    private static void List_()
+    private static void ListCombatLogs()
     {
         foreach (var combatLog in CombatLogs.EnumerateCombatLogs()) Console.WriteLine(combatLog);
     }
