@@ -33,8 +33,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Testing (TEST) — xUnit → MSTest SDK
 
-- [ ] **TEST-01**: ~~Migrate to MSTest .NET SDK~~ — **DEFERRED** (tests pass on xUnit, 116/116; the ~328-assertion migration was deferred to avoid churn against parallel test-project work — clean standalone follow-up)
-- [ ] **TEST-02**: CI coverage after migration — **DEFERRED** with TEST-01
+- [x] **TEST-01**: Test project migrated to **`MSTest.Sdk/4.2.3`** — all 16 files, [Fact]/[Theory]/[InlineData] → [TestMethod]/[DataTestMethod]/[DataRow], ~328 asserts mapped, `[Collection]`→`[DoNotParallelize]` for the source-swap tests; 116/116 pass; `InternalsVisibleTo` intact — closes #2
+- [x] **TEST-02**: CI coverage preserved via `UseVSTest=true` (coverlet `--collect:"XPlat Code Coverage"` still produces `coverage.cobertura.xml` — verified); CI command unchanged
 
 ### Dev Tooling (DX) — VSCode
 
