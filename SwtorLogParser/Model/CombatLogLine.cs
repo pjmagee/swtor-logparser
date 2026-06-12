@@ -6,34 +6,88 @@ public class CombatLogLine : IEquatable<CombatLogLine>
 {
     private static readonly string[] TimeFormats = { "HH:mm:ss", "HH:mm:ss.fff" };
 
+    // PERF-LAZY-01: backing fields + per-member parsed flags so each sub-object is parsed AT MOST
+    // ONCE and the legitimate "parsed to null" result is memoized too (a plain `??=` would re-parse
+    // forever on a null). Mirrors the existing lazy-property convention (GameObject `_name ??= ...`);
+    // no lock — CombatLogLine instances flow single-threaded per line through the Rx pipeline, and a
+    // benign re-compute would yield the identical value from the same retained slice.
+    private Actor? _source;
+    private bool _sourceParsed;
+    private Actor? _target;
+    private bool _targetParsed;
+    private Ability? _ability;
+    private bool _abilityParsed;
+    private Action? _action;
+    private bool _actionParsed;
+    private Value? _value;
+    private bool _valueParsed;
+    private Threat? _threat;
+    private bool _threatParsed;
+
     private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms, DateTime timeStamp)
     {
         Rom = rom;
         Roms = roms;
         TimeStamp = timeStamp;
-        Source = Actor.Parse(Roms[1]);
-        Target = Actor.Parse(Roms[2]);
-        Ability = Ability.Parse(Roms[3]);
-        Action = Action.Parse(Roms[4]);
-        Value = Value.Parse(Rom);
-        Threat = Threat.Parse(Rom);
     }
 
     public override int GetHashCode() => Rom.GetHashCode();
 
     public DateTime TimeStamp { get; }
 
-    public Actor? Source { get; }
+    public Actor? Source
+    {
+        get
+        {
+            if (!_sourceParsed) { _source = Actor.Parse(Roms[1]); _sourceParsed = true; }
+            return _source;
+        }
+    }
 
-    public Actor? Target { get; }
+    public Actor? Target
+    {
+        get
+        {
+            if (!_targetParsed) { _target = Actor.Parse(Roms[2]); _targetParsed = true; }
+            return _target;
+        }
+    }
 
-    public Ability? Ability { get; }
+    public Ability? Ability
+    {
+        get
+        {
+            if (!_abilityParsed) { _ability = Ability.Parse(Roms[3]); _abilityParsed = true; }
+            return _ability;
+        }
+    }
 
-    public Action? Action { get; }
+    public Action? Action
+    {
+        get
+        {
+            if (!_actionParsed) { _action = Action.Parse(Roms[4]); _actionParsed = true; }
+            return _action;
+        }
+    }
 
-    public Value? Value { get; }
+    public Value? Value
+    {
+        get
+        {
+            if (!_valueParsed) { _value = Value.Parse(Rom); _valueParsed = true; }
+            return _value;
+        }
+    }
 
-    public Threat? Threat { get; }
+    public Threat? Threat
+    {
+        get
+        {
+            if (!_threatParsed) { _threat = Threat.Parse(Rom); _threatParsed = true; }
+            return _threat;
+        }
+    }
 
     private ReadOnlyMemory<char> Rom { get; }
 
