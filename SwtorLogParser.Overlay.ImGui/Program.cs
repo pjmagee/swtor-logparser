@@ -303,10 +303,11 @@ internal sealed class Program
 
             var value = line.Value;
             var amount = value is { Total: > 0 } ? value.Total.ToString("N0", CultureInfo.InvariantCulture) : null;
-            var crit = value?.IsCritical == true ? " ✶crit" : string.Empty;
+            // ASCII only — ImGui's default font has no arrow/star glyphs (they render as '?').
+            var crit = value?.IsCritical == true ? " (crit)" : string.Empty;
 
             var text = $"{time}  {source}  {ability}";
-            if (!string.IsNullOrWhiteSpace(target) && target != source) text += $" → {target}";
+            if (!string.IsNullOrWhiteSpace(target) && target != source) text += $" -> {target}";
             if (amount is not null) text += $"  {amount}{crit}";
             return text;
         }
