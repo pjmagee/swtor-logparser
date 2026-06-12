@@ -18,7 +18,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests (completed 2026-06-11)
 - [x] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line (completed 2026-06-11)
 - [x] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha (completed 2026-06-12)
-- [ ] **Phase 6: CI Pipeline** - Add GitHub Actions build + test pipeline and remove the misleading DockerDefaultTargetOS=Linux
+- [ ] **Phase 6: .NET 10 Upgrade** - Move every project to .NET 10 (LTS); re-verify the solution builds, all 106 tests pass, and the Native AOT host still compiles AOT-clean (PLAT-01, closes issue #1)
+- [ ] **Phase 7: CI Pipeline** - Add GitHub Actions build + test pipeline targeting .NET 10 (INFRA-01)
 
 ## Phase Details
 
@@ -150,7 +151,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `dotnet test` is green (106 tests, zero skips) on .NET 10
   4. The Native AOT CLI compiles AOT-clean on .NET 10 (zero IL2xxx/IL3xxx warnings); core lib stays `IsAotCompatible=true`
 
-**Plans**: TBD
+**Plans**: 1 plan (Wave 1: 06-01 — all 5 csproj TFM edits + 1 CPM version bump are one cohesive change; executor runs the 3 verification tasks sequentially)
+
+- [ ] 06-01-PLAN.md — Bump 5 TFMs to net10.0/net10.0-windows + Logging.Abstractions 8.0.3→10.0.9 + drop LangVersion=preview; re-verify restore/build, 106-test suite, and Native AOT code-gen on .NET 10 (PLAT-01)
+
+**Cross-cutting constraints:**
+
+- Pure mechanical TFM upgrade — ZERO code/behavior change; the 106 existing tests ARE the regression contract
+- Core lib stays `IsAotCompatible=true`; Native CLI stays `PublishAot=true`; Overlay stays `UseWindowsForms`
+- No preview/alpha/beta package remains; `dotnet restore` + `dotnet build SwtorLogParser.slnx -c Release` succeed on net10.0
 
 ### Phase 7: CI Pipeline
 
@@ -168,8 +177,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
-Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Phases 2-4 if desired; Phase 6 depends on Phase 5 being green.
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Phases 2-4 if desired; Phase 6 depends on Phase 5 being green; Phase 7 (CI) depends on Phase 6 so the pipeline targets a single .NET 10 SDK.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -178,4 +187,5 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
 | 4. Performance | 3/3 | Complete   | 2026-06-11 |
 | 5. Dependency Upgrades | 2/2 | Complete   | 2026-06-12 |
-| 6. CI Pipeline | 0/? | Not started | - |
+| 6. .NET 10 Upgrade | 0/1 | Not started | - |
+| 7. CI Pipeline | 0/? | Not started | - |
