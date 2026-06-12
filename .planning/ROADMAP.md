@@ -47,7 +47,9 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
   3. `dotnet build SwtorLogParser.slnx -c Release` stays green on `windows-latest` with the WinUI 3 project added
   4. `dotnet publish SwtorLogParser.Native.Cli -c Release` stays warning-free (no new trim/AOT warnings) — AOT regression gate passes
   5. The WinForms overlay still builds and runs (parity safety net intact)
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 08-01-PLAN.md — Pin WinAppSDK 2.2.0 + CsWin32 0.3.275 in CPM; scaffold the unpackaged self-contained WinUI 3 project (empty window)
+  - [ ] 08-02-PLAN.md — Guardrail verification: full .slnx build + Native AOT regression gate + CI wiring + clean-profile published-folder launch
 **UI hint**: yes
 
 ### Phase 9: Live Stream Render + Dispatcher Marshaling
