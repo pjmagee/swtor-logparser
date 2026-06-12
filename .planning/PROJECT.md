@@ -115,7 +115,9 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 
 The SWTOR log parser is hardened and modernized: .NET 10 LTS, 106-test suite, GitHub Actions CI green on `main` (build + test + Native AOT publish), all CONCERNS.md items resolved. **v1.1 in progress:** replacing the WinForms overlay with a WinUI 3 overlay (CsWin32 interop, BL-01 topmost fix), migrating tests xUnit→MSTest, adding VSCode launch/tasks, and refreshing docs. Core parser and live DPS/HPS stream remain frozen.
 
-**Phase 8 complete (2026-06-12):** new `SwtorLogParser.Overlay.WinUi` project scaffolded — unpackaged self-contained WinUI 3, opens an empty window, launches from the published `.exe` with no runtime install (human-verified). `Microsoft.WindowsAppSDK` 2.2.0 + `Microsoft.Windows.CsWin32` 0.3.275 pinned in CPM, isolated to the overlay (core/Native-CLI AOT graph clean). WinForms overlay untouched (parity safety net). OVL-01 validated. Next: Phase 9 — live DPS/HPS render via DispatcherQueue marshaling. *(Known advisory: code review WR-01/02 — latent x86/AnyCPU slnx-vs-RID platform mismatch; doesn't affect the x64 path; fold into a later overlay phase.)*
+**Phase 8 complete (2026-06-12):** new `SwtorLogParser.Overlay.WinUi` project scaffolded — unpackaged self-contained WinUI 3, opens an empty window, launches from the published `.exe` with no runtime install (human-verified). `Microsoft.WindowsAppSDK` 2.2.0 + `Microsoft.Windows.CsWin32` 0.3.275 pinned in CPM, isolated to the overlay (core/Native-CLI AOT graph clean). WinForms overlay untouched (parity safety net). OVL-01 validated.
+
+**Phase 9 complete (2026-06-12):** the WinUI overlay now renders the **live DPS/HPS stream** — `MainViewModel` subscribes to `DpsHps`, feeds the reused core `SlidingExpirationList` off-thread, and a 1s `DispatcherQueueTimer` mirrors a DPS-descending snapshot into a bound `ListView` (no cross-thread crash — human-verified launch). WinForms-parity +/- font buttons + corruption-safe settings persistence (window position+size+font → `%LocalAppData%\SwtorLogParser\settings.json`; restore-across-restart human-verified). Code-review blocker CR-01 (unguarded null `Player.Id` could fault the stream) fixed host-side. Core frozen (`View/*` byte-identical), tests 121/121. OVL-02 ✓, OVL-08 ✓, OVL-07 partial (position+size; **opacity persistence → Phase 10**). Live-rows-with-real-combat visual deferred to the Phase 11 parity gate. Next: Phase 10 — CsWin32 interop (transparency, click-through, drag, BL-01 topmost). *(Known advisory: x86/AnyCPU slnx-vs-RID mismatch from Phase 8; non-blocking review nits in 09-REVIEW.md — frozen-core timer, non-atomic settings write.)*
 
 ## Evolution
 
@@ -135,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-12 — Phase 8 complete (WinUI 3 scaffold; OVL-01 validated)*
+*Last updated: 2026-06-12 — Phase 9 complete (live render + persistence; OVL-02/08 ✓, OVL-07 partial)*
