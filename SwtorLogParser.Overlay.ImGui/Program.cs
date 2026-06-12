@@ -96,6 +96,11 @@ internal sealed class Program
         _input = _window.CreateInput();
         _controller = new ImGuiController(_gl, _window, _input);
 
+        // Keep the GL viewport in lock-step with the window size. Without this, resizing the window
+        // (e.g. toggling the combat log) squishes the render into the old viewport — skewed, shrunk, and
+        // with the mouse hit-test offset from where things are drawn.
+        _window.FramebufferResize += size => _gl.Viewport(size);
+
         // Feed the frozen core stream OFF the render thread into the internally-locked sliding list.
         // Guard null Player.Id (Actor.Id is long?, null for malformed actors) — the core list
         // force-unwraps it, and an unguarded null would fault the subscription and kill the stream.
