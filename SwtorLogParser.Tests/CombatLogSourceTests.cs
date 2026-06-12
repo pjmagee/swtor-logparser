@@ -8,41 +8,47 @@ namespace SwtorLogParser.Tests;
 // injectable ICombatLogSource guarded by Directory.Exists, so touching any CombatLogs member
 // no longer throws TypeInitializationException/DirectoryNotFoundException when the SWTOR
 // folders are absent (Pitfall 6). The static facade is preserved for hosts.
-[Collection(CombatLogsSourceCollection.Name)]
+[TestClass]
+[DoNotParallelize]
 public class CombatLogSourceTests
 {
     // Static_Ctor_Does_Not_Throw_When_Settings_Absent: touching CombatLogs.PlayerNames must
     // not throw even when the real settings/logs directories are absent. The default source
     // guards every directory read with Directory.Exists and yields an empty set instead.
-    [Fact]
+    [TestMethod]
     public void Static_Ctor_Does_Not_Throw_When_Settings_Absent()
     {
-        var ex = Record.Exception(() =>
+        Exception? ex = null;
+        try
         {
             _ = CombatLogs.PlayerNames;
             _ = CombatLogs.EnumerateCombatLogs().ToList();
             _ = CombatLogs.GetLatestCombatLog();
-        });
+        }
+        catch (Exception e)
+        {
+            ex = e;
+        }
 
-        Assert.Null(ex);
+        Assert.IsNull(ex);
     }
 
     // Default_Seam_Wraps_Real_Paths: the default source still resolves the real %Documents%
     // SWTOR path (behavior unchanged for hosts) — the default CombatLogsDirectory path still
     // ends with the expected SWTOR subpath.
-    [Fact]
+    [TestMethod]
     public void Default_Seam_Wraps_Real_Paths()
     {
         CombatLogs.ResetSource();
 
         var expectedSuffix = Path.Combine("Star Wars - The Old Republic", "CombatLogs");
-        Assert.EndsWith(expectedSuffix, CombatLogs.CombatLogsDirectory.FullName);
+        StringAssert.EndsWith(CombatLogs.CombatLogsDirectory.FullName, expectedSuffix);
     }
 
     // Test_Source_Is_Injectable: a test can install an in-memory source supplying a known
     // PlayerNames set and a known set of combat-log files, then read them back through the
     // static facade. Restore the default source afterward to avoid cross-test leakage.
-    [Fact]
+    [TestMethod]
     public void Test_Source_Is_Injectable()
     {
         using var fixture = new InMemoryCombatLogSource(new HashSet<string> { "Aegrae" });
@@ -52,9 +58,9 @@ public class CombatLogSourceTests
         {
             CombatLogs.SetSource(fixture);
 
-            Assert.Contains("Aegrae", CombatLogs.PlayerNames);
-            Assert.Single(CombatLogs.EnumerateCombatLogs());
-            Assert.NotNull(CombatLogs.GetLatestCombatLog());
+            Assert.IsTrue(CombatLogs.PlayerNames.Contains("Aegrae"));
+            Assert.AreEqual(1, CombatLogs.EnumerateCombatLogs().Count());
+            Assert.IsNotNull(CombatLogs.GetLatestCombatLog());
         }
         finally
         {
@@ -63,15 +69,15 @@ public class CombatLogSourceTests
     }
 
     // ResetSource restores the real default source after a test swap.
-    [Fact]
+    [TestMethod]
     public void ResetSource_Restores_Default()
     {
         using var fixture = new InMemoryCombatLogSource(new HashSet<string> { "TempName" });
         CombatLogs.SetSource(fixture);
-        Assert.Contains("TempName", CombatLogs.PlayerNames);
+        Assert.IsTrue(CombatLogs.PlayerNames.Contains("TempName"));
 
         CombatLogs.ResetSource();
 
-        Assert.DoesNotContain("TempName", CombatLogs.PlayerNames);
+        Assert.IsFalse(CombatLogs.PlayerNames.Contains("TempName"));
     }
 }

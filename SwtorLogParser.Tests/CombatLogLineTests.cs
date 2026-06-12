@@ -1,12 +1,13 @@
-﻿using SwtorLogParser.Model;
+using SwtorLogParser.Model;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.Tests.Fixtures;
 
 namespace SwtorLogParser.Tests;
 
 // Serialized with the other CombatLogs source-seam mutators (SetSource/ResetSource) to keep
-// the shared static `_source` deterministic under xUnit's default class-parallelism.
-[Collection(CombatLogsSourceCollection.Name)]
+// the shared static `_source` deterministic under default class-parallelism.
+[TestClass]
+[DoNotParallelize]
 public class CombatLogLineTests
 {
     // Phase 3 Plan 05 (TEST-01): HERMETIC. Previously this iterated the REAL %Documents%
@@ -14,7 +15,7 @@ public class CombatLogLineTests
     // on ambient ICombatLogSource state from other tests. It now installs its OWN in-memory
     // source seeded with known well-formed golden lines, iterates via the seam, and restores
     // the default source in finally. Passes deterministically with NO real SWTOR folder.
-    [Fact]
+    [TestMethod]
     public void All_Logs_Are_Not_Null()
     {
         using var fixture = new InMemoryCombatLogSource();
@@ -46,29 +47,29 @@ public class CombatLogLineTests
                             {
                                 seenAnyLine = true;
                                 var parsed = CombatLogLine.Parse(line.AsMemory());
-                                Assert.NotNull(parsed);
+                                Assert.IsNotNull(parsed);
 
-                                Assert.NotEmpty(parsed.ToString());
+                                Assert.IsTrue(parsed.ToString().Any());
 
-                                Assert.True(parsed.TimeStamp != default);
+                                Assert.IsTrue(parsed.TimeStamp != default);
 
                                 if (parsed.Source is not null)
                                 {
-                                    Assert.NotNull(parsed.Source.Id);
-                                    Assert.NotNull(parsed.Source.Name);
+                                    Assert.IsNotNull(parsed.Source.Id);
+                                    Assert.IsNotNull(parsed.Source.Name);
                                 }
 
                                 if (parsed.Action is not null)
                                 {
-                                    Assert.NotNull(parsed.Action.Effect);
-                                    Assert.NotNull(parsed.Action.Event);
+                                    Assert.IsNotNull(parsed.Action.Effect);
+                                    Assert.IsNotNull(parsed.Action.Event);
                                 }
                             }
                         }
                     }
                 }
 
-            Assert.True(seenAnyLine, "hermetic fixture must yield at least one combat-log line");
+            Assert.IsTrue(seenAnyLine, "hermetic fixture must yield at least one combat-log line");
         }
         finally
         {
@@ -76,69 +77,69 @@ public class CombatLogLineTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Empty_Line_Is_Null()
     {
         var line = CombatLogLine.Parse("".AsMemory());
-        Assert.Null(line);
+        Assert.IsNull(line);
     }
 
-    [Fact]
+    [TestMethod]
     public void Line_With_No_Timestamp_Is_Null()
     {
         var line = CombatLogLine.Parse("foo".AsMemory());
-        Assert.Null(line);
+        Assert.IsNull(line);
     }
 
-    [Fact]
+    [TestMethod]
     public void Line_With_Valid_Sections_Is_Parsed()
     {
         var line = CombatLogLine.Parse("[18:12:13] [Powerful Subscriber 688623358308676 (1/401177)] [] [] [AreaEntered {836045448953664}: Imperial Fleet {137438989504}]".AsMemory());
 
-        Assert.NotNull(line);
+        Assert.IsNotNull(line);
 
-        Assert.NotNull(line.Source);
-        Assert.NotNull(line.Action);
+        Assert.IsNotNull(line.Source);
+        Assert.IsNotNull(line.Action);
 
-        Assert.Null(line.Target);
-        Assert.Null(line.Ability);
-        Assert.Null(line.Value);
-        Assert.Null(line.Threat);
+        Assert.IsNull(line.Target);
+        Assert.IsNull(line.Ability);
+        Assert.IsNull(line.Value);
+        Assert.IsNull(line.Threat);
     }
 
-    [Fact]
+    [TestMethod]
     public void Line_With_Valid_Sections_And_Threat_Is_Parsed()
     {
         var line = CombatLogLine.Parse("[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>".AsMemory());
 
-        Assert.NotNull(line);
+        Assert.IsNotNull(line);
 
-        Assert.NotNull(line.Source);
-        Assert.NotNull(line.Action);
+        Assert.IsNotNull(line.Source);
+        Assert.IsNotNull(line.Action);
 
-        Assert.Null(line.Target);
+        Assert.IsNull(line.Target);
 
-        Assert.NotNull(line.Ability);
-        Assert.NotNull(line.Value);
-        Assert.NotNull(line.Threat);
+        Assert.IsNotNull(line.Ability);
+        Assert.IsNotNull(line.Value);
+        Assert.IsNotNull(line.Threat);
     }
 
     // Phase 2: bad timestamp now returns null (BUG-03). CombatLogLine.Parse gates the
     // first section through DateTime.TryParseExact + InvariantCulture in the static factory,
     // so a non-parseable timestamp skips the line (returns null) instead of throwing. (TEST-03)
-    [Fact]
+    [TestMethod]
     public void CombatLogLine_NonParseable_Timestamp_Returns_Null()
     {
         // Well-formed 5-section line whose FIRST section is not a parseable timestamp.
         var line =
             "[notatime] [Powerful Subscriber 688623358308991 (1/401177)] [] [] [AreaEntered {836045448953991}: Imperial Fleet {137438989991}]";
 
-        Assert.Null(CombatLogLine.Parse(line.AsMemory()));
+        Assert.IsNull(CombatLogLine.Parse(line.AsMemory()));
     }
 
     // Golden lock: SWTOR emits time-only stamps (HH:mm:ss[.fff]) which are culture-robust.
     // Distinct literals from the existing goldens so this exercises a fresh parse. (TEST-03)
-    [Fact]
+    [TestMethod]
     public void CombatLogLine_Golden_TimeOnly_Stamp_Parses()
     {
         var line =
@@ -146,13 +147,13 @@ public class CombatLogLineTests
 
         var parsed = CombatLogLine.Parse(line);
 
-        Assert.NotNull(parsed);
-        Assert.True(parsed.TimeStamp != default);
-        Assert.NotNull(parsed.Source);
-        Assert.NotNull(parsed.Action);
+        Assert.IsNotNull(parsed);
+        Assert.IsTrue(parsed.TimeStamp != default);
+        Assert.IsNotNull(parsed.Source);
+        Assert.IsNotNull(parsed.Action);
     }
 
-    [Fact]
+    [TestMethod]
     public void Duplicated_Line_Appears_In_HashSet_Once()
     {
         // A
@@ -161,15 +162,15 @@ public class CombatLogLineTests
         var line2 = CombatLogLine.Parse("[20:33:17.759] [@Aegrae#689921479616853|(422.51,620.88,33.46,84.27)|(300469/379924)] [=] [Progressive Scan {3394132265402368}] [ApplyEffect {836045448945477}: Heal {836045448945500}] (8622) <3880>".AsMemory());
         var set = new HashSet<CombatLogLine>(comparer);
 
-        Assert.NotNull(line1);
-        Assert.NotNull(line2);
-        
+        Assert.IsNotNull(line1);
+        Assert.IsNotNull(line2);
+
         // A
         set.Add(line1);
         set.Add(line2);
-        
+
         // A
-        Assert.Single(set);
-        Assert.True(comparer.Equals(line1, line2));
+        Assert.AreEqual(1, set.Count());
+        Assert.IsTrue(comparer.Equals(line1, line2));
     }
 }

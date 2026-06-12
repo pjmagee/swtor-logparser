@@ -8,6 +8,7 @@ namespace SwtorLogParser.Tests;
 // (CombatLog.GetLogLines, CombatLogsMonitor.ReadAsync) must decode with Encoding.Latin1.
 // Decoding these bytes as UTF-8 corrupts each high byte to U+FFFD '�' — the bug seen as
 // "Matt W�lsh" in the overlay. These tests lock the encoding decision.
+[TestClass]
 public class EncodingTests
 {
     // Realistic player line; {0} is the accented name as the game writes it.
@@ -16,7 +17,7 @@ public class EncodingTests
         "[=] [Progressive Scan {{3394132265402368}}] [ApplyEffect {{836045448945477}}: " +
         "Heal {{836045448945500}}] (8622) <3880>";
 
-    [Fact]
+    [TestMethod]
     public void Latin1_StreamReader_Decodes_Accented_Name_Intact()
     {
         var line = string.Format(LineTemplate, "Tést Wálsh"); // é=0xE9, á=0xE1
@@ -26,17 +27,17 @@ public class EncodingTests
         using var reader = new StreamReader(ms, Encoding.Latin1); // matches production readers
         var decoded = reader.ReadLine();
 
-        Assert.NotNull(decoded);
-        Assert.Contains("Tést Wálsh", decoded);
-        Assert.DoesNotContain('�', decoded); // no replacement char
+        Assert.IsNotNull(decoded);
+        StringAssert.Contains(decoded, "Tést Wálsh");
+        Assert.IsFalse(decoded.Contains('�')); // no replacement char
 
         var parsed = CombatLogLine.Parse(decoded.AsMemory());
-        Assert.NotNull(parsed?.Source?.Name);
-        Assert.Contains("Wálsh", parsed!.Source!.Name!);
-        Assert.DoesNotContain('�', parsed.Source.Name!);
+        Assert.IsNotNull(parsed?.Source?.Name);
+        StringAssert.Contains(parsed!.Source!.Name!, "Wálsh");
+        Assert.IsFalse(parsed.Source.Name!.Contains('�'));
     }
 
-    [Fact]
+    [TestMethod]
     public void Utf8_StreamReader_Corrupts_Latin1_Bytes()
     {
         // Documents WHY Latin1 is required: lone 0xE1/0xE9 bytes are invalid UTF-8.
@@ -47,7 +48,7 @@ public class EncodingTests
         using var reader = new StreamReader(ms, Encoding.UTF8); // the OLD (buggy) behavior
         var decoded = reader.ReadLine();
 
-        Assert.NotNull(decoded);
-        Assert.Contains('�', decoded); // UTF-8 mangles the accents
+        Assert.IsNotNull(decoded);
+        Assert.IsTrue(decoded.Contains('�')); // UTF-8 mangles the accents
     }
 }

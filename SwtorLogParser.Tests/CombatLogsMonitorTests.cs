@@ -6,6 +6,7 @@ using SwtorLogParser.Monitor;
 
 namespace SwtorLogParser.Tests;
 
+[TestClass]
 public class CombatLogsMonitorTests
 {
     // TEST-01: build a player-damage line with a NOW-RELATIVE timestamp so the
@@ -21,45 +22,46 @@ public class CombatLogsMonitorTests
             + "[ApplyEffect {836045448945477}: Damage {836045448945501}] (8622) <3880>";
 
         var line = CombatLogLine.Parse(raw.AsMemory());
-        Assert.NotNull(line);
-        Assert.True(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
+        Assert.IsNotNull(line);
+        Assert.IsTrue(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
         return line;
     }
 
     // RFCT-02: the ILogger<CombatLogsMonitor> ctor is now public, so the monitor can be
     // constructed directly (for DI/tests) without going through the singleton. The
     // ConfigureObservables() chain still runs via the parameterless ctor, so DpsHps is wired.
-    [Fact]
+    [TestMethod]
     public void Monitor_Constructs_Via_Public_Ctor()
     {
         var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
 
-        Assert.NotNull(monitor);
-        Assert.NotNull(monitor.DpsHps);
+        Assert.IsNotNull(monitor);
+        Assert.IsNotNull(monitor.DpsHps);
     }
 
     // RFCT-02: Instance is now defined unconditionally (NullLogger-backed) in every build
     // configuration, closing the #if RELEASE/#elif DEBUG gap that left it undefined elsewhere.
-    [Fact]
+    [TestMethod]
     public void Instance_Is_Defined()
     {
-        Assert.NotNull(CombatLogsMonitor.Instance);
+        Assert.IsNotNull(CombatLogsMonitor.Instance);
     }
 
     // BUG-02: Stop() before Start() must be a safe no-op. The _cancellationTokenSource is now
     // nullable and Stop() uses ?.Cancel() with null-safe logging, so calling Stop() on a freshly
     // obtained (never-started) monitor does not throw NullReferenceException.
-    [Fact]
+    [TestMethod]
     public void Stop_Before_Start_Does_Not_Throw()
     {
-        var ex = Record.Exception(() => CombatLogsMonitor.Instance.Stop());
-        Assert.Null(ex);
+        Exception? ex = null;
+        try { CombatLogsMonitor.Instance.Stop(); } catch (Exception e) { ex = e; }
+        Assert.IsNull(ex);
     }
 
     // BUG-07: CombatLog.GetLogLines() opens the file with FileAccess.Read (least privilege) while
     // keeping FileShare.ReadWrite so the live SWTOR writer is not blocked. This test proves the read
     // succeeds AND tolerates a concurrent writer holding the file open with FileShare.ReadWrite.
-    [Fact]
+    [TestMethod]
     public void GetLogLines_Opens_ReadOnly_And_Reads()
     {
         var path = Path.Combine(Path.GetTempPath(), $"swtor_combatlog_{Guid.NewGuid():N}.txt");
@@ -80,7 +82,7 @@ public class CombatLogsMonitorTests
                 var combatLog = new CombatLog(new FileInfo(path));
                 var parsed = combatLog.GetLogLines();
 
-                Assert.Equal(lines.Length, parsed.Count);
+                Assert.AreEqual(lines.Length, parsed.Count);
             }
         }
         finally
@@ -93,7 +95,7 @@ public class CombatLogsMonitorTests
     // PlayerStats for a pushed player-damage line. Constructed via the public ctor (not the
     // singleton) to avoid leaking state across tests. Subject<T>.OnNext is synchronous, so
     // delivery lands on the calling thread — no scheduler/sleep needed for this assertion.
-    [Fact]
+    [TestMethod]
     public void Start_Then_Push_Delivers()
     {
         var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
@@ -103,9 +105,9 @@ public class CombatLogsMonitorTests
         monitor.Start(CancellationToken.None);
         monitor.PublishForTest(NowRelativePlayerDamageLine());
 
-        Assert.NotEmpty(received);
+        Assert.IsTrue(received.Any());
         // Assert delivery + player identity only — exact DPS numbers are time-dependent (TEST-02).
-        Assert.All(received, s => Assert.NotNull(s.Player));
+        foreach (var s in received) Assert.IsNotNull(s.Player);
 
         monitor.Stop();
     }
@@ -120,7 +122,7 @@ public class CombatLogsMonitorTests
     // seam injects directly into that Subject, so it bypasses the reader the way the live game writer
     // never could; therefore we verify "Stop halts the feed" through IsRunning (the reader that feeds
     // the Subject), not by pushing through the bypass seam after Stop.
-    [Fact]
+    [TestMethod]
     public void Stop_Halts_Delivery()
     {
         var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
@@ -129,30 +131,35 @@ public class CombatLogsMonitorTests
 
         monitor.Start(CancellationToken.None);
         monitor.PublishForTest(NowRelativePlayerDamageLine());
-        Assert.NotEmpty(received); // pipeline delivers while running
+        Assert.IsTrue(received.Any()); // pipeline delivers while running
 
         monitor.Stop();
         Thread.Sleep(50); // let cooperative cancellation settle
 
         // The reader/monitor tasks that feed the Subject are torn down — the live feed has halted.
-        Assert.False(monitor.IsRunning);
+        Assert.IsFalse(monitor.IsRunning);
     }
 
     // TEST-01: a second Start (after Stop) must not throw — exercises the linked-CTS
     // dispose/recreate path in Start().
-    [Fact]
+    [TestMethod]
     public void Second_Start_Does_Not_Throw()
     {
         var monitor = new CombatLogsMonitor(NullLogger<CombatLogsMonitor>.Instance);
 
-        var ex = Record.Exception(() =>
+        Exception? ex = null;
+        try
         {
             monitor.Start(CancellationToken.None);
             monitor.Stop();
             monitor.Start(CancellationToken.None);
-        });
+        }
+        catch (Exception e)
+        {
+            ex = e;
+        }
 
-        Assert.Null(ex);
+        Assert.IsNull(ex);
         monitor.Stop();
     }
 }

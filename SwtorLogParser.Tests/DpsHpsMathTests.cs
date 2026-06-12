@@ -13,6 +13,7 @@ namespace SwtorLogParser.Tests;
 //
 // These tests LOCK the CURRENT product behavior (PERF-03 accumulator rewrite is Phase 4) —
 // they must not assert any "improved" rounding/averaging.
+[TestClass]
 public class DpsHpsMathTests
 {
     // Build a player-damage line whose timestamp is a controlled time-of-day so deltas between
@@ -29,9 +30,9 @@ public class DpsHpsMathTests
             + $"[ApplyEffect {{836045448945477}}: Damage {{836045448945501}}] ({value}{crit})";
 
         var line = CombatLogLine.Parse(raw.AsMemory());
-        Assert.NotNull(line);
-        Assert.True(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
-        Assert.Equal(critical, line.Value!.IsCritical);
+        Assert.IsNotNull(line);
+        Assert.IsTrue(line!.IsPlayerDamage(), "test line must satisfy IsPlayerDamage()");
+        Assert.AreEqual(critical, line.Value!.IsCritical);
         return line;
     }
 
@@ -44,9 +45,9 @@ public class DpsHpsMathTests
             + $"[ApplyEffect {{836045448945477}}: Heal {{836045448945500}}] ({value}{crit})";
 
         var line = CombatLogLine.Parse(raw.AsMemory());
-        Assert.NotNull(line);
-        Assert.True(line!.IsPlayerHeal(), "test line must satisfy IsPlayerHeal()");
-        Assert.Equal(critical, line.Value!.IsCritical);
+        Assert.IsNotNull(line);
+        Assert.IsTrue(line!.IsPlayerHeal(), "test line must satisfy IsPlayerHeal()");
+        Assert.AreEqual(critical, line.Value!.IsCritical);
         return line;
     }
 
@@ -55,7 +56,7 @@ public class DpsHpsMathTests
 
     // DPS = damageTotal / (last - first).TotalSeconds, computed directly (bypasses DateTime.Now).
     // Two damage lines 1.000s apart: totals 1000 + 2000 = 3000 over 1.0s => DPS = 3000.
-    [Fact]
+    [TestMethod]
     public void Dps_Computed_From_Known_Damage()
     {
         var monitor = NewMonitor();
@@ -66,13 +67,13 @@ public class DpsHpsMathTests
 
         var stats = monitor.CalculateDpsHpsStats(state);
 
-        Assert.NotNull(stats.DPS);
-        Assert.Equal(3000d, stats.DPS!.Value, precision: 3); // 3000 over 1.0s
-        Assert.Null(stats.HPS); // no heals => null
+        Assert.IsNotNull(stats.DPS);
+        Assert.AreEqual(3000d, stats.DPS!.Value, 1e-3); // 3000 over 1.0s
+        Assert.IsNull(stats.HPS); // no heals => null
     }
 
     // HPS = healTotal / (last - first).TotalSeconds. Two heals 1.0s apart: 500 + 1500 over 1.0s => 2000.
-    [Fact]
+    [TestMethod]
     public void Hps_Computed_From_Known_Heals()
     {
         var monitor = NewMonitor();
@@ -83,14 +84,14 @@ public class DpsHpsMathTests
 
         var stats = monitor.CalculateDpsHpsStats(state);
 
-        Assert.NotNull(stats.HPS);
-        Assert.Equal(2000d, stats.HPS!.Value, precision: 3); // 2000 over 1.0s
-        Assert.Null(stats.DPS); // no damage => null
+        Assert.IsNotNull(stats.HPS);
+        Assert.AreEqual(2000d, stats.HPS!.Value, 1e-3); // 2000 over 1.0s
+        Assert.IsNull(stats.DPS); // no damage => null
     }
 
     // Crit% = count(IsCritical) / state.Count * 100. One of two damage lines is critical => 50%.
     // The current code maps exactly-zero/infinity crit to null, so a non-crit-only stream yields null.
-    [Fact]
+    [TestMethod]
     public void Crit_Percent_Computed()
     {
         var monitor = NewMonitor();
@@ -102,14 +103,14 @@ public class DpsHpsMathTests
         var stats = monitor.CalculateDpsHpsStats(state);
 
         // 1 critical of 2 total lines => 1/2*100 = 50.
-        Assert.NotNull(stats.DPSCritP);
-        Assert.Equal(50d, stats.DPSCritP!.Value, precision: 3);
+        Assert.IsNotNull(stats.DPSCritP);
+        Assert.AreEqual(50d, stats.DPSCritP!.Value, 1e-3);
         // No heals => hps crit numerator is 0 => current code maps 0.0 to null.
-        Assert.Null(stats.HPSCritP);
+        Assert.IsNull(stats.HPSCritP);
     }
 
     // Zero crit maps to null (locks the `dpsCrit == 0.0d ? null` branch of the current code).
-    [Fact]
+    [TestMethod]
     public void Zero_Crit_Maps_To_Null()
     {
         var monitor = NewMonitor();
@@ -120,13 +121,13 @@ public class DpsHpsMathTests
 
         var stats = monitor.CalculateDpsHpsStats(state);
 
-        Assert.Null(stats.DPSCritP);
-        Assert.Null(stats.HPSCritP);
+        Assert.IsNull(stats.DPSCritP);
+        Assert.IsNull(stats.HPSCritP);
     }
 
     // The 10s sliding window in Accumulator removes any line older than newLine.TimeStamp - 10s.
     // Seed a line at t0, then Accumulator a new line 11s later: the old line is removed, new kept.
-    [Fact]
+    [TestMethod]
     public void Window_Expiry_Removes_Old_Lines()
     {
         var monitor = NewMonitor();
@@ -136,17 +137,17 @@ public class DpsHpsMathTests
         var newLine = DamageLine("20:00:11.000", 2000, critical: false); // 11s later (> 10s)
 
         state = monitor.Accumulator(state, oldLine);
-        Assert.Contains(oldLine, state); // present before expiry
+        Assert.IsTrue(state.Contains(oldLine)); // present before expiry
 
         state = monitor.Accumulator(state, newLine);
 
-        Assert.DoesNotContain(oldLine, state); // 10s RemoveWhere evicted the old line
-        Assert.Contains(newLine, state); // the new line is kept
-        Assert.Single(state);
+        Assert.IsFalse(state.Contains(oldLine)); // 10s RemoveWhere evicted the old line
+        Assert.IsTrue(state.Contains(newLine)); // the new line is kept
+        Assert.AreEqual(1, state.Count());
     }
 
     // A line exactly within the 10s window survives (boundary: 9s < 10s delta is kept).
-    [Fact]
+    [TestMethod]
     public void Window_Keeps_Recent_Lines()
     {
         var monitor = NewMonitor();
@@ -158,15 +159,15 @@ public class DpsHpsMathTests
         state = monitor.Accumulator(state, recentLine);
         state = monitor.Accumulator(state, newLine);
 
-        Assert.Contains(recentLine, state); // within 10s => kept
-        Assert.Contains(newLine, state);
-        Assert.Equal(2, state.Count);
+        Assert.IsTrue(state.Contains(recentLine)); // within 10s => kept
+        Assert.IsTrue(state.Contains(newLine));
+        Assert.AreEqual(2, state.Count);
     }
 
     // PERF-03 Wave-0: lock the `state.Count <= 1 ⇒ timeSpan == TimeSpan.FromSeconds(1)` branch
     // explicitly (previously only covered transitively). With a SINGLE line, the divisor is 1.0s,
     // so DPS == the single line's value. The single-pass rewrite must preserve this exactly.
-    [Fact]
+    [TestMethod]
     public void Single_Line_Uses_OneSecond_Window()
     {
         var monitor = NewMonitor();
@@ -176,9 +177,9 @@ public class DpsHpsMathTests
 
         var stats = monitor.CalculateDpsHpsStats(state);
 
-        Assert.Single(state);
-        Assert.NotNull(stats.DPS);
-        Assert.Equal(1500d, stats.DPS!.Value, precision: 3); // one line => divisor is 1.0s => DPS == value
-        Assert.Null(stats.HPS); // no heals => null
+        Assert.AreEqual(1, state.Count());
+        Assert.IsNotNull(stats.DPS);
+        Assert.AreEqual(1500d, stats.DPS!.Value, 1e-3); // one line => divisor is 1.0s => DPS == value
+        Assert.IsNull(stats.HPS); // no heals => null
     }
 }

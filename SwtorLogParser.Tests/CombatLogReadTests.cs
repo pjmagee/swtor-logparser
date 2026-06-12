@@ -7,6 +7,7 @@ namespace SwtorLogParser.Tests;
 // MUST pass against the CURRENT (unrefactored) code — they lock the pre-refactor behavior so
 // the optimization cannot drift the GetLogLines() output set, the CRLF parity, or the
 // ToString() count semantics.
+[TestClass]
 public class CombatLogReadTests
 {
     // A real, parseable player line shape (mirrors CombatLogsMonitorTests / DpsHpsMathTests).
@@ -22,7 +23,7 @@ public class CombatLogReadTests
     // TEST: GetLogLines() yields the same set of parsed CombatLogLine objects. The fixture mixes
     // CRLF and LF terminators, contains a blank line in the middle, and a malformed (unparseable)
     // line. The returned list must contain exactly the valid lines, parsed identically.
-    [Fact]
+    [TestMethod]
     public void GetLogLines_Yields_Same_Parsed_Lines()
     {
         var path = Path.Combine(Path.GetTempPath(), $"swtor_combatlog_{Guid.NewGuid():N}.txt");
@@ -39,17 +40,17 @@ public class CombatLogReadTests
             var parsed = combatLog.GetLogLines();
 
             // Exactly the two valid lines parse; blank + malformed are dropped.
-            Assert.Equal(2, parsed.Count);
+            Assert.AreEqual(2, parsed.Count);
 
             // Content parity: the parsed lines reconstruct the same ToString() as parsing the raw
             // lines directly (locks the slice content fed to Parse).
             var expectedA = CombatLogLine.Parse(ValidLineA.AsMemory());
             var expectedB = CombatLogLine.Parse(ValidLineB.AsMemory());
-            Assert.NotNull(expectedA);
-            Assert.NotNull(expectedB);
+            Assert.IsNotNull(expectedA);
+            Assert.IsNotNull(expectedB);
 
-            Assert.Equal(expectedA!.ToString(), parsed[0].ToString());
-            Assert.Equal(expectedB!.ToString(), parsed[1].ToString());
+            Assert.AreEqual(expectedA!.ToString(), parsed[0].ToString());
+            Assert.AreEqual(expectedB!.ToString(), parsed[1].ToString());
         }
         finally
         {
@@ -62,7 +63,7 @@ public class CombatLogReadTests
     // actual landmine from 04-RESEARCH (CRLF parity). We drive a CRLF-terminated line through the
     // production GetLogLines() path and assert the parsed result is byte-identical to parsing the
     // same line WITHOUT the '\r' — i.e. the terminator was excluded from the slice.
-    [Fact]
+    [TestMethod]
     public void Splitter_Matches_EnumerateLines()
     {
         // Cross-check the expected line set against EnumerateLines over a mixed fixture: collect
@@ -75,8 +76,8 @@ public class CombatLogReadTests
             expectedLines.Add(line.ToString());
         }
         // No emitted line retains a trailing '\r' (EnumerateLines excludes the terminator).
-        Assert.DoesNotContain(expectedLines, l => l.EndsWith('\r'));
-        Assert.Equal(new[] { "first", "second", "third", "fourth", "fifth" }, expectedLines);
+        Assert.IsFalse(expectedLines.Any(l => l.EndsWith('\r')));
+        CollectionAssert.AreEqual(new[] { "first", "second", "third", "fourth", "fifth" }, expectedLines);
 
         // Now prove the production read path strips CRLF identically: write a CRLF-terminated
         // value-bearing line and confirm GetLogLines() parses it the same as the \r-free form.
@@ -88,13 +89,13 @@ public class CombatLogReadTests
             var combatLog = new CombatLog(new FileInfo(path));
             var parsed = combatLog.GetLogLines();
 
-            Assert.Single(parsed);
+            Assert.AreEqual(1, parsed.Count());
 
             // Parsing ValidLineB WITH a trailing '\r' would change the last section's slice; parsing
             // WITHOUT it is the reference. The production path must equal the reference (no \r).
             var reference = CombatLogLine.Parse(ValidLineB.AsMemory());
-            Assert.NotNull(reference);
-            Assert.Equal(reference!.ToString(), parsed[0].ToString());
+            Assert.IsNotNull(reference);
+            Assert.AreEqual(reference!.ToString(), parsed[0].ToString());
         }
         finally
         {
@@ -105,7 +106,7 @@ public class CombatLogReadTests
     // TEST: ToString() reports the file name and a line count. Per 04-RESEARCH Pitfall 1 / A1, the
     // exact integer is diagnostic-only (no test pins it elsewhere). Locked PERF-01 count semantics:
     // "non-empty lines" — so over a fixture with 2 valid lines + 1 blank line the count is 2.
-    [Fact]
+    [TestMethod]
     public void ToString_Reports_Line_Count()
     {
         var path = Path.Combine(Path.GetTempPath(), $"swtor_combatlog_{Guid.NewGuid():N}.txt");
@@ -121,7 +122,7 @@ public class CombatLogReadTests
             var rendered = combatLog.ToString();
 
             // Shape: "{FileInfo.Name}: {count}" where count is the number of non-empty lines (2).
-            Assert.Equal($"{fileInfo.Name}: 2", rendered);
+            Assert.AreEqual($"{fileInfo.Name}: 2", rendered);
         }
         finally
         {

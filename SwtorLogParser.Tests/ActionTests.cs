@@ -1,25 +1,26 @@
-﻿using Action = SwtorLogParser.Model.Action;
+using Action = SwtorLogParser.Model.Action;
 
 namespace SwtorLogParser.Tests;
 
+[TestClass]
 public class ActionTests
 {
-    [Fact]
+    [TestMethod]
     public void Event_And_Effect_Parsed()
     {
         var action = Action.Parse("AreaEntered {836045448953664}: Imperial Fleet {137438989504}".AsMemory());
 
-        Assert.NotNull(action);
-        Assert.False(action.Effect.IsNested);
+        Assert.IsNotNull(action);
+        Assert.IsFalse(action.Effect.IsNested);
 
-        Assert.Equal("AreaEntered", action.Event.Name);
-        Assert.Equal(836045448953664u, action.Event.Id);
+        Assert.AreEqual("AreaEntered", action.Event.Name);
+        Assert.AreEqual(836045448953664u, action.Event.Id);
 
-        Assert.Equal("Imperial Fleet", action.Effect.Name);
-        Assert.Equal(137438989504u, action.Effect.Id);
+        Assert.AreEqual("Imperial Fleet", action.Effect.Name);
+        Assert.AreEqual(137438989504u, action.Effect.Id);
     }
 
-    [Fact]
+    [TestMethod]
     public void Event_And_Effect_Nested_Parsed()
     {
         var action =
@@ -27,37 +28,37 @@ public class ActionTests
                 "DisciplineChanged {836045448953665}: Mercenary {16141111589108060476}/Bodyguard {2031339142381600}"
                     .AsMemory());
 
-        Assert.NotNull(action);
-        Assert.True(action.Effect.IsNested);
+        Assert.IsNotNull(action);
+        Assert.IsTrue(action.Effect.IsNested);
 
-        Assert.Equal("DisciplineChanged", action.Event.Name);
-        Assert.Equal(836045448953665u, action.Event.Id);
+        Assert.AreEqual("DisciplineChanged", action.Event.Name);
+        Assert.AreEqual(836045448953665u, action.Event.Id);
 
-        Assert.Equal("Bodyguard", action.Effect.Name);
-        Assert.Equal(2031339142381600u, action.Effect.Id);
+        Assert.AreEqual("Bodyguard", action.Effect.Name);
+        Assert.AreEqual(2031339142381600u, action.Effect.Id);
 
-        Assert.Equal("Mercenary", action.Effect.ParentName);
-        Assert.Equal(16141111589108060476u, action.Effect.ParentId);
+        Assert.AreEqual("Mercenary", action.Effect.ParentName);
+        Assert.AreEqual(16141111589108060476u, action.Effect.ParentId);
     }
 
-    [Fact]
+    [TestMethod]
     public void Same_Actions_Are_Equal()
     {
         var action1 = Action.Parse("[ApplyEffect {836045448945477}: Damage {836045448945501}]".AsMemory());
         var action2 = Action.Parse("[ApplyEffect {836045448945477}: Damage {836045448945501}]".AsMemory());
 
-        Assert.StrictEqual(action1, action2);
+        Assert.AreEqual(action1, action2);
     }
 
     // Graceful-null (Pattern C, green TODAY). Action.Parse wraps construction in try/catch: when a
     // child GameObject.Parse hits a non-numeric id brace it throws EAGERLY (GameObject.Parse reads
     // .Id), the exception is caught (Console.Error), and Action.Parse returns null. Distinct literal
     // per row — Action/GameObject caches key on Rom.GetHashCode and never clear between tests.
-    [Theory]
-    [InlineData("ZqxBadEvent {abc}: Imperial Fleet {137438989504}")]
-    [InlineData("AreaEntered {836045448953664}: ZqxBadEffect {xyz}")]
+    [DataTestMethod]
+    [DataRow("ZqxBadEvent {abc}: Imperial Fleet {137438989504}")]
+    [DataRow("AreaEntered {836045448953664}: ZqxBadEffect {xyz}")]
     public void Action_Malformed_Inner_Fragment_Returns_Null(string raw)
     {
-        Assert.Null(Action.Parse(raw.AsMemory()));
+        Assert.IsNull(Action.Parse(raw.AsMemory()));
     }
 }

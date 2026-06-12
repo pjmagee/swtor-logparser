@@ -4,28 +4,29 @@ using SwtorLogParser.View;
 
 namespace SwtorLogParser.Tests;
 
+[TestClass]
 public class SlidingExpirationListTests
 {
     private static CombatLogsMonitor.PlayerStats MakeStats(long id, string name, double dps, double hps)
     {
         var actor = Actor.Parse($"@{name}#{id}|(0,0,0,0)|(1/2)".AsMemory());
-        Assert.NotNull(actor);
-        Assert.Equal(id, actor.Id);
+        Assert.IsNotNull(actor);
+        Assert.AreEqual(id, actor.Id);
         return new CombatLogsMonitor.PlayerStats { Player = actor, DPS = dps, HPS = hps };
     }
 
-    [Fact]
+    [TestMethod]
     public void AddOrUpdate_Inserts_New_Player()
     {
         var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
 
         list.AddOrUpdate(MakeStats(101, "Alpha", 100, 0));
 
-        Assert.Single(list.Items);
-        Assert.Equal(100, list.Items[0].DPS);
+        Assert.AreEqual(1, list.Items.Count());
+        Assert.AreEqual(100, list.Items[0].DPS);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddOrUpdate_Updates_Existing_Player_By_Id()
     {
         var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
@@ -33,11 +34,11 @@ public class SlidingExpirationListTests
         list.AddOrUpdate(MakeStats(202, "Beta", 100, 0));
         list.AddOrUpdate(MakeStats(202, "Beta", 250, 0));
 
-        Assert.Single(list.Items);
-        Assert.Equal(250, list.Items[0].DPS);
+        Assert.AreEqual(1, list.Items.Count());
+        Assert.AreEqual(250, list.Items[0].DPS);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddOrUpdate_Keeps_Distinct_Players_Separate()
     {
         var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
@@ -45,10 +46,10 @@ public class SlidingExpirationListTests
         list.AddOrUpdate(MakeStats(303, "Gamma", 100, 0));
         list.AddOrUpdate(MakeStats(404, "Delta", 200, 0));
 
-        Assert.Equal(2, list.Items.Count);
+        Assert.AreEqual(2, list.Items.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Item_Expires_After_Expiration_Window()
     {
         // Short window: the internal timer fires at the same cadence as the expiration,
@@ -56,7 +57,7 @@ public class SlidingExpirationListTests
         var list = new SlidingExpirationList(TimeSpan.FromMilliseconds(50));
 
         list.AddOrUpdate(MakeStats(505, "Epsilon", 100, 0));
-        Assert.Single(list.Items);
+        Assert.AreEqual(1, list.Items.Count());
 
         // Poll up to ~2s for the timer-driven RemoveExpiredItems to clear the entry.
         var cleared = false;
@@ -66,6 +67,6 @@ public class SlidingExpirationListTests
             cleared = list.Items.Count == 0;
         }
 
-        Assert.True(cleared, "Expired entry was not removed within the expiration window.");
+        Assert.IsTrue(cleared, "Expired entry was not removed within the expiration window.");
     }
 }
