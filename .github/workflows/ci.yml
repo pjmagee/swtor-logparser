@@ -59,9 +59,9 @@ jobs:
           path: ${{ github.workspace }}/TestResults/**/coverage.cobertura.xml
           if-no-files-found: ignore
 
-  # Non-blocking: validates the Native AOT publish (incl. the MSVC link step that
-  # cannot run on the dev machine). continue-on-error keeps a transient AOT/link
-  # hiccup from failing the required build-test gate (INFRA-01 is about build+test).
+  # Non-blocking: validates the Native AOT publish of the CLI (incl. the MSVC link
+  # step that cannot run on the dev machine). continue-on-error keeps a transient
+  # AOT/link hiccup from failing the required build-test gate.
   aot-publish:
     name: Native AOT Publish (validation · non-blocking)
     runs-on: windows-latest
@@ -75,13 +75,14 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # SwtorLogParser.Cli is the AOT CLI (PublishAot=true + RuntimeIdentifier=win-x64 in its csproj).
       - name: Publish Native AOT
-        run: dotnet publish SwtorLogParser.Native.Cli -c Release
+        run: dotnet publish SwtorLogParser.Cli -c Release
 
       - name: Upload native binary
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: native-cli
-          path: SwtorLogParser.Native.Cli/**/publish/SwtorLogParser.Native.Cli.exe
+          name: cli
+          path: SwtorLogParser.Cli/**/publish/SwtorLogParser.Cli.exe
           if-no-files-found: ignore
