@@ -10,6 +10,10 @@
 
     <PropertyGroup>
         <PublishAot>true</PublishAot>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <StripSymbols>true</StripSymbols>
+        <OptimizationPreference>Size</OptimizationPreference>
     </PropertyGroup>
 
 
