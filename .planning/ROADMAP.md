@@ -1,191 +1,43 @@
-# Roadmap: SWTOR Log Parser — Hardening Milestone
+# Roadmap: SWTOR Log Parser
 
-## Overview
+## Milestones
 
-This milestone turns a working multi-prototype experiment into a correct, maintainable, CI-backed codebase by resolving every concern catalogued in CONCERNS.md. The sequence is safety-net first (parser behavior locks), then correctness fixes, then refactors protected by that safety net, then performance tuning, then dependency upgrades (including the CommandLine rendering rework), and finally a CI pipeline that guards against regressions going forward.
+- ✅ **v1.0 Hardening (+ .NET 10)** — Phases 1-7 (shipped 2026-06-12) — see [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 ## Phases
 
-**Phase Numbering:**
+<details>
+<summary>✅ v1.0 Hardening (Phases 1-7) — SHIPPED 2026-06-12</summary>
 
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+- [x] Phase 1: Parser Safety Net — characterization/golden tests (TEST-03)
+- [x] Phase 2: Correctness Bugs — BUG-01..07 (+ Latin-1 encoding UAT fix)
+- [x] Phase 3: Monitor Refactor + Coverage — RFCT-01..03, TEST-01/02
+- [x] Phase 4: Performance — PERF-01..03
+- [x] Phase 5: Dependency Upgrades — DEP-01..03, INFRA-02
+- [x] Phase 6: .NET 10 Upgrade — PLAT-01 (closed issue #1)
+- [x] Phase 7: CI Pipeline — INFRA-01 (CI green on main)
 
-Decimal phases appear between their surrounding integers in numeric order.
+Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: [milestones/v1.0-MILESTONE-AUDIT.md](milestones/v1.0-MILESTONE-AUDIT.md)
 
-- [x] **Phase 1: Parser Safety Net** - Lock in correct parse behavior with edge-case tests before anything else changes (completed 2026-06-11)
-- [x] **Phase 2: Correctness Bugs** - Fix all seven bug-class defects (cancellation, NRE, locale, static-ctor crash, malformed-line throws, cache races, wrong file-access mode) (completed 2026-06-11)
-- [x] **Phase 3: Monitor Refactor + Coverage** - De-duplicate view types, replace singleton construction, redesign static caches, and add monitor/Rx/math tests (completed 2026-06-11)
-- [x] **Phase 4: Performance** - Eliminate the re-parse in ToString, per-line char[] alloc, Console.Clear flicker, and full-window re-sort per line (completed 2026-06-11)
-- [x] **Phase 5: Dependency Upgrades** - Move all packages to stable GA, add central package management, migrate off the abandoned CommandLine.Rendering alpha (completed 2026-06-12)
-- [x] **Phase 6: .NET 10 Upgrade** - Move every project to .NET 10 (LTS); re-verify the solution builds, all 106 tests pass, and the Native AOT host still compiles AOT-clean (PLAT-01, closes issue #1) (completed 2026-06-12)
-- [x] **Phase 7: CI Pipeline** - Add GitHub Actions build + test pipeline targeting .NET 10 (INFRA-01)
+</details>
 
-## Phase Details
+### 📋 Next Milestone (planned — see BACKLOG.md / issues)
 
-### Phase 1: Parser Safety Net
+Candidate clusters (not yet scoped into a milestone):
+- **Overlay / UI** — BL-01 (overlay topmost on windowed/borderless), issue #3 (CsWin32 for Win32 interop), issue #4 (lightweight UI alternative to WinForms: WinUI 3 / MAUI)
+- **Tooling** — issue #2 (xUnit → MSTest .NET SDK)
+- **Docs** — refresh CLAUDE.md / codebase map to reflect .NET 10 + Spectre.Console (System.CommandLine removed)
 
-**Goal**: Existing parse behavior is locked in by automated tests for edge cases, so every subsequent change can be verified to produce no regressions
-**Depends on**: Nothing (first phase)
-**Requirements**: TEST-03
-**Success Criteria** (what must be TRUE):
-
-  1. The test suite contains xUnit tests that feed malformed lines (missing fields, truncated tokens) to every model Parse factory and assert null or graceful skip — no unhandled exception escapes
-  2. Tests exist for locale-sensitive inputs: timestamps and numeric fields formatted with a non-invariant culture are either parsed correctly via InvariantCulture or rejected cleanly
-  3. Tests exist for delimiter edge cases: actor/ability/game-object names containing `[`, `]`, `{`, `}`, `@`, or `:` are handled without index-out-of-range errors
-  4. All new tests pass on a clean `dotnet test` run with no skips
-
-**Plans**: 3 plans (all Wave 1 — parallel; no file overlap)
-
-- [x] 01-01-PLAN.md — EAGER models: GameObject + CombatLogLine (Assert.Throws characterization, brace/delimiter [Theory], timestamp locale, golden lines)
-- [x] 01-02-PLAN.md — LAZY models: Actor + Threat + Value (property-throw characterization, delimiter [Theory], position locale, guard-null [Theory], golden lines)
-- [x] 01-03-PLAN.md — Inheriting/guarded models: Ability (LAZY .Id throw) + Action (graceful-null [Theory], golden lines)
-
-**Cross-cutting constraints:**
-
-- dotnet test runs fully GREEN with zero skips
-
-### Phase 2: Correctness Bugs
-
-**Goal**: The monitor starts, runs, and stops correctly in all conditions; no parse path throws on malformed or locale-variant input; shared caches cannot be corrupted; log files are opened safely
-**Depends on**: Phase 1
-**Requirements**: BUG-01, BUG-02, BUG-03, BUG-04, BUG-05, BUG-06, BUG-07
-**Success Criteria** (what must be TRUE):
-
-  1. Calling `Stop()` after `Start()` causes the monitor and reader worker tasks to observe cancellation and exit; the process does not hang
-  2. Calling `Stop()` before `Start()` returns without throwing a NullReferenceException
-  3. The application starts without a TypeInitializationException even when a PlayerGUIState settings filename contains no underscore
-  4. Feeding a malformed line (missing numeric token, truncated record) to any model Parse factory results in a null return or skipped line, never an unhandled exception during normal log tailing
-  5. Log files are opened with FileAccess.Read so the game client is never blocked from writing
-
-**Plans**: 3 plans (Wave 1: 02-01, 02-02 parallel; Wave 2: 02-03 — shares CombatLogs.cs with 02-02)
-
-- [x] 02-01-PLAN.md — BUG-05 leaf numeric guards: Threat/Actor/Value TryParse + 4 flipped tests (no cache coupling)
-- [x] 02-02-PLAN.md — BUG-05 (GameObject/Ability) + BUG-06 ConcurrentDictionary caches + 2 flipped tests + concurrency smoke
-- [x] 02-03-PLAN.md — BUG-03 timestamp gate, BUG-01/02 monitor lifecycle, BUG-04 static-ctor guard, BUG-07 read-only open + lifecycle/helper tests
-
-**Cross-cutting constraints:**
-
-- dotnet test stays GREEN with zero skips after EVERY commit; each bug fix lands with its flipped/added test(s) in the same commit
-
-### Phase 3: Monitor Refactor + Coverage
-
-**Goal**: The shared CombatLogsMonitor is constructible in all build configurations and testable via DI; view-layer types are deduplicated into the core library; static caches are content-keyed, bounded, and thread-safe; monitor lifecycle, Rx pipeline, and DPS/HPS math have automated test coverage
-**Depends on**: Phase 2
-**Requirements**: RFCT-01, RFCT-02, RFCT-03, TEST-01, TEST-02
-**Success Criteria** (what must be TRUE):
-
-  1. `Entry` and `SlidingExpirationList` exist in exactly one location (the core library); all three host projects reference that single copy and the duplicated per-host View/ files are removed
-  2. `CombatLogsMonitor.Instance` is defined (not undefined) regardless of build configuration; an alternative DI-friendly construction path exists that does not rely on the preprocessor singleton
-  3. The static parse caches use string or span-to-string content keys (not ReadOnlyMemory GetHashCode), are bounded so they cannot grow without limit, and are written under a lock or via a concurrent collection safe for concurrent reader-task access
-  4. Automated tests cover monitor Start/Stop lifecycle transitions (including the cancellation wiring fixed in Phase 2) and assert that the Rx Subject receives lines after Start and stops receiving them after Stop
-  5. Automated tests verify DPS/HPS arithmetic against known inputs and sliding-window expiry behavior
-
-**Plans**: 5 plans (Wave 1: 03-01, 03-02 parallel; Wave 2: 03-03, 03-04, 03-05 — sequenced after wave 1, no intra-wave file overlap)
-
-- [x] 03-01-PLAN.md — RFCT-02 unconditional NullLogger Instance + public DI ctor + internal push seam; TEST-01 monitor Start/Stop/Rx-delivery lifecycle tests
-- [x] 03-02-PLAN.md — RFCT-03 in-repo BoundedCache + content (rom.ToString()) keys + separate per-type caches (fixes Ability/GameObject cast bug) + cache dedup/concurrency/cap tests
-- [x] 03-03-PLAN.md — RFCT-01 promote UI-free Entry/SlidingExpirationList to core SwtorLogParser.View, delete CLI/Native duplicates, Overlay adapter composes the core expiry logic (no WinForms in core)
-- [x] 03-04-PLAN.md — TEST-02 make Accumulator/CalculateDpsHpsStats internal (behavior-preserving) + deterministic DPS/HPS/crit%/10s-window tests (bypass DateTime.Now)
-- [x] 03-05-PLAN.md — Filesystem hermeticity: ICombatLogSource seam + Directory.Exists guard behind the static CombatLogs facade; make All_Logs_Are_Not_Null + Player_Is_Local_Is_True hermetic/CI-safe
-
-**Cross-cutting constraints:**
-
-- dotnet test GREEN with zero skips after EVERY commit (77 baseline, growing with TEST-01/02); after RFCT-01 and RFCT-02 also `dotnet build SwtorLogParser.slnx` succeeds
-- Core lib `SwtorLogParser` stays `IsAotCompatible=true` — NO reflection, NO DI container, NO WinForms types in the core lib
-- The live `IObservable<PlayerStats>` DpsHps behavior and all 3 hosts must behave IDENTICALLY after
-
-### Phase 4: Performance
-
-**Goal**: The live stats pipeline avoids wasteful full-file re-parses, per-line heap allocations, and full-window re-sorts; the Native CLI renders without full-screen flicker
-**Depends on**: Phase 3
-**Requirements**: PERF-01, PERF-02, PERF-03
-**Success Criteria** (what must be TRUE):
-
-  1. `CombatLog.ToString()` reports line count without re-parsing the entire file; `GetLogLines()` does not allocate a char[] per line (ReadOnlyMemory<char> zero-copy intent is preserved end-to-end)
-  2. The Native CLI host renders updates without calling `Console.Clear()` per event — existing displayed rows are updated or overwritten in-place, eliminating the full-screen repaint flicker
-  3. The stats accumulator's sliding-window update does not re-sort or re-scan the entire window collection on every incoming line; incremental maintenance replaces the full-scan loop
-
-**Plans**: 3 plans (all Wave 1 — parallel; PERF-01/02/03 each own a different production file, no overlap; each plan writes Wave-0 tests FIRST, then its optimization. Executors run sequentially on the main tree.)
-
-- [x] 04-01-PLAN.md — PERF-01: offset-tracking splitter + zero-copy `AsMemory` line slices + parse-free `ToString()` count in CombatLog.cs; Wave-0 read/slice + EnumerateLines-parity tests
-- [x] 04-02-PLAN.md — PERF-02: Native CLI `Update()` in-place cursor render (no `Console.Clear()`), IsOutputRedirected guard + width/height clamps + vacated-row clearing; manual flicker checkpoint (no automated console test)
-- [x] 04-03-PLAN.md — PERF-03: single-pass `CalculateDpsHpsStats` (drop OrderBy + 6 LINQ passes) with identical output; Wave-0 `Single_Line_Uses_OneSecond_Window` edge test; Accumulator + DateTime.Now filter untouched
-
-**Cross-cutting constraints:**
-
-- PURE perf refactors — OUTPUT IDENTICAL, ZERO behavior change. `dotnet test` GREEN with zero skips after EVERY commit (102 baseline + Wave-0 additions); `DpsHpsMathTests` pass UNCHANGED (PERF-03)
-- Core lib `SwtorLogParser` stays `IsAotCompatible=true` — no reflection added; `dotnet build SwtorLogParser.slnx` succeeds
-- Do NOT touch the `DateTime.Now` window filter (IN-01, deferred), the Accumulator body, or the managed CLI renderer (Phase 5)
-
-### Phase 5: Dependency Upgrades
-
-**Goal**: Every NuGet package is on a stable GA release managed centrally; the CLI host no longer depends on the abandoned System.CommandLine.Rendering 0.4.0-alpha
-**Depends on**: Phase 1
-**Requirements**: DEP-01, DEP-02, DEP-03, INFRA-02
-**Success Criteria** (what must be TRUE):
-
-  1. `Directory.Packages.props` exists at solution root and all project files reference it for package versions — no per-csproj version attributes remain for centrally managed packages
-  2. No package in any csproj is pinned to a preview, alpha, or beta version; `dotnet restore` succeeds with only GA feeds
-  3. `SwtorLogParser.Cli` renders its live table without referencing `System.CommandLine.Rendering`; the rendering approach compiles and produces visible output (e.g. Spectre.Console or equivalent)
-  4. `DockerDefaultTargetOS=Linux` is absent from all project files; no misleading cross-platform properties remain
-
-**Plans**: 2 plans (Wave 1: 05-01 — CPM migration touches all csproj, runs alone; Wave 2: 05-02 — System.CommandLine removal + Spectre.Console + Docker removal on the two CLI hosts)
-**Wave 1**
-
-- [x] 05-01-PLAN.md — Directory.Packages.props (CPM) + all-GA versions; strip Version= from every csproj; drop 3 dead core-lib refs; add explicit Logging.Abstractions (DEP-01, DEP-02)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 05-02-PLAN.md — drop System.CommandLine(+Rendering) from both CLI hosts; hand-rolled list/monitor dispatch + Ctrl+C bridge; Spectre.Console table (managed CLI); remove DockerDefaultTargetOS (DEP-03, INFRA-02)
-
-### Phase 6: .NET 10 Upgrade
-
-**Goal**: Every project targets .NET 10 (LTS); the full solution builds, all 106 tests pass, and the Native AOT host still compiles AOT-clean on .NET 10
-**Depends on**: Phase 5
-**Requirements**: PLAT-01
-**Success Criteria** (what must be TRUE):
-
-  1. Every `*.csproj` targets `net10.0` (or `net10.0-windows` for the WinForms Overlay) — no `net8.0` TargetFramework remains
-  2. `Microsoft.Extensions.*` and any other framework-tied packages are on their .NET 10 GA versions in `Directory.Packages.props`; `dotnet restore`/`dotnet build SwtorLogParser.slnx` succeed with no preview/alpha/beta
-  3. `dotnet test` is green (106 tests, zero skips) on .NET 10
-  4. The Native AOT CLI compiles AOT-clean on .NET 10 (zero IL2xxx/IL3xxx warnings); core lib stays `IsAotCompatible=true`
-
-**Plans**: 1 plan (Wave 1: 06-01 — all 5 csproj TFM edits + 1 CPM version bump are one cohesive change; executor runs the 3 verification tasks sequentially)
-
-- [x] 06-01-PLAN.md — Bump 5 TFMs to net10.0/net10.0-windows + Logging.Abstractions 8.0.3→10.0.9 + drop LangVersion=preview; re-verify restore/build, 106-test suite, and Native AOT code-gen on .NET 10 (PLAT-01)
-
-**Cross-cutting constraints:**
-
-- Pure mechanical TFM upgrade — ZERO code/behavior change; the 106 existing tests ARE the regression contract
-- Core lib stays `IsAotCompatible=true`; Native CLI stays `PublishAot=true`; Overlay stays `UseWindowsForms`
-- No preview/alpha/beta package remains; `dotnet restore` + `dotnet build SwtorLogParser.slnx -c Release` succeed on net10.0
-
-### Phase 7: CI Pipeline
-
-**Goal**: Every push and pull request is automatically built and tested by a GitHub Actions workflow; the build is green on the main branch
-**Depends on**: Phase 6
-**Requirements**: INFRA-01
-**Success Criteria** (what must be TRUE):
-
-  1. A `.github/workflows/` YAML file exists that triggers on push and pull_request to main, restores packages, builds the full solution, and runs `dotnet test`
-  2. The workflow completes successfully (green) on the current main branch state — no red CI on delivery
-  3. A test failure in any project causes the CI run to fail (non-zero exit), providing a regression gate for all future changes
-
-**Plans**: TBD
+Start with `/gsd:new-milestone`.
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
-Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Phases 2-4 if desired; Phase 6 depends on Phase 5 being green; Phase 7 (CI) depends on Phase 6 so the pipeline targets a single .NET 10 SDK.
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Parser Safety Net | 3/3 | Complete   | 2026-06-11 |
-| 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
-| 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
-| 4. Performance | 3/3 | Complete   | 2026-06-11 |
-| 5. Dependency Upgrades | 2/2 | Complete   | 2026-06-12 |
-| 6. .NET 10 Upgrade | 1/1 | Complete   | 2026-06-12 |
-| 7. CI Pipeline | 0/? | Not started | - |
+| Phase | Milestone | Status | Completed |
+|-------|-----------|--------|-----------|
+| 1. Parser Safety Net | v1.0 | Complete | 2026-06-11 |
+| 2. Correctness Bugs | v1.0 | Complete | 2026-06-11 |
+| 3. Monitor Refactor + Coverage | v1.0 | Complete | 2026-06-11 |
+| 4. Performance | v1.0 | Complete | 2026-06-11 |
+| 5. Dependency Upgrades | v1.0 | Complete | 2026-06-12 |
+| 6. .NET 10 Upgrade | v1.0 | Complete | 2026-06-12 |
+| 7. CI Pipeline | v1.0 | Complete | 2026-06-12 |

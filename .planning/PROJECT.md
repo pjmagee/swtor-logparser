@@ -20,35 +20,39 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 - ✓ Three presentation hosts consuming the stream: managed CLI, Native AOT CLI, WinForms overlay — existing
 - ✓ xUnit test suite covering the parser model types — existing
 
+### Validated (v1.0 Hardening — shipped 2026-06-12)
+
+**Correctness bugs (BUG-01..07)**
+- ✓ `Stop()` cancels the monitor/reader worker tasks via linked token — v1.0
+- ✓ `Stop()` before `Start()` is a safe no-op — v1.0
+- ✓ `InvariantCulture` `TryParseExact` timestamp + `TryParse` numeric guards — v1.0
+- ✓ `CombatLogs` static ctor tolerates filenames without `_` — v1.0
+- ✓ Malformed numeric lines skip (null) instead of throwing — v1.0
+- ✓ Parse caches thread-safe (ConcurrentDictionary, first-writer-wins) — v1.0
+- ✓ Combat-log files opened read-only (`FileAccess.Read` + `FileShare.ReadWrite`) — v1.0
+- ✓ **(UAT bonus)** Combat logs decoded as Latin-1 — accented player names no longer corrupted — v1.0
+
+**Refactors (RFCT-01..03)**
+- ✓ `Entry`/`SlidingExpirationList` deduplicated into core `SwtorLogParser.View` (Overlay composes it) — v1.0
+- ✓ `CombatLogsMonitor` constructible in all configs + public DI ctor (no `#if` gap) — v1.0
+- ✓ Static caches: per-type, content-keyed (`rom.ToString()`), bounded — v1.0
+
+**Performance (PERF-01..03)**
+- ✓ Zero-copy line slicing + parse-free `ToString()` count — v1.0
+- ✓ Native CLI in-place render (no `Console.Clear()` flicker); managed CLI flicker-free Spectre.Console `Live` — v1.0
+- ✓ Single-pass `CalculateDpsHpsStats` (no per-line re-sort) — v1.0
+
+**Dependencies, platform & infra**
+- ✓ All NuGet packages on stable GA via `Directory.Packages.props` — v1.0
+- ✓ `System.CommandLine`(+Rendering) removed → hand-rolled dispatch + Spectre.Console — v1.0
+- ✓ GitHub Actions CI (build + test + AOT publish), green on `main` — v1.0
+- ✓ `DockerDefaultTargetOS=Linux` removed — v1.0
+- ✓ Monitor lifecycle, Rx pipeline, and DPS/HPS math tests (106-test suite) — v1.0
+- ✓ **All projects on .NET 10 (LTS)**, AOT-clean (issue #1) — v1.0
+
 ### Active
 
-<!-- This milestone: resolve everything in CONCERNS.md. -->
-
-**Correctness bugs**
-- [ ] Fix cancellation-token mis-wiring so `Stop()` actually cancels the monitor worker tasks
-- [ ] Make `Stop()` safe to call before `Start()` (no NRE on unassigned `_cancellationTokenSource`)
-- [ ] Use `InvariantCulture` for all `DateTime`/number parsing (locale-independent)
-- [ ] Harden the `CombatLogs` static constructor against settings filenames without `_` (no startup `TypeInitializationException`)
-- [ ] Guard `int/long/ulong.Parse` paths against malformed lines (skip instead of throw)
-- [ ] Make the shared parse caches thread-safe (no `Dictionary.Add` races from the reader task)
-- [ ] Open combat-log files read-only instead of `ReadWrite`
-
-**Refactors**
-- [ ] De-duplicate the triplicated `View/` code (`Entry`, `SlidingExpirationList`) into the core library
-- [ ] Replace the `#if RELEASE/#elif DEBUG` singleton with a safe construction path (prefer DI)
-- [ ] Redesign the static caches: content-based keys, bounded growth, thread-safe
-
-**Performance**
-- [ ] Stop full-file re-parsing in `CombatLog.ToString()` and per-line `char[]` allocation in `GetLogLines()`
-- [ ] Replace `Console.Clear()` full-redraw-per-event in the Native CLI with incremental rendering
-- [ ] Avoid re-scanning/re-sorting the whole window per line in the stats accumulator
-
-**Dependencies & infra**
-- [ ] Move all preview/alpha/beta NuGet packages to stable GA versions; add central package management (`Directory.Packages.props`)
-- [ ] Migrate off the abandoned `System.CommandLine.Rendering 0.4.0-alpha` to a supported rendering approach
-- [ ] Add a CI pipeline (GitHub Actions) that builds the solution and runs tests
-- [ ] Remove the misleading `DockerDefaultTargetOS=Linux` (this is a Windows-only app)
-- [ ] Add tests for the currently-untested monitor lifecycle, Rx pipeline, and DPS/HPS math
+(Next milestone not yet scoped — see `BACKLOG.md` and GitHub issues #2/#3/#4. Candidate clusters: Overlay/UI modernization, tooling, docs refresh.)
 
 ### Out of Scope
 
@@ -65,7 +69,7 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 
 ## Constraints
 
-- **Tech stack**: .NET 8, C#, Rx.NET (`System.Reactive`), WinForms, xUnit — established; stay on .NET 8.
+- **Tech stack**: .NET 10 (LTS, upgraded from .NET 8 in v1.0), C#, Rx.NET (`System.Reactive`), WinForms, xUnit, Spectre.Console (managed CLI), central package management.
 - **Compatibility**: Windows-only is acceptable and intended; do not add cross-platform burden.
 - **AOT**: `SwtorLogParser.Native.Cli` uses Native AOT and the core library is `IsAotCompatible=true` — refactors (esp. DI) must not break AOT compatibility (no reflection-heavy patterns in the core library).
 - **No regressions**: the parser model and the live DPS/HPS stream must behave identically after hardening; new tests should lock in current correct behavior before refactors.
@@ -74,10 +78,18 @@ The live DPS/HPS stats pipeline must stay correct and reliable while the codebas
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Scope this milestone as "resolve all CONCERNS.md items" | User directive; concerns are concrete and well-cited | — Pending |
-| Upgrade preview/alpha deps to GA, including off `System.CommandLine.Rendering` alpha | Fragile restores, missed patches, abandoned alpha API | — Pending |
-| Add a GitHub Actions CI pipeline (build + test) | No CI exists; needed to protect against regressions during hardening | — Pending |
-| Remove `DockerDefaultTargetOS=Linux` rather than pursue cross-platform | App is Windows-only by design; the Docker target is misleading | — Pending |
+| Scope this milestone as "resolve all CONCERNS.md items" | User directive; concerns are concrete and well-cited | ✓ Good — all 22 reqs shipped v1.0 |
+| Upgrade preview/alpha deps to GA, including off `System.CommandLine.Rendering` alpha | Fragile restores, missed patches, abandoned alpha API | ✓ Good — GA + CPM; replaced with Spectre.Console |
+| Add a GitHub Actions CI pipeline (build + test) | No CI exists; needed to protect against regressions during hardening | ✓ Good — green on main, incl. AOT publish |
+| Remove `DockerDefaultTargetOS=Linux` rather than pursue cross-platform | App is Windows-only by design; the Docker target is misleading | ✓ Good |
+| Drop System.CommandLine entirely (hand-rolled dispatch + Spectre.Console table) | No GA at decision time; Rendering abandoned; 2-command surface is trivial + AOT-safe | ✓ Good |
+| Upgrade to .NET 10 LTS mid-milestone (issue #1) | User directive ("ASAP"); native `.slnx`/single-SDK; LTS; simplified CI | ✓ Good — AOT-clean, 106 tests green |
+
+---
+
+## Current State (v1.0 shipped 2026-06-12)
+
+The SWTOR log parser is hardened and modernized: .NET 10 LTS, 106-test suite, GitHub Actions CI green on `main` (build + test + Native AOT publish), all CONCERNS.md items resolved. Live overlay validated end-to-end against real combat logs. Deferred/next: overlay topmost (BL-01), CsWin32 interop (#3), lightweight UI alternative (#4), xUnit→MSTest (#2), docs refresh.
 
 ## Evolution
 
@@ -97,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-11 after initialization*
+*Last updated: 2026-06-12 after v1.0 Hardening milestone*

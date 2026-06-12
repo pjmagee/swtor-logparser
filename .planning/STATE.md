@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
+status: Awaiting next milestone
 stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-06-12T01:01:00Z"
-last_activity: 2026-06-12 -- Phase 06 Plan 01 executed
+last_updated: "2026-06-12T05:50:07.991Z"
+last_activity: 2026-06-12 — Milestone v1.0 completed and archived
 progress:
   total_phases: 7
   completed_phases: 6
@@ -25,12 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-11)
 
 ## Current Position
 
-Phase: 06 (.NET 10 Upgrade) — COMPLETE
-Plan: 1 of 1 complete
-Status: 06-01 complete (all 5 projects on net10.0/net10.0-windows; Logging.Abstractions 10.0.9; 106 tests green; AOT code-gen IL-clean); ready for Phase 7 (CI)
-Last activity: 2026-06-12 -- Phase 06 Plan 01 executed
-
-Progress: [████████░░] 86%
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-12 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -126,3 +124,19 @@ None yet.
 Last session: 2026-06-12T01:01:00Z
 Stopped at: Completed 06-01-PLAN.md
 Resume file: None
+
+## Deferred Items
+
+Verification items acknowledged and deferred at v1.0 milestone close on 2026-06-12
+(all non-blocking — see .planning/v1.0-MILESTONE-AUDIT.md for evidence):
+
+| Phase | Item | Status |
+|-------|------|--------|
+| 02 | BUG-07 live tailing + BUG-01 Stop() | resolved via live overlay UAT |
+| 04 | Native CLI flicker visual check | deferred (cosmetic; code verified) |
+| 05 | Ctrl+C clean-stop + `list` parity (both hosts) | deferred (interactive) |
+| 06 | Native AOT link step | resolved via Phase 7 CI (aot-publish green) |
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
