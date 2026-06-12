@@ -4,12 +4,12 @@ milestone: v1.1
 milestone_name: WinUI 3 Overlay & Dev Tooling
 status: executing
 stopped_at: Phase 9 context gathered
-last_updated: "2026-06-12T09:00:50.963Z"
-last_activity: 2026-06-12 -- Phase 9 planning complete
+last_updated: "2026-06-12T09:06:06.386Z"
+last_activity: 2026-06-12 -- Phase 9 execution started
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 2
+  total_plans: 4
   completed_plans: 2
   percent: 17
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12)
 
 **Core value:** The live DPS/HPS stats pipeline stays correct and reliable while the codebase becomes safe to maintain and extend — no regressions to parsing or the reactive stream.
-**Current focus:** Phase 8 — WinUI 3 Scaffold + Dependencies + Guardrails
+**Current focus:** Phase 9 — Live Stream Render + Dispatcher Marshaling
 
 ## Current Position
 
-Phase: 9
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 9 planning complete
+Phase: 9 (Live Stream Render + Dispatcher Marshaling) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 9
+Last activity: 2026-06-12 -- Phase 9 execution started
 
 Progress: [██████████] 100% (Phase 8: 2/2 plans)
 
@@ -72,6 +72,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [08-01] WinAppSDK 2.2.0 + CsWin32 0.3.275 pinned in CPM but referenced only from SwtorLogParser.Overlay.WinUi (core + Native CLI stay AOT-clean)
 - [Phase ?]: [08-02] Headless windows-latest restores+builds the unpackaged self-contained WinUI 3 project with no dotnet workload step needed in CI
 - [Phase ?]: [08-02] Native AOT publish IL-analysis warning-free (0 IL2xxx/IL3xxx); WinAppSDK/CsWin32 absent from Native.Cli graph — AOT-contamination boundary holds
+- [quick-260612-dso]: APPROVED exception to the FROZEN-core-parser decision: fixed Value.Parse outer-paren scope (absorb/shield Total bug — outer damage 133 not inner absorbed 149) + switched damage-type/result detection to the numeric {id} (locale-robust, plain AOT-safe switch); added Value.Absorbed int?. This intentionally changes live DPS for absorb/shield hits. `~` effective-HPS remains OUT OF SCOPE (deferred).
 
 ### Pending Todos
 
@@ -88,9 +89,10 @@ None yet.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260612-czd | Benchmark + optimize CombatLogLine.Parse allocations (−55% pure parse; span-keyed cache lookup + lazy sub-parsing) | 2026-06-12 | 72811c8 | [260612-czd-benchmark-optimize-combatlogline-parse-a](./quick/260612-czd-benchmark-optimize-combatlogline-parse-a/) |
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 260612-czd | Benchmark + optimize CombatLogLine.Parse allocations (−55% pure parse; span-keyed cache lookup + lazy sub-parsing) | 2026-06-12 | 72811c8 |  | [260612-czd-benchmark-optimize-combatlogline-parse-a](./quick/260612-czd-benchmark-optimize-combatlogline-parse-a/) |
+| 260612-dso | Fix Value.Parse outer-paren absorb bug + id-based damage-type detection (correctness; breaks v1.1 core freeze w/ approval — absorb DPS now counts outer damage) | 2026-06-12 | 093381d | Verified | [260612-dso-fix-value-parse-outer-paren-absorb-bug-i](./quick/260612-dso-fix-value-parse-outer-paren-absorb-bug-i/) |
 
 ## Deferred Items
 
