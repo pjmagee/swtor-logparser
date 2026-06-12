@@ -101,6 +101,7 @@ None yet.
 |---|-------------|------|--------|--------|-----------|
 | 260612-czd | Benchmark + optimize CombatLogLine.Parse allocations (−55% pure parse; span-keyed cache lookup + lazy sub-parsing) | 2026-06-12 | 72811c8 |  | [260612-czd-benchmark-optimize-combatlogline-parse-a](./quick/260612-czd-benchmark-optimize-combatlogline-parse-a/) |
 | 260612-dso | Fix Value.Parse outer-paren absorb bug + id-based damage-type detection (correctness; breaks v1.1 core freeze w/ approval — absorb DPS now counts outer damage) | 2026-06-12 | 093381d | Verified | [260612-dso-fix-value-parse-outer-paren-absorb-bug-i](./quick/260612-dso-fix-value-parse-outer-paren-absorb-bug-i/) |
+| 260612-hjb | Unify both CLI hosts behind shared SwtorLogParser.Cli.Common Spectre renderer (Native CLI cursor math removed; both Program.cs are one-line forwarders; AOT IL analysis 0 warnings) | 2026-06-12 | 9284e29 | Needs Review | [260612-hjb-unify-both-cli-hosts-behind-a-shared-spe](./quick/260612-hjb-unify-both-cli-hosts-behind-a-shared-spe/) |
 
 ## Deferred Items
 
@@ -110,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T10:27:00.000Z
-Stopped at: Completed 09-02-PLAN.md (Phase 9 complete)
+Last session: 2026-06-12T11:47:41.000Z
+Stopped at: Completed quick task 260612-hjb (unify CLI hosts behind shared Spectre renderer)
 Resume file: None
