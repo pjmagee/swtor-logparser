@@ -12,7 +12,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 ### Overlay (OVL) — WinUI 3 host replacing WinForms
 
 - [x] **OVL-01**: A WinUI 3 (Windows App SDK) overlay project exists as an **unpackaged, self-contained** app that launches a window from a published `.exe` — and adding it keeps the `.slnx` build and the Native AOT CLI publish green (AOT/CI guardrails intact)
-- [ ] **OVL-02**: The overlay subscribes to `CombatLogsMonitor.Instance.DpsHps` and renders live per-player rows (Player / DPS / Crit% / HPS / Crit%) updated on the UI dispatcher with no cross-thread crash, reusing the core `View` sliding-expiry types unchanged
+- [x] **OVL-02**: The overlay subscribes to `CombatLogsMonitor.Instance.DpsHps` and renders live per-player rows (Player / DPS / Crit% / HPS / Crit%) updated on the UI dispatcher with no cross-thread crash, reusing the core `View` sliding-expiry types unchanged
 - [ ] **OVL-03**: The WinUI 3 transparency + click-through approach is validated by a throwaway **spike** on a real window before the production grid port (de-risks the highest-uncertainty work)
 - [ ] **OVL-04**: The overlay is transparent and borderless, at visual parity with the WinForms overlay
 - [ ] **OVL-05**: The user can drag the overlay to reposition it
@@ -71,7 +71,7 @@ Which phases cover which requirements. Filled during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | OVL-01 | Phase 8 | Complete |
-| OVL-02 | Phase 9 | Pending |
+| OVL-02 | Phase 9 | Complete |
 | OVL-03 | Phase 10 | Pending |
 | OVL-04 | Phase 10 | Pending |
 | OVL-05 | Phase 10 | Pending |

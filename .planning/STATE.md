@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: WinUI 3 Overlay & Dev Tooling
 status: executing
-stopped_at: Phase 9 context gathered
-last_updated: "2026-06-12T09:06:06.386Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-06-12T09:19:41.845Z"
 last_activity: 2026-06-12 -- Phase 9 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 4
-  completed_plans: 2
-  percent: 17
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 ## Current Position
 
 Phase: 9 (Live Stream Render + Dispatcher Marshaling) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 9
-Last activity: 2026-06-12 -- Phase 9 execution started
+Plan: 2 of 2
+Status: Ready to execute (09-01 complete; 09-02 next)
+Last activity: 2026-06-12 -- Completed 09-01 (live stream render + dispatcher marshaling, OVL-02)
 
-Progress: [██████████] 100% (Phase 8: 2/2 plans)
+Progress: [█████░░░░░] 50% (Phase 9: 1/2 plans)
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100% (Phase 8: 2/2 plans)
 *Updated after each plan completion*
 | Phase 8 P01 | 3min | 2 tasks | 9 files |
 | Phase 8 P02 | 25min | 3 tasks | 2 files |
+| Phase 9 P01 | 3min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [08-02] Headless windows-latest restores+builds the unpackaged self-contained WinUI 3 project with no dotnet workload step needed in CI
 - [Phase ?]: [08-02] Native AOT publish IL-analysis warning-free (0 IL2xxx/IL3xxx); WinAppSDK/CsWin32 absent from Native.Cli graph — AOT-contamination boundary holds
 - [quick-260612-dso]: APPROVED exception to the FROZEN-core-parser decision: fixed Value.Parse outer-paren scope (absorb/shield Total bug — outer damage 133 not inner absorbed 149) + switched damage-type/result detection to the numeric {id} (locale-robust, plain AOT-safe switch); added Value.Absorbed int?. This intentionally changes live DPS for absorb/shield hits. `~` effective-HPS remains OUT OF SCOPE (deferred).
+- [Phase ?]: [09-01] Off-thread DpsHps aggregation in reused core SlidingExpirationList(10s); 1s DispatcherQueueTimer mirrors into ObservableCollection (DPS-desc, null/zero last); OnNext never touches XAML — no cross-thread COMException 0x8001010E
+- [Phase ?]: [09-01] OVL-02 satisfied at no-crash-launch level (window opens, monitor starts, marshaling holds); live-data visual confirmation of rows rendering/expiring deferred to Phase 11 parity gate
+- [Phase ?]: [09-01] Native AOT IL analysis warning-free (overlay->core ProjectReference did not contaminate core/Native.Cli AOT graph); native-link MSB3073 is env-gated (MSVC not on shell PATH), CI-covered
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-12T08:48:47.239Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-live-stream-render-dispatcher-marshaling/09-CONTEXT.md
+Last session: 2026-06-12T09:19:41.840Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None

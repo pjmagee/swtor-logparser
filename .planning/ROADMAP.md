@@ -76,7 +76,7 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
 
 **Wave 1**
 
-  - [ ] 09-01-PLAN.md — Render + dispatcher marshaling: core ProjectReference + EntryViewModel + MainViewModel (DpsHps→core list off-thread, 1s DispatcherQueueTimer mirror, DPS-desc sort) + bound ListView + monitor-on-activation + dispose (OVL-02)
+  - [x] 09-01-PLAN.md — Render + dispatcher marshaling: core ProjectReference + EntryViewModel + MainViewModel (DpsHps→core list off-thread, 1s DispatcherQueueTimer mirror, DPS-desc sort) + bound ListView + monitor-on-activation + dispose (OVL-02)
 
 **Wave 2** *(blocked on Wave 1 — shares MainWindow.xaml(.cs))*
 
@@ -154,7 +154,7 @@ Overlay critical path 8 → 9 → 10 → 11 (hard parity gate). Phase 12 (MSTest
 | 6. .NET 10 Upgrade | v1.0 | Complete | 2026-06-12 |
 | 7. CI Pipeline | v1.0 | Complete | 2026-06-12 |
 | 8. WinUI 3 Scaffold + Guardrails | 2/2 | Complete    | 2026-06-12 |
-| 9. Live Stream Render + Dispatcher | v1.1 | Planned (2 plans) | - |
+| 9. Live Stream Render + Dispatcher | 1/2 | In Progress|  |
 | 10. CsWin32 Interop | v1.1 | Not started | - |
 | 11. Parity Gate + WinForms Removal | v1.1 | Not started | - |
 | 12. MSTest Migration | v1.1 | Not started | - |
