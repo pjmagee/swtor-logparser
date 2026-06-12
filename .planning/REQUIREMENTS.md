@@ -31,8 +31,8 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 ### Dependencies (DEP)
 
-- [ ] **DEP-01**: All NuGet packages are on stable GA versions (no preview/alpha/beta) — all `*.csproj`
-- [ ] **DEP-02**: Package versions are centrally managed via `Directory.Packages.props`
+- [x] **DEP-01**: All NuGet packages are on stable GA versions (no preview/alpha/beta) — all `*.csproj`
+- [x] **DEP-02**: Package versions are centrally managed via `Directory.Packages.props`
 - [ ] **DEP-03**: The CLI rendering no longer depends on the abandoned `System.CommandLine.Rendering 0.4.0-alpha`; it uses a supported rendering approach — `SwtorLogParser.Cli`
 
 ### Infrastructure (INFRA)
@@ -75,8 +75,8 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | PERF-01 | Phase 4 | Complete |
 | PERF-02 | Phase 4 | Complete |
 | PERF-03 | Phase 4 | Complete |
-| DEP-01 | Phase 5 | Pending |
-| DEP-02 | Phase 5 | Pending |
+| DEP-01 | Phase 5 | Complete |
+| DEP-02 | Phase 5 | Complete |
 | DEP-03 | Phase 5 | Pending |
 | INFRA-01 | Phase 6 | Pending |
 | INFRA-02 | Phase 5 | Pending |

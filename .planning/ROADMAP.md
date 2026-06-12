@@ -132,7 +132,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans (Wave 1: 05-01 — CPM migration touches all csproj, runs alone; Wave 2: 05-02 — System.CommandLine removal + Spectre.Console + Docker removal on the two CLI hosts)
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Directory.Packages.props (CPM) + all-GA versions; strip Version= from every csproj; drop 3 dead core-lib refs; add explicit Logging.Abstractions (DEP-01, DEP-02)
+- [x] 05-01-PLAN.md — Directory.Packages.props (CPM) + all-GA versions; strip Version= from every csproj; drop 3 dead core-lib refs; add explicit Logging.Abstractions (DEP-01, DEP-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -163,5 +163,5 @@ Note: Phase 5 depends on Phase 1 (not Phase 4) so it can run in parallel with Ph
 | 2. Correctness Bugs | 3/3 | Complete   | 2026-06-11 |
 | 3. Monitor Refactor + Coverage | 5/5 | Complete   | 2026-06-11 |
 | 4. Performance | 3/3 | Complete   | 2026-06-11 |
-| 5. Dependency Upgrades | 0/? | Not started | - |
+| 5. Dependency Upgrades | 1/2 | In Progress|  |
 | 6. CI Pipeline | 0/? | Not started | - |
