@@ -37,17 +37,12 @@ public static class CombatLogs
 
     public static ISet<string> PlayerNames => _source.PlayerNames;
 
-    internal static ReadOnlyMemory<char> Energy { get; } = "energy".AsMemory();
-    internal static ReadOnlyMemory<char> Kinetic { get; } = "kinetic".AsMemory();
-    internal static ReadOnlyMemory<char> Internal { get; } = "internal".AsMemory();
-    internal static ReadOnlyMemory<char> Elemental { get; } = "elemental".AsMemory();
+    // BUG-260612-dso: the English-word damage-TYPE/RESULT needles (energy/kinetic/internal/
+    // elemental/-parry/-miss/-dodge/absorbed/deflect) were removed — type/result detection now
+    // keys off the numeric {id} in Value.cs (locale-robust). These char/word needles remain because
+    // they are NOT id-keyed in the log format: Critical ('*'), Charges, Tilde ('~'), HeroEngine ('he').
     internal static ReadOnlyMemory<char> Charges { get; } = "charges".AsMemory();
     internal static ReadOnlyMemory<char> Critical { get; } = "*".AsMemory();
-    internal static ReadOnlyMemory<char> Parry { get; } = "-parry".AsMemory();
-    internal static ReadOnlyMemory<char> Miss { get; } = "-miss".AsMemory();
-    internal static ReadOnlyMemory<char> Dodge { get; } = "-dodge".AsMemory();
-    internal static ReadOnlyMemory<char> Absorbed { get; } = "absorbed".AsMemory();
-    internal static ReadOnlyMemory<char> Deflect { get; } = "deflect".AsMemory();
     internal static ReadOnlyMemory<char> Tilde { get; } = "~".AsMemory();
     internal static ReadOnlyMemory<char> HeroEnginePrefix { get; } = "he".AsMemory();
 
@@ -63,15 +58,24 @@ public static class CombatLogs
     /// </summary>
     private sealed class DefaultCombatLogSource : ICombatLogSource
     {
-        private static readonly string LogsPath =
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.None),
-                "Star Wars - The Old Republic", "CombatLogs");
+        private static readonly string LogsPath = Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.MyDocuments,
+                Environment.SpecialFolderOption.None
+            ),
+            "Star Wars - The Old Republic",
+            "CombatLogs"
+        );
 
-        private static readonly string SettingsPath =
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
-                    Environment.SpecialFolderOption.None), "SWTOR", "swtor", "settings");
+        private static readonly string SettingsPath = Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.None
+            ),
+            "SWTOR",
+            "swtor",
+            "settings"
+        );
 
         public DirectoryInfo CombatLogsDirectory { get; } = new(LogsPath);
 
@@ -94,16 +98,21 @@ public static class CombatLogs
 
         public DefaultCombatLogSource()
         {
-            _playerNames = new Lazy<ISet<string>>(LoadPlayerNames, LazyThreadSafetyMode.ExecutionAndPublication);
+            _playerNames = new Lazy<ISet<string>>(
+                LoadPlayerNames,
+                LazyThreadSafetyMode.ExecutionAndPublication
+            );
         }
 
         public ISet<string> PlayerNames => _playerNames.Value;
 
         private ISet<string> LoadPlayerNames()
         {
-            if (!Directory.Exists(SettingsDirectory.FullName)) return new HashSet<string>();
+            if (!Directory.Exists(SettingsDirectory.FullName))
+                return new HashSet<string>();
 
-            return SettingsDirectory.EnumerateFiles("*PlayerGUIState.ini")
+            return SettingsDirectory
+                .EnumerateFiles("*PlayerGUIState.ini")
                 .Select(x => SecondSegmentOrNull(x.Name))
                 .Where(n => n is not null)
                 .Select(n => n!)
@@ -112,14 +121,19 @@ public static class CombatLogs
 
         public IEnumerable<CombatLog> EnumerateCombatLogs()
         {
-            if (!Directory.Exists(CombatLogsDirectory.FullName)) yield break;
-            foreach (var fi in CombatLogsDirectory.EnumerateFiles("*.txt")) yield return new CombatLog(fi);
+            if (!Directory.Exists(CombatLogsDirectory.FullName))
+                yield break;
+            foreach (var fi in CombatLogsDirectory.EnumerateFiles("*.txt"))
+                yield return new CombatLog(fi);
         }
 
         public CombatLog? GetLatestCombatLog()
         {
-            if (!Directory.Exists(CombatLogsDirectory.FullName)) return null;
-            var fileInfo = CombatLogsDirectory.EnumerateFiles("*.txt").MaxBy(x => x.LastWriteTimeUtc);
+            if (!Directory.Exists(CombatLogsDirectory.FullName))
+                return null;
+            var fileInfo = CombatLogsDirectory
+                .EnumerateFiles("*.txt")
+                .MaxBy(x => x.LastWriteTimeUtc);
             return fileInfo is not null ? new CombatLog(fileInfo) : null;
         }
     }
