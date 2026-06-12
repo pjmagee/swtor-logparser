@@ -2,7 +2,7 @@ using Spectre.Console;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
 
-namespace SwtorLogParser.Cli.Common;
+namespace SwtorLogParser.Cli;
 
 public static class SwtorCliApp
 {
@@ -52,14 +52,19 @@ public static class SwtorCliApp
         ConsoleCancelEventHandler handler = (_, e) =>
         {
             e.Cancel = true;
-            try { cts.Cancel(); } catch (ObjectDisposedException) { /* already shutting down */ }
+            try
+            {
+                cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            { /* already shutting down */
+            }
         };
         Console.CancelKeyPress += handler;
 
         // Only drive cursor/live-update rendering when we actually own an interactive
         // console buffer; piped/redirected output degrades to plain writes (WR-05).
-        _interactive = !Console.IsOutputRedirected
-                       && AnsiConsole.Profile.Capabilities.Interactive;
+        _interactive = !Console.IsOutputRedirected && AnsiConsole.Profile.Capabilities.Interactive;
 
         try
         {
@@ -73,11 +78,13 @@ public static class SwtorCliApp
 
                 // Live updates the table in place; the callback blocks until Ctrl+C cancels
                 // the token, while Update/OnCombatLogAdded refresh the live frame (WR-04).
-                AnsiConsole.Live(Table).Start(ctx =>
-                {
-                    _live = ctx;
-                    cts.Token.WaitHandle.WaitOne();
-                });
+                AnsiConsole
+                    .Live(Table)
+                    .Start(ctx =>
+                    {
+                        _live = ctx;
+                        cts.Token.WaitHandle.WaitOne();
+                    });
 
                 CombatLogsMonitor.Instance.Stop();
             }
@@ -129,16 +136,19 @@ public static class SwtorCliApp
                 x.DPS.HasValue ? x.DPS.Value.ToString("N") : "-",
                 x.DPSCritP.HasValue ? x.DPSCritP.Value.ToString("N") : "-",
                 x.HPS.HasValue ? x.HPS.Value.ToString("N") : "-",
-                x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-");
+                x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-"
+            );
     }
 
     private static string FormatRow(CombatLogsMonitor.PlayerStats x) =>
-        string.Format("{0}: dps: {1} ({2}); hps: {3} ({4})",
+        string.Format(
+            "{0}: dps: {1} ({2}); hps: {3} ({4})",
             x.Player.Name ?? "-",
             x.DPS.HasValue ? x.DPS.Value.ToString("N") : "-",
             x.DPSCritP.HasValue ? x.DPSCritP.Value.ToString("N") : "-",
             x.HPS.HasValue ? x.HPS.Value.ToString("N") : "-",
-            x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-");
+            x.HPSCritP.HasValue ? x.HPSCritP.Value.ToString("N") : "-"
+        );
 
     private static void OnCombatLogAdded(object? _, CombatLog combatLog)
     {
@@ -158,6 +168,7 @@ public static class SwtorCliApp
 
     private static void ListCombatLogs()
     {
-        foreach (var combatLog in CombatLogs.EnumerateCombatLogs()) Console.WriteLine(combatLog);
+        foreach (var combatLog in CombatLogs.EnumerateCombatLogs())
+            Console.WriteLine(combatLog);
     }
 }
