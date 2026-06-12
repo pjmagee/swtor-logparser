@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Overlay (ImGui)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-overlay",
+      "program": "${workspaceFolder}/SwtorLogParser.Overlay.ImGui/bin/Debug/net10.0-windows10.0.19041.0/win-x64/SwtorLogParser.Overlay.ImGui.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/SwtorLogParser.Overlay.ImGui",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Managed CLI",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-cli",
+      "program": "${workspaceFolder}/SwtorLogParser.Cli/bin/Debug/net10.0/SwtorLogParser.Cli.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/SwtorLogParser.Cli",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
