@@ -7,6 +7,7 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
+using SwtorLogParser.Model;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
 using Windows.Win32;
@@ -36,6 +37,16 @@ internal sealed class Program
 
     private float _fontScale;
     private double _opacity;
+    private bool _showLog;
+
+    // Mini human-readable combat log (toggled): a bounded ring of formatted ability events, fed from the
+    // core CombatLogChanged event on the reader thread and rendered on the UI thread. Stripped of GUIDs
+    // and the raw log syntax — useful for streamers sharing their rotation.
+    private const int LogCapacity = 250;
+    private readonly object _logLock = new();
+    private readonly Queue<string> _log = new();
+    private static readonly Vector2D<int> MeterSize = new(480, 300);
+    private static readonly Vector2D<int> MeterWithLogSize = new(620, 680);
 
     // SWTOR game-window tracking: poll until the game window appears, pin the overlay over it, follow it.
     private const double GamePollSeconds = 1.5d;
@@ -53,6 +64,7 @@ internal sealed class Program
         _settings = _settingsService.Load();
         _fontScale = Math.Clamp(_settings.FontScale, 0.8f, 3.0f);
         _opacity = Math.Clamp(_settings.Opacity, 0.05d, 1.0d);
+        _showLog = _settings.ShowLog;
     }
 
     [STAThread]
@@ -63,7 +75,7 @@ internal sealed class Program
         var options = WindowOptions.Default with
         {
             Title = "SWTOR Overlay",
-            Size = new Vector2D<int>(460, 300),
+            Size = _showLog ? MeterWithLogSize : MeterSize,
             Position = _settings is { WindowX: { } x, WindowY: { } y } ? new Vector2D<int>(x, y) : new Vector2D<int>(40, 40),
             WindowBorder = WindowBorder.Hidden,
             TransparentFramebuffer = true,
@@ -91,6 +103,9 @@ internal sealed class Program
         {
             if (stats.Player?.Id is not null) _list.AddOrUpdate(stats);
         });
+        // Per-line feed for the mini combat log (fires on the reader thread; we just format + enqueue).
+        CombatLogsMonitor.Instance.CombatLogChanged += OnCombatLine;
+
         if (!CombatLogsMonitor.Instance.IsRunning)
             CombatLogsMonitor.Instance.Start(CancellationToken.None);
 
@@ -143,6 +158,7 @@ internal sealed class Program
 
         DrawControlBar();
         DrawTable();
+        if (_showLog) DrawLog();
 
         ImGuiNET.ImGui.End();
 
@@ -185,6 +201,14 @@ internal sealed class Program
         var op = (float)_opacity;
         if (ImGuiNET.ImGui.SliderFloat("Opacity", ref op, 0.05f, 1.0f, "")) _opacity = op;
 
+        ImGuiNET.ImGui.SameLine();
+        var showLog = _showLog;
+        if (ImGuiNET.ImGui.Checkbox("Log", ref showLog))
+        {
+            _showLog = showLog;
+            ResizeForLog(); // grow/shrink the window to make room for the combat log
+        }
+
         if (!_gameFound)
             ImGuiNET.ImGui.TextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Waiting for SWTOR…");
     }
@@ -213,6 +237,78 @@ internal sealed class Program
         }
 
         ImGuiNET.ImGui.EndTable();
+    }
+
+    /// <summary>
+    /// Mini human-readable combat log (the streamer "rotation" view): a scrollable list of recent ability
+    /// events — time, who, ability, target, amount + crit — with the raw GUIDs/syntax stripped. Renders a
+    /// snapshot of the bounded buffer and auto-scrolls while pinned to the bottom.
+    /// </summary>
+    private void DrawLog()
+    {
+        ImGuiNET.ImGui.Separator();
+        ImGuiNET.ImGui.TextDisabled("Combat log");
+
+        if (ImGuiNET.ImGui.BeginChild("##combatlog"))
+        {
+            string[] lines;
+            lock (_logLock) lines = _log.ToArray();
+
+            foreach (var line in lines) ImGuiNET.ImGui.TextUnformatted(line);
+
+            // Keep the newest line in view only when the user is already scrolled to the bottom.
+            if (ImGuiNET.ImGui.GetScrollY() >= ImGuiNET.ImGui.GetScrollMaxY())
+                ImGuiNET.ImGui.SetScrollHereY(1.0f);
+        }
+
+        ImGuiNET.ImGui.EndChild();
+    }
+
+    private void ResizeForLog() => _window.Size = _showLog ? MeterWithLogSize : MeterSize;
+
+    // Reader-thread handler: format the line and push it into the bounded ring (oldest dropped).
+    private void OnCombatLine(object? sender, CombatLogLine line)
+    {
+        var text = FormatLine(line);
+        if (text is null) return;
+
+        lock (_logLock)
+        {
+            _log.Enqueue(text);
+            while (_log.Count > LogCapacity) _log.Dequeue();
+        }
+    }
+
+    /// <summary>
+    /// Projects a parsed line into a readable "rotation" entry, or null to skip it. Only ability events
+    /// are kept; GUIDs and the raw bracketed syntax are dropped. Lazy <see cref="CombatLogLine"/> getters
+    /// can throw on odd lines, so the whole projection is guarded.
+    /// </summary>
+    private static string? FormatLine(CombatLogLine line)
+    {
+        try
+        {
+            var ability = line.Ability?.Name;
+            if (string.IsNullOrWhiteSpace(ability)) return null;
+
+            var time = line.TimeStamp.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            var source = line.Source?.Name;
+            source = string.IsNullOrWhiteSpace(source) ? "?" : source;
+            var target = line.Target?.Name;
+
+            var value = line.Value;
+            var amount = value is { Total: > 0 } ? value.Total.ToString("N0", CultureInfo.InvariantCulture) : null;
+            var crit = value?.IsCritical == true ? " ✶crit" : string.Empty;
+
+            var text = $"{time}  {source}  {ability}";
+            if (!string.IsNullOrWhiteSpace(target) && target != source) text += $" → {target}";
+            if (amount is not null) text += $"  {amount}{crit}";
+            return text;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -268,8 +364,10 @@ internal sealed class Program
         _settings.WindowY = _window.Position.Y;
         _settings.Opacity = _opacity;
         _settings.FontScale = _fontScale;
+        _settings.ShowLog = _showLog;
         _settingsService.Save(_settings);
 
+        CombatLogsMonitor.Instance.CombatLogChanged -= OnCombatLine;
         _subscription?.Dispose();
         _interop?.Dispose();
         _controller?.Dispose();

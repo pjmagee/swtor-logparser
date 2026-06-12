@@ -14,6 +14,7 @@ public sealed class OverlaySettings
     public int? WindowY { get; set; }
     public double Opacity { get; set; } = 0.45d;   // panel background alpha over the clear game
     public float FontScale { get; set; } = 1.4f;    // ImGui global font scale (legibility over a game)
+    public bool ShowLog { get; set; }               // expanded mini combat-log panel visible
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
