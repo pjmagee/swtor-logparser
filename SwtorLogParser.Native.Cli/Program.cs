@@ -1,28 +1,37 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using SwtorLogParser.Monitor;
+﻿using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
 
 namespace SwtorLogParser.Native.Cli;
 
 public static class Program
 {
-    public static async Task<int> Main(string[] args)
+    public static int Main(string[] args)
     {
-        var rootCommand = new RootCommand("SWTOR Log Parser");
-        var listCommand = new Command("list", "list all swtor logs");
-        var monitorCommand = new Command("monitor", "monitor log file changes");
-        listCommand.SetHandler(ListCombatLogs);
-        monitorCommand.SetHandler(MonitorCombatLogs);
-        rootCommand.Add(listCommand);
-        rootCommand.Add(monitorCommand);
-        return await rootCommand.InvokeAsync(args);
+        switch (args.Length > 0 ? args[0] : "")
+        {
+            case "list":
+                ListCombatLogs();
+                return 0;
+            case "monitor":
+                MonitorCombatLogs();
+                return 0;
+            default:
+                Console.Error.WriteLine("Usage: SwtorLogParser.Native.Cli [list|monitor]");
+                return 1;
+        }
     }
 
-    private static void MonitorCombatLogs(InvocationContext context)
+    private static void MonitorCombatLogs()
     {
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, e) =>
+        {
+            e.Cancel = true;
+            cts.Cancel();
+        };
+        var token = cts.Token;
+
         using var manualResetEvent = new ManualResetEvent(false);
-        var token = context.GetCancellationToken();
         var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
         manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
 
@@ -31,6 +40,8 @@ public static class Program
         CombatLogsMonitor.Instance.Start(token);
 
         manualResetEvent.WaitOne();
+
+        CombatLogsMonitor.Instance.Stop();
     }
 
     private static int _lastRowCount;

@@ -5,7 +5,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>SwtorLogParser.Native.Cli</RootNamespace>
     </PropertyGroup>
 
@@ -16,7 +15,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
-        <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1"/>   <!-- removed in plan 05-02; VersionOverride pins it without a central PackageVersion entry (avoids NU1008/NU1010) -->
     </ItemGroup>
 
     <ItemGroup>
