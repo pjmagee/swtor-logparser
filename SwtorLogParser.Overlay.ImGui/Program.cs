@@ -65,6 +65,12 @@ internal sealed class Program
 
     private void Run()
     {
+        // Single-file (and trimmed/AOT) deployments can't auto-discover the Silk.NET windowing/input
+        // backends by reflection, which fails with "Couldn't find a suitable window platform". Register
+        // the GLFW platform explicitly so the published single-file .exe runs.
+        Silk.NET.Windowing.Glfw.GlfwWindowing.RegisterPlatform();
+        Silk.NET.Input.Glfw.GlfwInput.RegisterPlatform();
+
         var options = WindowOptions.Default with
         {
             Title = "SWTOR Overlay",

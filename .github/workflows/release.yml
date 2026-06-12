@@ -30,10 +30,13 @@ jobs:
       # The overlay isn't AOT-able (Silk.NET/OpenGL + Dear ImGui + GLFW), so it's a self-contained
       # single-file .exe: the .NET runtime is bundled and the native GLFW/ImGui libraries self-extract
       # at launch. One file, runs without any install (larger than the AOT CLI — it carries the runtime).
+      # IncludeAllContentForSelfExtract (not just native libs) is required for Silk.NET/GLFW: it extracts
+      # everything to one dir so AppContext.BaseDirectory points where Silk looks for glfw3.dll — otherwise
+      # the app exits with "Couldn't find a suitable window platform". (Code also calls RegisterPlatform.)
       - name: Publish Overlay (single-file self-contained)
         run: >-
           dotnet publish SwtorLogParser.Overlay.ImGui -c Release -r win-x64 --self-contained
-          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true
           -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish/overlay
 
       - name: Package artifacts
