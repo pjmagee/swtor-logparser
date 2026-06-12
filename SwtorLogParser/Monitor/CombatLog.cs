@@ -2,14 +2,9 @@ using SwtorLogParser.Model;
 
 namespace SwtorLogParser.Monitor;
 
-public sealed class CombatLog
+public sealed class CombatLog(FileInfo fileInfo)
 {
-    public CombatLog(FileInfo fileInfo)
-    {
-        FileInfo = fileInfo;
-    }
-
-    public FileInfo FileInfo { get; init; }
+    public FileInfo FileInfo { get; init; } = fileInfo;
 
     public override string ToString()
     {

@@ -62,7 +62,7 @@ public class CombatLogsMonitor
             );
     }
 
-    private static readonly object Lock = new();
+    private static readonly Lock Lock = new();
 
     // TEST-02 seam: internal (was private) so DpsHpsMathTests can call the DPS/HPS math directly
     // via the existing InternalsVisibleTo(SwtorLogParser.Tests) grant — this bypasses the

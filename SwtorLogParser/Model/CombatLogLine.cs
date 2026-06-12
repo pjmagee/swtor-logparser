@@ -24,7 +24,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     private Threat? _threat;
     private bool _threatParsed;
 
-    private CombatLogLine(ReadOnlyMemory<char> rom, List<ReadOnlyMemory<char>> roms, DateTime timeStamp)
+    private CombatLogLine(
+        ReadOnlyMemory<char> rom,
+        List<ReadOnlyMemory<char>> roms,
+        DateTime timeStamp
+    )
     {
         Rom = rom;
         Roms = roms;
@@ -39,7 +43,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_sourceParsed) { _source = Actor.Parse(Roms[1]); _sourceParsed = true; }
+            if (!_sourceParsed)
+            {
+                _source = Actor.Parse(Roms[1]);
+                _sourceParsed = true;
+            }
             return _source;
         }
     }
@@ -48,7 +56,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_targetParsed) { _target = Actor.Parse(Roms[2]); _targetParsed = true; }
+            if (!_targetParsed)
+            {
+                _target = Actor.Parse(Roms[2]);
+                _targetParsed = true;
+            }
             return _target;
         }
     }
@@ -57,7 +69,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_abilityParsed) { _ability = Ability.Parse(Roms[3]); _abilityParsed = true; }
+            if (!_abilityParsed)
+            {
+                _ability = Ability.Parse(Roms[3]);
+                _abilityParsed = true;
+            }
             return _ability;
         }
     }
@@ -66,7 +82,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_actionParsed) { _action = Action.Parse(Roms[4]); _actionParsed = true; }
+            if (!_actionParsed)
+            {
+                _action = Action.Parse(Roms[4]);
+                _actionParsed = true;
+            }
             return _action;
         }
     }
@@ -75,7 +95,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_valueParsed) { _value = Value.Parse(Rom); _valueParsed = true; }
+            if (!_valueParsed)
+            {
+                _value = Value.Parse(Rom);
+                _valueParsed = true;
+            }
             return _value;
         }
     }
@@ -84,7 +108,11 @@ public class CombatLogLine : IEquatable<CombatLogLine>
     {
         get
         {
-            if (!_threatParsed) { _threat = Threat.Parse(Rom); _threatParsed = true; }
+            if (!_threatParsed)
+            {
+                _threat = Threat.Parse(Rom);
+                _threatParsed = true;
+            }
             return _threat;
         }
     }
@@ -95,10 +123,20 @@ public class CombatLogLine : IEquatable<CombatLogLine>
 
     public static CombatLogLine? Parse(ReadOnlyMemory<char> rom)
     {
-        if (rom.IsEmpty) return null;
+        if (rom.IsEmpty)
+            return null;
         var sections = GetSections(rom);
-        if (sections.Count != 5) return null;
-        if (!DateTime.TryParseExact(sections[0].Span, TimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var ts))
+        if (sections.Count != 5)
+            return null;
+        if (
+            !DateTime.TryParseExact(
+                sections[0].Span,
+                TimeFormats,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var ts
+            )
+        )
             return null;
         return new CombatLogLine(rom, sections, ts);
     }

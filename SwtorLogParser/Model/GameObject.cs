@@ -12,7 +12,6 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 
     private ulong? _parentId;
 
-
     private string? _parentName;
 
     protected GameObject(ReadOnlyMemory<char> rom)
@@ -30,8 +29,10 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
 
     public bool Equals(GameObject? other)
     {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (ReferenceEquals(null, other))
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
         return GetHashCode().Equals(other.GetHashCode());
     }
 
@@ -40,7 +41,8 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
         if (IsNested)
         {
             var nameEnd = Rom.Span.IndexOf('{');
-            if (nameEnd == -1) return null;
+            if (nameEnd == -1)
+                return null;
             var name = Rom.Span.Slice(0, nameEnd - 1).Trim();
             return name.Length > 0 ? name.ToString() : null;
         }
@@ -56,23 +58,37 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
     private string? GetName()
     {
         if (IsNested)
-            return Rom.Span.Slice(Rom.Span.IndexOf('/') + 1, Rom.Span.LastIndexOf('{') - Rom.Span.IndexOf('/') - 1)
-                .Trim().ToString();
+            return Rom
+                .Span.Slice(
+                    Rom.Span.IndexOf('/') + 1,
+                    Rom.Span.LastIndexOf('{') - Rom.Span.IndexOf('/') - 1
+                )
+                .Trim()
+                .ToString();
 
         var nameEnd = Rom.Span.IndexOf('{');
-        if (nameEnd == -1) return null;
+        if (nameEnd == -1)
+            return null;
         var name = Rom.Span.Slice(0, nameEnd - 1).Trim();
         return name.Length > 0 ? name.ToString() : null;
     }
 
     private ulong? GetParentId()
     {
-        if (!IsNested) return null;
+        if (!IsNested)
+            return null;
         var startIndex = Rom.Span.IndexOf('{');
         var endIndex = Rom.Span.IndexOf('}');
 
         return startIndex != -1 && endIndex != -1
-            ? (ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var pid) ? pid : (ulong?)null)
+            ? (
+                ulong.TryParse(
+                    Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1),
+                    out var pid
+                )
+                    ? pid
+                    : (ulong?)null
+            )
             : null;
     }
 
@@ -84,7 +100,12 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
             var endIndex = Rom.Span.LastIndexOf('}');
 
             if (startIndex != -1 && endIndex != -1)
-                return ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var id) ? id : (ulong?)null;
+                return ulong.TryParse(
+                    Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1),
+                    out var id
+                )
+                    ? id
+                    : (ulong?)null;
         }
         else
         {
@@ -92,7 +113,12 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
             var endIndex = Rom.Span.IndexOf('}');
 
             if (startIndex != -1 && endIndex != -1)
-                return ulong.TryParse(Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1), out var id) ? id : (ulong?)null;
+                return ulong.TryParse(
+                    Rom.Span.Slice(startIndex + 1, endIndex - startIndex - 1),
+                    out var id
+                )
+                    ? id
+                    : (ulong?)null;
         }
 
         return null;
@@ -105,7 +131,8 @@ public class GameObject : IEquatable<GameObject>, IComparable<GameObject>
             return cached;
 
         var gameObject = new GameObject(rom);
-        if (gameObject.Id == null) return null;
+        if (gameObject.Id == null)
+            return null;
 
         // Miss: materialize the key once and insert. GetOrAdd preserves the TryAdd race idiom:
         // returns the race winner's instance.
