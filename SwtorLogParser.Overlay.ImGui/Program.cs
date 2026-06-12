@@ -45,8 +45,8 @@ internal sealed class Program
     private const int LogCapacity = 250;
     private readonly object _logLock = new();
     private readonly Queue<string> _log = new();
-    private static readonly Vector2D<int> MeterSize = new(480, 300);
-    private static readonly Vector2D<int> MeterWithLogSize = new(620, 680);
+    private static readonly Vector2D<int> MeterSize = new(600, 320);
+    private static readonly Vector2D<int> MeterWithLogSize = new(680, 700);
 
     // Manual window drag (the OS caption-move loop doesn't work on a no-activate window).
     private bool _dragging;
@@ -223,14 +223,17 @@ internal sealed class Program
 
     private void DrawTable()
     {
-        const ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp;
+        const ImGuiTableFlags tableFlags =
+            ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.SizingStretchProp;
         if (!ImGuiNET.ImGui.BeginTable("stats", 5, tableFlags)) return;
 
-        ImGuiNET.ImGui.TableSetupColumn("Player");
-        ImGuiNET.ImGui.TableSetupColumn("DPS");
-        ImGuiNET.ImGui.TableSetupColumn("Crit %##dcrit");
-        ImGuiNET.ImGui.TableSetupColumn("HPS");
-        ImGuiNET.ImGui.TableSetupColumn("Crit %##hcrit");
+        // Player gets ~2.2x the width of each numeric column so DPS/HPS/Crit% have real room and don't
+        // clip/merge; BordersInnerV separates them visually.
+        ImGuiNET.ImGui.TableSetupColumn("Player", ImGuiTableColumnFlags.WidthStretch, 2.2f);
+        ImGuiNET.ImGui.TableSetupColumn("DPS", ImGuiTableColumnFlags.WidthStretch, 1.0f);
+        ImGuiNET.ImGui.TableSetupColumn("Crit %##dcrit", ImGuiTableColumnFlags.WidthStretch, 1.0f);
+        ImGuiNET.ImGui.TableSetupColumn("HPS", ImGuiTableColumnFlags.WidthStretch, 1.0f);
+        ImGuiNET.ImGui.TableSetupColumn("Crit %##hcrit", ImGuiTableColumnFlags.WidthStretch, 1.0f);
         ImGuiNET.ImGui.TableHeadersRow();
 
         // DPS-descending; zero/null DPS sorts to the bottom (read the locked snapshot once per frame).
