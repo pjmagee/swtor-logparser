@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj"/>
+        <ProjectReference Include="..\SwtorLogParser.Cli.Common\SwtorLogParser.Cli.Common.csproj"/>
     </ItemGroup>
 
 </Project>
