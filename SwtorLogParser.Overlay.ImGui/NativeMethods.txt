@@ -1,7 +1,5 @@
 GetWindowLongPtr
 SetWindowLongPtr
-GetWindowRect
-IsWindow
 SetWindowPos
 SetWinEventHook
 UnhookWinEvent

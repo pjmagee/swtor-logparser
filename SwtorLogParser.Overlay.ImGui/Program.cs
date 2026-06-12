@@ -11,16 +11,16 @@ using SwtorLogParser.Model;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 
 namespace SwtorLogParser.Overlay.ImGui;
 
 /// <summary>
 /// Immediate-mode (Dear ImGui) game overlay. A transparent, borderless, always-on-top GLFW/OpenGL
-/// window renders the live DPS/HPS table each frame from the frozen core stream. Replaces the WinForms
-/// + WinUI overlays: GLFW's transparent framebuffer gives the clear per-pixel see-through WinUI 3 cannot.
-/// CsWin32 (<see cref="WindowInterop"/>) supplies the click-through toggle, caption drag, tool-window /
-/// no-activate styles, and the HWND_TOPMOST re-assert (BL-01) over a borderless/windowed game.
+/// window renders the live DPS/HPS table (and an optional human-readable combat log) each frame from the
+/// frozen core stream. Replaces the WinForms + WinUI overlays: GLFW's transparent framebuffer gives the
+/// clear per-pixel see-through WinUI 3 cannot. CsWin32 (<see cref="WindowInterop"/>) supplies the
+/// no-activate style (never steals game focus) and the HWND_TOPMOST re-assert (BL-01). The user
+/// positions it by dragging — no game-window detection.
 /// </summary>
 internal sealed class Program
 {
@@ -47,13 +47,6 @@ internal sealed class Program
     private readonly Queue<string> _log = new();
     private static readonly Vector2D<int> MeterSize = new(480, 300);
     private static readonly Vector2D<int> MeterWithLogSize = new(620, 680);
-
-    // SWTOR game-window tracking: poll until the game window appears, pin the overlay over it, follow it.
-    private const double GamePollSeconds = 1.5d;
-    private double _gamePollAccum = GamePollSeconds; // first frame polls immediately
-    private bool _gameAcquired;
-    private bool _gameFound;
-    private RECT _lastGameRect;
 
     // Manual window drag (the OS caption-move loop doesn't work on a no-activate window).
     private bool _dragging;
@@ -123,14 +116,6 @@ internal sealed class Program
 
     private void OnRender(double delta)
     {
-        // Find / follow the SWTOR window so the overlay pins itself over the game (polled, resilient).
-        _gamePollAccum += delta;
-        if (_gamePollAccum >= GamePollSeconds)
-        {
-            _gamePollAccum = 0d;
-            PollGameWindow();
-        }
-
         ImGuiNET.ImGui.GetIO().FontGlobalScale = _fontScale;
 
         _controller.Update((float)delta);
@@ -220,13 +205,10 @@ internal sealed class Program
             ResizeForLog(); // grow/shrink the window to make room for the combat log
         }
 
-        // Close button — the borderless tool-window has no OS title-bar 'X', so provide one in-UI.
+        // Close button — the borderless window has no OS title-bar 'X', so provide one in-UI.
         ImGuiNET.ImGui.SameLine();
         if (ImGuiNET.ImGui.Button("X")) _window.Close();
         if (ImGuiNET.ImGui.IsItemHovered()) ImGuiNET.ImGui.SetTooltip("Close the overlay");
-
-        if (!_gameFound)
-            ImGuiNET.ImGui.TextColored(new Vector4(1f, 0.85f, 0.2f, 1f), "Waiting for SWTOR…");
     }
 
     private void DrawTable()
@@ -327,53 +309,6 @@ internal sealed class Program
             return null;
         }
     }
-
-    /// <summary>
-    /// Poll for the SWTOR window and keep the overlay pinned over it. On first acquisition the overlay
-    /// snaps to the game window's top-right; thereafter it follows the game if it moves/resizes. If the
-    /// game isn't running it keeps polling (and re-snaps when SWTOR (re)appears).
-    /// </summary>
-    private void PollGameWindow()
-    {
-        if (GameWindowTracker.TryGetGameRect(out var rect))
-        {
-            if (!_gameAcquired)
-            {
-                PositionOverGame(rect);
-                _gameAcquired = true;
-            }
-            else if (!SameRect(rect, _lastGameRect))
-            {
-                // Game window moved/resized → shift the overlay by the same delta to follow it.
-                var pos = _window.Position;
-                _window.Position = new Vector2D<int>(
-                    pos.X + (rect.left - _lastGameRect.left),
-                    pos.Y + (rect.top - _lastGameRect.top));
-            }
-
-            _lastGameRect = rect;
-            _gameFound = true;
-            _interop?.ReassertTopmost(); // ensure we sit above the game window we just located
-        }
-        else
-        {
-            // SWTOR not running / window not ready → keep the overlay where it is and keep polling.
-            // _gameAcquired stays set once we've snapped, so re-finding the game does NOT yank the
-            // overlay back to the corner and override a position the user has dragged to.
-            _gameFound = false;
-        }
-    }
-
-    private void PositionOverGame(RECT rect)
-    {
-        const int margin = 16;
-        var x = rect.right - _window.Size.X - margin;
-        var y = rect.top + margin;
-        _window.Position = new Vector2D<int>(x, y);
-    }
-
-    private static bool SameRect(RECT a, RECT b) =>
-        a.left == b.left && a.top == b.top && a.right == b.right && a.bottom == b.bottom;
 
     private void OnClosing()
     {
