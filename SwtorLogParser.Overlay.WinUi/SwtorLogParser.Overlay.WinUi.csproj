@@ -29,4 +29,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <!-- One-directional reference to the frozen core library. The overlay is a pure
+       consumer of CombatLogsMonitor.Instance.DpsHps + the UI-free View/* types
+       (SlidingExpirationList, Entry). This does NOT add WinAppSDK/CsWin32 to the core,
+       so the core's AOT graph (and Native.Cli) stays uncontaminated. No PublishAot here. -->
+  <ItemGroup>
+    <ProjectReference Include="..\SwtorLogParser\SwtorLogParser.csproj" />
+  </ItemGroup>
 </Project>
