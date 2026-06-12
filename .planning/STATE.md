@@ -86,6 +86,12 @@ None yet.
 - Phase 12 (MSTest): MTP silently breaks coverlet coverage — edit `.github/workflows/*` in the same change
 - Hard limit: overlay cannot cover **exclusive fullscreen** — document Fullscreen-Windowed requirement (DOCS-01)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260612-czd | Benchmark + optimize CombatLogLine.Parse allocations (−55% pure parse; span-keyed cache lookup + lazy sub-parsing) | 2026-06-12 | 72811c8 | [260612-czd-benchmark-optimize-combatlogline-parse-a](./quick/260612-czd-benchmark-optimize-combatlogline-parse-a/) |
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
