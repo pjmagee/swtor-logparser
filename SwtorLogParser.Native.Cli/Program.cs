@@ -24,24 +24,35 @@ public static class Program
     private static void MonitorCombatLogs()
     {
         using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, e) =>
+        // A second or late Ctrl+C can fire after cts is disposed (when MonitorCombatLogs
+        // returns); guard the Cancel and unsubscribe in finally so the disposed CTS never
+        // throws ObjectDisposedException on the SIGINT handler thread.
+        ConsoleCancelEventHandler handler = (_, e) =>
         {
             e.Cancel = true;
-            cts.Cancel();
+            try { cts.Cancel(); } catch (ObjectDisposedException) { /* already shutting down */ }
         };
+        Console.CancelKeyPress += handler;
         var token = cts.Token;
 
-        using var manualResetEvent = new ManualResetEvent(false);
-        var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
-        manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
+        try
+        {
+            using var manualResetEvent = new ManualResetEvent(false);
+            var list = new SlidingExpirationList(TimeSpan.FromSeconds(30));
+            manualResetEvent.SetSafeWaitHandle(token.WaitHandle.SafeWaitHandle);
 
-        CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DpsHps.Subscribe(playerStats => Update(list, playerStats));
-        CombatLogsMonitor.Instance.Start(token);
+            CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
+            CombatLogsMonitor.Instance.DpsHps.Subscribe(playerStats => Update(list, playerStats));
+            CombatLogsMonitor.Instance.Start(token);
 
-        manualResetEvent.WaitOne();
+            manualResetEvent.WaitOne();
 
-        CombatLogsMonitor.Instance.Stop();
+            CombatLogsMonitor.Instance.Stop();
+        }
+        finally
+        {
+            Console.CancelKeyPress -= handler;
+        }
     }
 
     private static int _lastRowCount;

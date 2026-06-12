@@ -27,21 +27,32 @@ public static class Program
     private static void MonitorCombatLogs()
     {
         using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, e) =>
+        // A second or late Ctrl+C can fire after cts is disposed (when MonitorCombatLogs
+        // returns); guard the Cancel and unsubscribe in finally so the disposed CTS never
+        // throws ObjectDisposedException on the SIGINT handler thread.
+        ConsoleCancelEventHandler handler = (_, e) =>
         {
             e.Cancel = true;
-            cts.Cancel();
+            try { cts.Cancel(); } catch (ObjectDisposedException) { /* already shutting down */ }
         };
+        Console.CancelKeyPress += handler;
 
-        Console.CursorVisible = false;
+        try
+        {
+            Console.CursorVisible = false;
 
-        CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
-        CombatLogsMonitor.Instance.DpsHps.Subscribe(Update);
-        CombatLogsMonitor.Instance.Start(cts.Token);
+            CombatLogsMonitor.Instance.CombatLogAdded += OnCombatLogAdded;
+            CombatLogsMonitor.Instance.DpsHps.Subscribe(Update);
+            CombatLogsMonitor.Instance.Start(cts.Token);
 
-        cts.Token.WaitHandle.WaitOne();
+            cts.Token.WaitHandle.WaitOne();
 
-        CombatLogsMonitor.Instance.Stop();
+            CombatLogsMonitor.Instance.Stop();
+        }
+        finally
+        {
+            Console.CancelKeyPress -= handler;
+        }
     }
 
     private static void Update(CombatLogsMonitor.PlayerStats playerStats)
