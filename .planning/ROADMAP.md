@@ -138,10 +138,24 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] 05-02-PLAN.md — drop System.CommandLine(+Rendering) from both CLI hosts; hand-rolled list/monitor dispatch + Ctrl+C bridge; Spectre.Console table (managed CLI); remove DockerDefaultTargetOS (DEP-03, INFRA-02)
 
-### Phase 6: CI Pipeline
+### Phase 6: .NET 10 Upgrade
+
+**Goal**: Every project targets .NET 10 (LTS); the full solution builds, all 106 tests pass, and the Native AOT host still compiles AOT-clean on .NET 10
+**Depends on**: Phase 5
+**Requirements**: PLAT-01
+**Success Criteria** (what must be TRUE):
+
+  1. Every `*.csproj` targets `net10.0` (or `net10.0-windows` for the WinForms Overlay) — no `net8.0` TargetFramework remains
+  2. `Microsoft.Extensions.*` and any other framework-tied packages are on their .NET 10 GA versions in `Directory.Packages.props`; `dotnet restore`/`dotnet build SwtorLogParser.slnx` succeed with no preview/alpha/beta
+  3. `dotnet test` is green (106 tests, zero skips) on .NET 10
+  4. The Native AOT CLI compiles AOT-clean on .NET 10 (zero IL2xxx/IL3xxx warnings); core lib stays `IsAotCompatible=true`
+
+**Plans**: TBD
+
+### Phase 7: CI Pipeline
 
 **Goal**: Every push and pull request is automatically built and tested by a GitHub Actions workflow; the build is green on the main branch
-**Depends on**: Phase 5
+**Depends on**: Phase 6
 **Requirements**: INFRA-01
 **Success Criteria** (what must be TRUE):
 

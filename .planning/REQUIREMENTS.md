@@ -35,6 +35,10 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 - [x] **DEP-02**: Package versions are centrally managed via `Directory.Packages.props`
 - [x] **DEP-03**: The CLI rendering no longer depends on the abandoned `System.CommandLine.Rendering 0.4.0-alpha`; it uses a supported rendering approach — `SwtorLogParser.Cli`
 
+### Platform (PLAT)
+
+- [ ] **PLAT-01**: Every project targets .NET 10 (LTS) — `net10.0` / `net10.0-windows`; framework packages on .NET 10 GA; solution builds, all tests pass, Native AOT compiles AOT-clean (added mid-milestone per issue #1; supersedes the earlier "stay on .NET 8" scope decision)
+
 ### Infrastructure (INFRA)
 
 - [ ] **INFRA-01**: A CI pipeline (GitHub Actions) builds the solution and runs the test suite on push/PR
@@ -78,7 +82,8 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 | DEP-01 | Phase 5 | Complete |
 | DEP-02 | Phase 5 | Complete |
 | DEP-03 | Phase 5 | Complete |
-| INFRA-01 | Phase 6 | Pending |
+| PLAT-01 | Phase 6 | Pending |
+| INFRA-01 | Phase 7 | Pending |
 | INFRA-02 | Phase 5 | Complete |
 | TEST-01 | Phase 3 | Complete |
 | TEST-02 | Phase 3 | Complete |
@@ -86,10 +91,10 @@ Each requirement corresponds to one or more items in `.planning/codebase/CONCERN
 
 **Coverage:**
 
-- v1 requirements: 21 total
-- Mapped to phases: 21
+- v1 requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-11*
-*Last updated: 2026-06-11 after roadmap creation*
+*Last updated: 2026-06-12 — inserted Phase 6 (.NET 10 Upgrade, PLAT-01) per issue #1; CI moved to Phase 7*
