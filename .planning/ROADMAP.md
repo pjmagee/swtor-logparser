@@ -62,7 +62,7 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
 
 ### Phase 9: Live Stream Render + Dispatcher Marshaling
 
-**Goal**: The WinUI 3 overlay subscribes to the frozen `DpsHps` stream and renders live per-player rows on the UI thread with no cross-thread crash, plus parity-level font controls and cross-run persistence.
+**Goal**: The WinUI 3 overlay subscribes to the frozen `DpsHps` stream and renders live per-player rows on the UI thread with no cross-thread crash, plus parity-level font controls and cross-run persistence of window position + size.
 **Depends on**: Phase 8
 **Requirements**: OVL-02, OVL-07, OVL-08
 **Success Criteria** (what must be TRUE):
@@ -70,9 +70,18 @@ Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) · audit: 
   1. The overlay subscribes to `CombatLogsMonitor.Instance.DpsHps` and renders live per-player rows (Player / DPS / Crit% / HPS / Crit%), reusing the **core** `View/SlidingExpirationList` + `Entry` types unchanged
   2. The first live update arrives without a cross-thread `COMException 0x8001010E` — every UI mutation is marshaled to the captured UI `DispatcherQueue` (background aggregation in the locked core list; UI-tick render mirror into an `ObservableCollection`)
   3. The user can increase/decrease the overlay font size, at parity with the WinForms controls
-  4. The overlay persists window position, size, and opacity across runs via a local settings file, with no new dependency on the core library
+  4. The overlay persists window **position + size** across runs via a local settings file, with no new dependency on the core library (opacity persistence is deliberately deferred to Phase 10 per CONTEXT D-04 — Phase 9 = position + size, Phase 10 = opacity)
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+  - [ ] 09-01-PLAN.md — Render + dispatcher marshaling: core ProjectReference + EntryViewModel + MainViewModel (DpsHps→core list off-thread, 1s DispatcherQueueTimer mirror, DPS-desc sort) + bound ListView + monitor-on-activation + dispose (OVL-02)
+
+**Wave 2** *(blocked on Wave 1 — shares MainWindow.xaml(.cs))*
+
+  - [ ] 09-02-PLAN.md — Font +/- controls + settings persistence: OverlaySettings + source-gen JsonSerializerContext + corruption-safe SettingsService (%LocalAppData%\SwtorLogParser\settings.json) + load-on-startup/save-on-close of window position+size+font (OVL-07 pos+size, OVL-08)
+
 **UI hint**: yes
 
 ### Phase 10: CsWin32 Interop — Transparency, Click-through, Drag, Topmost
@@ -145,7 +154,7 @@ Overlay critical path 8 → 9 → 10 → 11 (hard parity gate). Phase 12 (MSTest
 | 6. .NET 10 Upgrade | v1.0 | Complete | 2026-06-12 |
 | 7. CI Pipeline | v1.0 | Complete | 2026-06-12 |
 | 8. WinUI 3 Scaffold + Guardrails | 2/2 | Complete    | 2026-06-12 |
-| 9. Live Stream Render + Dispatcher | v1.1 | Not started | - |
+| 9. Live Stream Render + Dispatcher | v1.1 | Planned (2 plans) | - |
 | 10. CsWin32 Interop | v1.1 | Not started | - |
 | 11. Parity Gate + WinForms Removal | v1.1 | Not started | - |
 | 12. MSTest Migration | v1.1 | Not started | - |
