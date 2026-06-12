@@ -52,7 +52,18 @@ public sealed class MainViewModel : IDisposable
 
         // OnNext runs on the monitor's background reader thread. It does the ONLY allowed off-thread
         // work — feeding the internally-locked core list. It must NOT touch Rows or the dispatcher.
-        _sub = monitor.DpsHps.Subscribe(stats => _core.AddOrUpdate(stats));
+        // CR-01: guard null Player.Id — the core list force-unwraps Player.Id!.Value, and Actor.Id is
+        // long? (null for malformed actors). An unguarded null would throw on the reader thread and
+        // fault the subscription, silently killing the live stream (the milestone's core value).
+        // SyncRows already treats null-id stats as non-renderable, so dropping them here is consistent.
+        // The onError keeps an otherwise-silent stream fault observable instead of vanishing.
+        _sub = monitor.DpsHps.Subscribe(
+            stats =>
+            {
+                if (stats.Player?.Id is not null)
+                    _core.AddOrUpdate(stats);
+            },
+            ex => System.Diagnostics.Debug.WriteLine($"DpsHps stream faulted: {ex}"));
 
         // 1s UI-thread render tick mirrors the core snapshot into Rows (parity with the WinForms timer).
         _renderTimer = _ui.CreateTimer();
