@@ -27,17 +27,21 @@ jobs:
       - name: Publish CLI (Native AOT)
         run: dotnet publish SwtorLogParser.Cli -c Release -o publish/cli
 
-      # The overlay is a self-contained Silk.NET/OpenGL + Dear ImGui app (bundles the GLFW/OpenGL
-      # natives + the .NET runtime, so it runs without a separate install).
-      - name: Publish Overlay (self-contained)
-        run: dotnet publish SwtorLogParser.Overlay.ImGui -c Release -r win-x64 --self-contained -o publish/overlay
+      # The overlay isn't AOT-able (Silk.NET/OpenGL + Dear ImGui + GLFW), so it's a self-contained
+      # single-file .exe: the .NET runtime is bundled and the native GLFW/ImGui libraries self-extract
+      # at launch. One file, runs without any install (larger than the AOT CLI — it carries the runtime).
+      - name: Publish Overlay (single-file self-contained)
+        run: >-
+          dotnet publish SwtorLogParser.Overlay.ImGui -c Release -r win-x64 --self-contained
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish/overlay
 
       - name: Package artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item publish/cli/SwtorLogParser.Cli.exe "dist/SwtorLogParser.Cli-${{ github.ref_name }}-win-x64.exe"
-          Compress-Archive -Path publish/overlay/* -DestinationPath "dist/SwtorLogParser.Overlay-${{ github.ref_name }}-win-x64.zip" -Force
+          Copy-Item publish/overlay/SwtorLogParser.Overlay.ImGui.exe "dist/SwtorLogParser.Overlay-${{ github.ref_name }}-win-x64.exe"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
