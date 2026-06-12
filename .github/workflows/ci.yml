@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & Test (.NET 10 · Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # No packages.lock.json in the repo, so key the NuGet cache on the
+      # project files + central package manifest instead of a lockfile.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore SwtorLogParser.slnx
+
+      # Builds the full .slnx (core lib + 3 hosts + tests). net10.0 / net10.0-windows;
+      # the Overlay (WinForms) requires the Windows runner.
+      - name: Build
+        run: dotnet build SwtorLogParser.slnx -c Release --no-restore
+
+      # A test failure exits non-zero -> the job (and run) fails: the regression gate.
+      - name: Test
+        run: >-
+          dotnet test SwtorLogParser.Tests/SwtorLogParser.Tests.csproj
+          -c Release --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory ${{ github.workspace }}/TestResults
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: ${{ github.workspace }}/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: ignore
+
+  # Non-blocking: validates the Native AOT publish (incl. the MSVC link step that
+  # cannot run on the dev machine). continue-on-error keeps a transient AOT/link
+  # hiccup from failing the required build-test gate (INFRA-01 is about build+test).
+  aot-publish:
+    name: Native AOT Publish (validation · non-blocking)
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Native AOT
+        run: dotnet publish SwtorLogParser.Native.Cli -c Release
+
+      - name: Upload native binary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-cli
+          path: SwtorLogParser.Native.Cli/**/publish/SwtorLogParser.Native.Cli.exe
+          if-no-files-found: ignore
