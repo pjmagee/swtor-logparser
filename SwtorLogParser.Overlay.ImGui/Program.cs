@@ -9,6 +9,7 @@ using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 using SwtorLogParser.Monitor;
 using SwtorLogParser.View;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 
 namespace SwtorLogParser.Overlay.ImGui;
@@ -44,6 +45,10 @@ internal sealed class Program
     private bool _gameAcquired;
     private bool _gameFound;
     private RECT _lastGameRect;
+
+    // Manual window drag (the OS caption-move loop doesn't work on a no-activate window).
+    private bool _dragging;
+    private int _dragCursorX, _dragCursorY, _dragWinX, _dragWinY;
 
     private Program()
     {
@@ -154,9 +159,28 @@ internal sealed class Program
 
     private void DrawControlBar()
     {
-        // Drag grip — pressing it starts the OS caption move-loop (OVL-05).
+        // Drag grip — manual drag (OVL-05): track the global cursor and move the window by the delta.
+        // (The OS caption move-loop is unreliable on a WS_EX_NOACTIVATE window.)
         ImGuiNET.ImGui.Button("☰");          // ☰ grip
-        if (ImGuiNET.ImGui.IsItemActivated()) _interop?.BeginDrag();
+        if (ImGuiNET.ImGui.IsItemActive() && PInvoke.GetCursorPos(out var cursor))
+        {
+            if (!_dragging)
+            {
+                _dragging = true;
+                _dragCursorX = cursor.X; _dragCursorY = cursor.Y;
+                _dragWinX = _window.Position.X; _dragWinY = _window.Position.Y;
+            }
+            else
+            {
+                _window.Position = new Vector2D<int>(
+                    _dragWinX + (cursor.X - _dragCursorX),
+                    _dragWinY + (cursor.Y - _dragCursorY));
+            }
+        }
+        else
+        {
+            _dragging = false;
+        }
 
         ImGuiNET.ImGui.SameLine();
         if (ImGuiNET.ImGui.Button(" + ")) _fontScale = Math.Clamp(_fontScale + 0.1f, 0.8f, 3.0f);
@@ -237,9 +261,10 @@ internal sealed class Program
         }
         else
         {
-            // SWTOR not running / window not ready → keep the overlay where it is and re-snap on return.
+            // SWTOR not running / window not ready → keep the overlay where it is and keep polling.
+            // _gameAcquired stays set once we've snapped, so re-finding the game does NOT yank the
+            // overlay back to the corner and override a position the user has dragged to.
             _gameFound = false;
-            _gameAcquired = false;
         }
     }
 
